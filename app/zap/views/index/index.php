@@ -6,6 +6,7 @@
     <title>ZAP</title>
     <link href="<?php echo base_url();?>/assets/bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="<?php echo base_url();?>/assets/admin/css/default.css" rel="stylesheet">
+    <link href="<?php echo base_url();?>/assets/fontawesome/6.4.2/css/all.min.css" rel="stylesheet">
 </head>
 
 <body class="bg-body-tertiary">
@@ -22,19 +23,20 @@
         <div class="navbar-collapse offcanvas-collapse" id="navbarsExampleDefault">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="#">控制面板</a>
+                    <a class="nav-link active" aria-current="page" href="#"><i class="fa fa-dashboard"></i> 控制面板</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Notifications</a>
+                    <a class="nav-link" href="#">内容管理</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Profile</a>
+                    <a class="nav-link" href="#">栏目</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Switch account</a>
                 </li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">设置</a>
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa fa-gear"></i> 设置</a>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="#">Action</a></li>
                         <li><a class="dropdown-item" href="#">Another action</a></li>
@@ -50,9 +52,11 @@
 <!--                    <a class="nav-link" href="#">Switch account</a>-->
 <!--                </li>-->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false"><?php echo $zap_admin['username']; ?></a>
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa fa-user-cog"></i> <?php echo $zap_admin['username']; ?></a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="<?php echo \zap\facades\Url::action('Auth@signOut'); ?>">安全退出</a></li>
+                        <li><a class="dropdown-item" href="<?php echo \zap\facades\Url::action('Auth@signOut'); ?>">
+                                <i class="fa fa-sign-out"></i> 安全退出</a></li>
 
                     </ul>
                 </li>
