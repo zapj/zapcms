@@ -1,0 +1,12 @@
+{
+  "require": {
+    "zapj/zap-php-framework": "dev-main"
+  },
+  "autoload": {
+    "files":[],
+    "psr-4":{
+      "app\\" :"app/",
+      "zap\\" :"app/zap/"
+    }
+  }
+}

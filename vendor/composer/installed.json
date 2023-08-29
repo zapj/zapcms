@@ -1,0 +1,60 @@
+{
+    "packages": [
+        {
+            "name": "zapj/zap-php-framework",
+            "version": "dev-main",
+            "version_normalized": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/zapj/zap-php-framework.git",
+                "reference": "43333abbbe44f91496f88c2d5685190c12b3e4fc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/43333abbbe44f91496f88c2d5685190c12b3e4fc",
+                "reference": "43333abbbe44f91496f88c2d5685190c12b3e4fc",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-dom": "*",
+                "ext-json": "*",
+                "ext-mbstring": "*",
+                "ext-openssl": "*",
+                "ext-pdo": "*",
+                "ext-simplexml": "*",
+                "php": ">=7.1.0"
+            },
+            "time": "2023-08-27T09:47:04+00:00",
+            "default-branch": true,
+            "type": "library",
+            "installation-source": "source",
+            "autoload": {
+                "files": [
+                    "src/functions.php"
+                ],
+                "psr-4": {
+                    "zap\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "z",
+                    "email": "z@zap.cn"
+                }
+            ],
+            "description": "zap php framework",
+            "support": {
+                "issues": "https://github.com/zapj/zap-php-framework/issues",
+                "source": "https://github.com/zapj/zap-php-framework/tree/main"
+            },
+            "install-path": "../zapj/zap-php-framework"
+        }
+    ],
+    "dev": true,
+    "dev-package-names": []
+}
