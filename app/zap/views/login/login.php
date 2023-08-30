@@ -69,9 +69,8 @@
             url:'<?php echo url_action("Auth@signIn"); ?>',
             method:'post',
             dataType:'json',
-            data:$('#reqForm').serialize(),
+            data: $('#reqForm').serialize(),
             success:function(data){
-
                 if(data.code === 0){
                     ZapToast.alert(data.msg,{
                         bgColor:bgSuccess,

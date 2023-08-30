@@ -11,7 +11,7 @@ class IndexController extends AdminController
 {
     function index(){
         $data = [];
-        $data['zap_admin'] = session()->get('zap.admin');
+//        $data['zap_admin'] = session()->get('zap.admin');
         View::render("index.index",$data);
     }
 
