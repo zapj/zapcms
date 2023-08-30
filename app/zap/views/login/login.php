@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ZAP</title>
     <link href="<?php echo base_url();?>/assets/bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="<?php echo base_url();?>/assets/admin/css/default.css" rel="stylesheet">
+    <script src="<?php echo base_url();?>/assets/jquery/jquery-3.7.1.min.js"></script>
     <style>
         html,
         body {
@@ -39,7 +40,7 @@
 
 
 <main class="form-signin w-100 m-auto">
-    <form action="<?php echo \zap\facades\Url::action('Auth@signIn'); ?>" method="post">
+    <form action="<?php echo \zap\facades\Url::action('Auth@signIn'); ?>" method="post" id="reqForm">
         <p class="text-center">
             <img class="mb-4 m-auto " src="<?php echo base_url();?>/assets/admin/img/zap_logo_green_rgb.svg" alt="ZAP" width="150" >
         </p>
@@ -55,21 +56,41 @@
         </div>
 
 
-        <button class="btn btn-success w-100 py-2" type="submit">登录</button>
+        <button class="btn btn-success w-100 py-2" type="button" onclick="return loginSystem()">登录</button>
         <p class="mt-5 mb-3 text-body-secondary text-center">&copy; ZAP.CN <?php echo date('Y');?></p>
 
     </form>
 </main>
+<div class="toast-container p-3 top-0 start-50 translate-middle-x" id="topCenterToast" data-original-class="toast-container p-3"></div>
 
-<div class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
-    <div class="d-flex">
-        <div class="toast-body">
-            Hello, world! This is a toast message.
-        </div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-    </div>
-</div>
+<script>
+    function loginSystem(){
+        $.ajax({
+            url:'<?php echo url_action("Auth@signIn"); ?>',
+            method:'post',
+            dataType:'json',
+            data:$('#reqForm').serialize(),
+            success:function(data){
+
+                if(data.code === 0){
+                    ZapToast.alert(data.msg,{
+                        bgColor:bgSuccess,
+                        delay:2000,
+                        callback:function(){
+                            location.href=data.redirect_to;
+                        }
+                    });
+
+                }else{
+                    ZapToast.alert(data.msg,{bgColor:bgDanger})
+                }
+            }
+        });
+
+        return false;
+    }
+
+</script>
 <script src="<?php echo base_url();?>/assets/bootstrap/5.3.1/js/bootstrap.bundle.min.js" ></script>
-
 <script src="<?php echo base_url();?>/assets/admin/js/admin.js"></script></body>
 </html>

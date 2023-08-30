@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,6 +7,8 @@
     <link href="<?php echo base_url();?>/assets/bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="<?php echo base_url();?>/assets/admin/css/default.css" rel="stylesheet">
     <link href="<?php echo base_url();?>/assets/fontawesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <script src="<?php echo base_url();?>/assets/jquery/jquery-3.7.1.min.js"></script>
+
 </head>
 
 <body class="bg-body-tertiary">
@@ -69,7 +71,6 @@
 
 <main class="container">
     <div class="d-flex align-items-center p-3 my-3 text-white bg-purple rounded shadow-sm">
-        <img class="me-3" src="/docs/5.3/assets/brand/bootstrap-logo-white.svg" alt="" width="48" height="38">
         <div class="lh-1">
             <h1 class="h6 mb-0 text-white lh-1">Bootstrap</h1>
             <small>Since 2011</small>
@@ -141,7 +142,9 @@
         </small>
     </div>
 </main>
-<script src="<?php echo base_url();?>/assets/bootstrap/5.3.1/js/bootstrap.bundle.min.js" ></script>
 
+<div class="toast-container p-3 top-0 start-50 translate-middle-x" id="topToast" data-original-class="toast-container p-3"></div>
+<div class="toast-container p-3 top-0 end-0" id="topRightToast" data-original-class="toast-container p-3"></div>
+<script src="<?php echo base_url();?>/assets/bootstrap/5.3.1/js/bootstrap.bundle.min.js" ></script>
 <script src="<?php echo base_url();?>/assets/admin/js/admin.js"></script></body>
 </html>

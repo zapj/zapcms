@@ -21,12 +21,18 @@ class AuthController extends Controller
 
     function signIn()
     {
-        if (\zap\http\Request::isPost()) {
-            $username = Request::post('username');
+        if (Request::isPost()) {
+            $username = trim(Request::post('username'));
             $password = Request::post('password');
+
             $admin = DB::table('admin')->where('username', $username)->fetch(FETCH_OBJ);
             if (is_null($admin) || ($admin && Password::verify($password, $admin->password) === false )) {
-                Response::redirect(Url::action('Auth@signIn'), "登录失败，用户名或密码错误", Session::ERROR);
+                if (Request::isAjax()) {
+                    Response::json(['code'=>1,'msg'=>'登录失败，用户名或密码错误']);
+                }else{
+                    Response::redirect(Url::action('Auth@signIn'), "登录失败，用户名或密码错误", Session::ERROR);
+                }
+
             }
             //登录成功
             DB::table('admin')->set('last_ip', Request::ip())->set('last_access_time', time())->update();
@@ -36,7 +42,12 @@ class AuthController extends Controller
                 'id'=>$admin->id,
                 'username'=>$admin->username,
             ]);
-            Response::redirect(Url::action('Index'), "登录成功", Session::SUCCESS);
+
+            if (Request::isAjax()) {
+                Response::json(['code'=>0,'msg'=>'登录成功','redirect_to'=>Url::action('Index')]);
+            }else{
+                Response::redirect(Url::action('Index'), "登录成功", Session::SUCCESS);
+            }
         }
         View::render("login.login");
     }
