@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "13882aa6ff480d993b9c6c43dc359d05",
+    "content-hash": "d29ba75d77dc509b9942a1b88b28416c",
     "packages": [
         {
             "name": "zapj/zap-php-framework",
@@ -66,7 +66,9 @@
     },
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "ext-pdo": "*"
+    },
     "platform-dev": [],
     "plugin-api-version": "2.3.0"
 }
