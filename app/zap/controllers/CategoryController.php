@@ -22,9 +22,29 @@ class CategoryController extends AdminController
 //            print_r($webconfig);
 
         $category = new Category('category');
-        $ID = $category->add(['name'=>'编程语言'],0);
-        $category->add(['name'=>'JAVa'],$ID);
+        $ID = $category->add(['name'=>'编程语言'],4);
+        $category->add(['name'=>'Spring Boot'],$ID);
+        $category->add(['name'=>'Spring Web'],$ID);
 
+    }
+
+    function show(){
+        $category = new Category('category');
+//        $all = $category->getAll();
+        $all = $category->getTreeArray();
+//        print_r($all);
+
+        while($data = array_shift($all)){
+            echo str_repeat('=',$data['level']),$data['name'],'<br/>';
+
+            if(!empty($data['children'])){
+//                array_unshift($all,$data['children'] );
+                foreach ($data['children'] as $child){
+                    array_unshift($all,$child);
+                }
+
+            }
+        }
     }
 
 }
