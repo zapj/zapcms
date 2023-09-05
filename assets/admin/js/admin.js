@@ -46,3 +46,24 @@ const ZapToast = {
 };
 
 
+
+
+// ZAP Modal
+
+const ZapModal = {
+    show:function(params){
+        const defaultParams = {
+            title:'',
+            content:'',
+            callback:function(){}
+        }
+        if(params === undefined){
+            params = {}
+        }
+        params = Object.assign(defaultParams,params);
+
+
+    }
+};
+
+

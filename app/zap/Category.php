@@ -61,15 +61,6 @@ class Category
     }
 
 
-    public function getAll()
-    {
-        $categories = DB::table($this->table)
-            ->orderBy("{$this->parentColumn} ASC,sort_order DESC")
-            ->get(FETCH_ASSOC);
-//        return $this->generateTree($categories);
-    }
-
-
     public function getTreeArray()
     {
         $data = DB::table($this->table)

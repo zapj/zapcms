@@ -1,9 +1,13 @@
 <?php
 use zap\http\Route;
+use zap\view\View;
+
 Route::prefix("/zap/",function (){
     config_set('config.theme',false);
-    \zap\view\View::paths(base_path('/app/zap/views'));
-},["namespace"=>'\app\zap\controllers']);
+    View::paths(base_path('/app/zap/views'));
+},[
+    "namespace"=>'\app\zap\controllers'
+]);
 Route::get("/",function (){
     echo "hello world";
 });

@@ -35,7 +35,9 @@ class AuthController extends Controller
 
             }
             //登录成功
-            DB::table('admin')->set('last_ip', Request::ip())->set('last_access_time', time())->update();
+            DB::table('admin')->set('last_ip', Request::ip())
+                ->set('last_access_time', time())
+                ->update();
             session()->set('zap.admin',[
                 'last_ip'=>$admin->last_ip,
                 'last_access_time'=>$admin->last_access_time,

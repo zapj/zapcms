@@ -1,3 +1,4 @@
+<?php use zap\facades\Url; ?>
 <nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-success" aria-label="Main navigation">
     <div class="container-fluid">
         <a class="navbar-brand" href="<?php echo \zap\facades\Url::home();?>">
@@ -13,19 +14,19 @@
                     <a class="nav-link active" aria-current="page" href="<?php echo \zap\facades\Url::home();?>"><i class="fa fa-dashboard"></i> 控制面板</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#"><i class="fa fa-cube"></i> 内容管理</a>
+                    <a class="nav-link" href="<?php echo Url::action('Content');?>"><i class="fa fa-cube"></i> 内容管理</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#"><i class="fa fa-ellipsis"></i> 栏目</a>
+                    <a class="nav-link" href="<?php echo Url::action('Catalog');?>"><i class="fa fa-ellipsis"></i> 栏目</a>
                 </li>
 
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fa fa-gear"></i> 设置</a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="<?php echo \zap\facades\Url::action('System@settings');?>">系统设置</a></li>
-                        <li><a class="dropdown-item" href="#">Another action</a></li>
-                        <li><a class="dropdown-item" href="#">Something else here</a></li>
+                        <li><a class="dropdown-item" href="<?php echo Url::action('System@settings');?>">系统设置</a></li>
+                        <li><a class="dropdown-item" href="<?php echo Url::action('AdminMenu');?>">系统菜单设置</a></li>
+
                     </ul>
                 </li>
             </ul>
