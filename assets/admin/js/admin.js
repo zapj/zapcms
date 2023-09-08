@@ -17,6 +17,7 @@ const bgDark = 'text-bg-dark';
 
 const Toast_Pos_TopCenter = 'topCenterToast';
 const Toast_Pos_TopRight = 'topRightToast';
+const Toast_Pos_Center = 'centerToast';
 const ZapToast = {
     alert:function(msg,params){
         const defaultParams = {
@@ -51,6 +52,14 @@ const ZapToast = {
 // ZAP Modal
 
 const ZapModal = {
+    loadding:function(color){
+        if(color === undefined){
+            color = 'text-success';
+        }
+        return '<div class="spinner-border '+color+'" role="status">\n' +
+            '  <span class="visually-hidden">Loading...</span>\n' +
+            '</div>';
+    },
     show:function(params){
         const defaultParams = {
             title:'',
@@ -63,7 +72,84 @@ const ZapModal = {
         params = Object.assign(defaultParams,params);
 
 
-    }
+    },
+    create:function(params,replaced){
+        const defaultParams = {
+            title:null,
+            content:'',
+            id:'defaultZapModal',
+            callback:function(){},
+            keyboard:true,
+            focus:true,
+            backdrop:'',
+            buttons:null,
+            url:false,
+            dialog_class:'modal-dialog-scrollable modal-dialog-centered modal-lg',
+            header_class:'bg-dark text-white',
+            body_class:'',
+        }
+        if(replaced === undefined){replaced = false;}
+        /**
+         *  buttons:[{title:"test",callback:function(){},close:true}]
+         */
+        if(params === undefined){
+            params = {}
+        }
+        params = Object.assign(defaultParams,params);
+        if($('#' + params.id).length > 0 && replaced === false){
+            return new bootstrap.Modal('#' + params.id);
+        }
+        if(!params.backdrop){params.backdrop = ' data-bs-backdrop="static" data-bs-keyboard="false" ';}
+        var modalTpl = '<div class="modal fade" id="'+params.id+'" '+params.backdrop+' tabindex="-1" aria-labelledby="'+params.id+'Label" aria-hidden="true">\n' +
+            '  <div class="modal-dialog '+params.dialog_class+'">\n' +
+            '    <div class="modal-content">\n' ;
+        if(params.title !== null){
+            modalTpl += '<div class="modal-header '+params.header_class+' pt-2 pb-2">\n' +
+                '        <h1 class="modal-title fs-5" id="'+params.id+'Label">'+params.title+'</h1>\n' +
+                '        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>\n' +
+                '      </div>\n';
+        }
+        modalTpl += '<div class="modal-body '+params.body_class+'">\n' +
+                    params.content +
+            '      </div>\n' ;
+        if(params.buttons !== null){
+            modalTpl += '<div class="modal-footer">\n' ;
+            for (const button in params.buttons) {
+                btn = params.buttons[button];
+                index = parseInt(button) + 1;
+                if(btn.title === undefined){btn.title = '';}
+                if(btn.class === undefined){btn.class = 'btn-primary';}
+                if(btn.close){
+                    modalTpl += '<button type="button" data-index="'+index+'" class="btn btn-sm '+btn.class+'" data-bs-dismiss="modal">'+btn.title+'</button>\n' ;
+                }else{
+                    modalTpl += '<button type="button" data-index="'+index+'" class="btn btn-sm '+btn.class+'" >'+btn.title+'</button>\n' ;
+                }
+            }
+        modalTpl +=    '      </div>\n';
+        }
+        modalTpl +=  '    </div>\n' +
+            '  </div>\n' +
+            '</div>';
+        if(replaced===true){
+            $('#' + params.id).remove();
+        }
+        if($('#' + params.id).length === 0){
+            $(document.body).append(modalTpl);
+        }
+        if(params.url!==false){
+            $('#' + params.id + ' .modal-body').load(params.url);
+        }
+        $('#' + params.id + ' .modal-footer > button').on('click',function (e) {
+            const btnName = 'btn'+$(e.target).data('index');
+            if(params[btnName] !== undefined){
+                callback = params[btnName];
+                callback(e);
+            }
+        });
+        return new bootstrap.Modal('#' + params.id);
+    },
+
+
 };
 
 

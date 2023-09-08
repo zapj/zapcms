@@ -2,7 +2,7 @@
 
 namespace app\zap\controllers;
 
-use app\zap\AdminController;
+use zap\AdminController;
 use zap\Category;
 use zap\facades\Cache;
 use zap\facades\Url;
@@ -22,7 +22,7 @@ class CategoryController extends AdminController
 //            print_r($webconfig);
 
         $category = new Category('category');
-        $ID = $category->add(['name'=>'编程语言'],4);
+        $ID = $category->add(['name'=>'编程语言'],0);
         $category->add(['name'=>'Spring Boot'],$ID);
         $category->add(['name'=>'Spring Web'],$ID);
 

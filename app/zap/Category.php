@@ -4,6 +4,8 @@ namespace zap;
 
 class Category
 {
+
+    protected static $instance;
     //表名
     protected $table;
     //分类Path
@@ -29,7 +31,7 @@ class Category
     {
         if ($pid > 0) {
             $parent = DB::table($this->table)->where('id', $pid)->fetch();
-            $data[$this->pathColumn] = sprintf('%s-%s',$parent->path,$parent->id);
+            $data[$this->pathColumn] = sprintf('%s,%s',$parent->path,$parent->id);
             $data[$this->levelColumn] = $parent->level + 1;
         } else {
             $data[$this->pathColumn] = '0';
@@ -56,7 +58,8 @@ class Category
             return false;
         }
         $path = $category[$this->pathColumn];
-        DB::table($this->table)->where($this->pathColumn,'LIKE',"{$path}%")->delete();
+        //删除子类
+        DB::table($this->table)->where($this->pathColumn,'LIKE',"{$path},{$id}%")->delete();
         return DB::table($this->table)->where($this->primaryKey,$id)->delete();
     }
 
@@ -64,7 +67,7 @@ class Category
     public function getTreeArray()
     {
         $data = DB::table($this->table)
-            ->orderBy("{$this->parentColumn} ASC,sort_order DESC")
+            ->orderBy("{$this->parentColumn} ASC,sort_order ASC")
             ->get(FETCH_ASSOC);
         $categories = array();
         foreach ($data as $value) {
@@ -89,12 +92,30 @@ class Category
         while($data = array_shift($categories)){
             $callback($data);
             if(!empty($data['children'])){
-                foreach ($data['children'] as $child){
-                    array_unshift($categories,$child);
+                while($children = array_pop($data['children'])){
+                    array_unshift($categories,$children);
                 }
+//                foreach ($data['children'] as $child){
+//                    array_unshift($categories,$child);
+//                }
 
             }
         }
+    }
+
+    public function get($id){
+        return DB::table($this->table)->where($this->primaryKey, $id)->fetch(FETCH_ASSOC);
+    }
+
+    /**
+     * @return Category
+     */
+    public static function instance()
+    {
+        if(is_null(static::$instance)){
+            static::$instance = new static;
+        }
+        return static::$instance;
     }
 
 

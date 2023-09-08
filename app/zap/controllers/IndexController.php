@@ -2,7 +2,7 @@
 
 namespace app\zap\controllers;
 
-use app\zap\AdminController;
+use zap\AdminController;
 use zap\facades\Url;
 use zap\util\Password;
 use zap\view\View;
