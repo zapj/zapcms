@@ -9,9 +9,8 @@
     <link href="<?php echo base_url();?>/assets/fontawesome/6.4.2/css/all.min.css" rel="stylesheet">
     <script src="<?php echo base_url();?>/assets/jquery/jquery-3.7.1.min.js"></script>
     <?php
-    print_scripts(ASSETS_HEAD);
-    print_scripts(ASSETS_HEAD_TEXT);
-    print_scripts(ASSETS_HEAD);
+    print_styles();
+    print_scripts();
     print_scripts(ASSETS_HEAD_TEXT);
     ?>
 </head>
@@ -34,8 +33,8 @@
         <script src="<?php echo base_url();?>/assets/bootstrap/5.3.1/js/bootstrap.bundle.min.js" ></script>
         <script src="<?php echo base_url();?>/assets/admin/js/admin.js"></script>
         <?php
-        print_scripts(ASSETS_BODY);
-        print_scripts(ASSETS_BODY_TEXT);
+        print_styles(ASSETS_BODY);
+        print_styles(ASSETS_BODY_TEXT);
         print_scripts(ASSETS_BODY);
         print_scripts(ASSETS_BODY_TEXT);
         

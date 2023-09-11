@@ -1,12 +1,7 @@
 <?php
-
 use zap\facades\Url;
-use zap\Catalog;
-use zap\ContentType;
-
 
 $this->layout('layouts/common');
-
 ?>
 
 
@@ -24,9 +19,46 @@ $this->layout('layouts/common');
     </div>
 
     <div class="my-3 p-3 bg-body rounded shadow-sm">
-        <h6 class="border-bottom pb-2 mb-0">内容管理</h6>
+        <div>
+            <a class="btn btn-success btn-sm" href="<?php echo url_action('Content@news/index/add');?>">添加</a>
+<!--            <a class="btn btn-secondary btn-sm" href="">Small button</a>-->
+        </div>
+        <hr/>
+        <h6 class="border-bottom pb-2 mb-0"><?php echo $title; ?></h6>
 
-
+        <div class="table-responsive">
+            <table class="table text-nowrap table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">First</th>
+                    <th scope="col">Last</th>
+                    <th scope="col">Handle</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($data as $row): ?>
+                <tr>
+                    <th scope="row">1</th>
+                    <td>Mark</td>
+                    <td>Otto</td>
+                    <td>@mdo</td>
+                </tr>
+                <?php endforeach; ?>
+                <tr>
+                    <th scope="row">2</th>
+                    <td>Jacob</td>
+                    <td>Thornton</td>
+                    <td>@fat</td>
+                </tr>
+                <tr>
+                    <th scope="row">3</th>
+                    <td colspan="2">Larry the Bird</td>
+                    <td>@twitter</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
 

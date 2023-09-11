@@ -1,6 +1,6 @@
 <?php
 
-namespace app\zap;
+namespace zap;
 
 
 
