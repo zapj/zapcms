@@ -1,6 +1,6 @@
 <?php
 
 return [
-  "theme"=>"basic",
-    "debug"=>true
+    "theme" => "basic",
+    "debug" => true
 ];

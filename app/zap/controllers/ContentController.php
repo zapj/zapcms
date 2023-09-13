@@ -4,7 +4,7 @@ namespace app\zap\controllers;
 
 use zap\AdminController;
 
-use zap\Content;
+use zap\Node;
 use zap\view\View;
 
 class ContentController extends AdminController
@@ -20,7 +20,7 @@ class ContentController extends AdminController
             $controller = str_replace('-','',ucwords($controller,"-"));
             $action = str_replace('-','',ucwords($action,"-"));
 
-            $class = "\\app\\modules\\{$module}\\controllers\\{$controller}Controller";
+            $class = "\\app\\mods\\{$module}\\controllers\\{$controller}Controller";
 
             if(!class_exists($class)){
 //                trigger_error("{$class} - Class does not exist!!",E_USER_ERROR);
@@ -41,7 +41,7 @@ class ContentController extends AdminController
                 ]);
             }
 
-            View::paths(base_path("/app/modules/{$module}/views"));
+            View::paths(base_path("/app/mods/{$module}/views"));
             call_user_func_array(array($class, $action), $params);
 
         }
@@ -49,8 +49,6 @@ class ContentController extends AdminController
 
     function index(){
         $data = [];
-
-
         View::render("content.index",$data);
     }
 

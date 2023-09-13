@@ -43,7 +43,7 @@
             'cil': 'CIL',
             'coffee': 'CoffeeScript',
             'cmake': 'CMake',
-            'csp': 'Content-Security-Policy',
+            'csp': 'Node-Security-Policy',
             'css-extras': 'CSS Extras',
             'dax': 'DAX',
             'django': 'Django/Jinja2',

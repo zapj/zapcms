@@ -2,7 +2,7 @@
 
 use zap\facades\Url;
 use zap\Catalog;
-use zap\ContentType;
+use zap\NodeType;
 
 $this->layout('layouts/common');
 ?>
@@ -14,7 +14,7 @@ $this->layout('layouts/common');
         <div class="col pt-2 pb-0">
             <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);" aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="<?php echo Url::action('Content') ?>">内容管理</a></li>
+                    <li class="breadcrumb-item"><a href="<?php echo Url::action('Node') ?>">内容管理</a></li>
                     <li class="breadcrumb-item active" aria-current="page">编辑的模块</li>
                 </ol>
             </nav>
@@ -35,13 +35,13 @@ $this->layout('layouts/common');
             <?php
 
             Catalog::instance()->forEachAll(function($catalog){
-                $contentType = ContentType::getContentType($catalog['content_type']);
+                $nodeType = NodeType::getNodeType($catalog['node_type']);
 
                 ?>
                 <tr>
                     <td>
                         <i class="<?php echo $catalog['icon'];?>"></i>
-                      <a href="<?php echo Url::action("Content@{$contentType['module_name']}"); ?>">
+                      <a href="<?php echo Url::action("Node@{$nodeType['module_name']}"); ?>">
                           <span style="padding-left: <?php echo $catalog['level'];?>rem!important;"><?php echo $catalog['title'];?></span>
                       </a>
                     </td>

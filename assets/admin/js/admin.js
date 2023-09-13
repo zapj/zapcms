@@ -152,4 +152,44 @@ const ZapModal = {
 
 };
 
+//https://layui.dev/2.7/docs/modules/layer.html
+var ZapFinder = {
+    open: function(url){
+        layer.open({
+            type: 2, // page 层类型
+            // area: ['500px', '300px'],
+            title: 'ZAP Finder',
+            shade: 0.6, // 遮罩透明度
+            shadeClose: true, // 点击遮罩区域，关闭弹层
+            maxmin: true, // 允许全屏最小化
+            anim: 0, // 0-6 的动画形式，-1 不开启
+            content: url
+        });
+    }
+}
+
+var Zap = {
+    loadding:function(title,icon){
+        return layer.open({
+            title:false,
+            closeBtn:false,
+            btn:false,
+            content: '<div class="d-flex justify-content-center">\n' +
+                '  <div class="spinner-border text-success" role="status">\n' +
+                '    <span class="visually-hidden">Loading...</span>\n' +
+                '  </div>\n' +
+                '</div>'+
+                '<div class="text-center">'+title+'</div>'
+        });
+
+
+    },
+    closeLayer:function(index){
+        layer.close(index)
+    },
+    closeAllLayer:function(){
+        layer.closeAll()
+    }
+
+}
 

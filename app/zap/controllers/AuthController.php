@@ -22,11 +22,11 @@ class AuthController extends Controller
     function signIn()
     {
         if (Request::isPost()) {
-            $username = trim(Request::post('username'));
+            $username = Request::post('username');
             $password = Request::post('password');
 
             $admin = DB::table('admin')->where('username', $username)->fetch(FETCH_OBJ);
-            if (is_null($admin) || ($admin && Password::verify($password, $admin->password) === false )) {
+            if (empty($admin) || ($admin && Password::verify($password, $admin->password) === false )) {
                 if (Request::isAjax()) {
                     Response::json(['code'=>1,'msg'=>'登录失败，用户名或密码错误']);
                 }else{
@@ -34,6 +34,7 @@ class AuthController extends Controller
                 }
 
             }
+
             //登录成功
             DB::table('admin')->set('last_ip', Request::ip())
                 ->set('last_access_time', time())
@@ -51,12 +52,12 @@ class AuthController extends Controller
                 Response::redirect(Url::action('Index'), "登录成功", Session::SUCCESS);
             }
         }
-        View::render("login.login");
+        View::render("auth.login");
     }
 
     function signOut()
     {
-        \session()->remove('zap.admin');
+        session()->remove('zap.admin');
         Response::redirect(Url::action('Auth@signIn'), "您已安全退出", Session::SUCCESS);
     }
 

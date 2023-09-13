@@ -1,6 +1,6 @@
 <?php
 use zap\Catalog;
-use zap\ContentType;
+use zap\NodeType;
 ?>
 <form>
 <table class="table text-nowrap">
@@ -27,7 +27,7 @@ use zap\ContentType;
 
             <td>
                     <select name="catalog[0][content_type]" class="form-select form-select-sm w-auto">
-                        <?php foreach (ContentType::getContentTypes() as $row): ?>
+                        <?php foreach (NodeType::getContentTypes() as $row): ?>
                         <option value="<?php echo $row['id'];?>"><?php echo $row['name'];?></option>
                         <?php endforeach; ?>
                     </select>

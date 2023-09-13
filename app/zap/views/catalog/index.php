@@ -73,7 +73,7 @@ $this->layout('layouts/common');
                         </select>
 
                         </td>
-                    <td><?php echo \zap\ContentType::getContentTypeName($admin_menu['module_name']); ?></td>
+                    <td><?php echo \zap\NodeType::getNodeTypeName($admin_menu['module_name']); ?></td>
                     <td><?php echo $admin_menu['seo_url']; ?></td>
                     <td>
                         <button type="button" class="btn btn-info btn-sm">设置</button>

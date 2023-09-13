@@ -24,4 +24,3 @@ pre {
 EOF,ASSETS_HEAD_TEXT);
 register_scripts(base_url('/assets/summernote/summernote-lite.min.js'));
 register_scripts(base_url('/assets/summernote/lang/summernote-zh-CN.js'));
-register_scripts(base_url('/assets/summernote/plugin/hello/summernote-ext-hello.js'));

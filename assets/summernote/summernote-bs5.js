@@ -233,7 +233,7 @@ module.exports = __WEBPACK_EXTERNAL_MODULE__1145__;
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat get default export */
 /******/ 	(() => {
-/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		// getDefaultExport function for compatibility with non-harmony mods
 /******/ 		__webpack_require__.n = (module) => {
 /******/ 			var getter = module && module.__esModule ?
 /******/ 				() => (module['default']) :
@@ -273,7 +273,7 @@ module.exports = __WEBPACK_EXTERNAL_MODULE__1145__;
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+// This entry need to be wrapped in an IIFE because it need to be isolated against other mods in the chunk.
 (() => {
 // ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
@@ -2132,7 +2132,7 @@ var Context = /*#__PURE__*/function () {
     this.initialize();
   }
   /**
-   * create layout and initialize modules and other resources
+   * create layout and initialize mods and other resources
    */
 
 
@@ -2147,7 +2147,7 @@ var Context = /*#__PURE__*/function () {
       return this;
     }
     /**
-     * destroy modules and other resources and remove layout
+     * destroy mods and other resources and remove layout
      */
 
   }, {
@@ -2159,7 +2159,7 @@ var Context = /*#__PURE__*/function () {
       this.ui.removeLayout(this.$note, this.layoutInfo);
     }
     /**
-     * destory modules and other resources and initialize it again
+     * destory mods and other resources and initialize it again
      */
 
   }, {
@@ -2190,7 +2190,7 @@ var Context = /*#__PURE__*/function () {
       Object.keys(buttons).forEach(function (key) {
         _this.memo('button.' + key, buttons[key]);
       });
-      var modules = external_jQuery_default().extend({}, this.options.modules, (external_jQuery_default()).summernote.plugins || {}); // add and initialize modules
+      var modules = external_jQuery_default().extend({}, this.options.modules, (external_jQuery_default()).summernote.plugins || {}); // add and initialize mods
 
       Object.keys(modules).forEach(function (key) {
         _this.module(key, modules[key], true);
@@ -2204,7 +2204,7 @@ var Context = /*#__PURE__*/function () {
     value: function _destroy() {
       var _this2 = this;
 
-      // destroy modules with reversed order
+      // destroy mods with reversed order
       Object.keys(this.modules).reverse().forEach(function (key) {
         _this2.removeModule(key);
       });
