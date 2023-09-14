@@ -5,6 +5,19 @@ namespace zap;
 /**
  * Category
  *
+ *
+ * CREATE TABLE `zap_category` (
+ * `id` int(11) NOT NULL,
+ * `name` varchar(255) NOT NULL,
+ * `path` varchar(255) DEFAULT NULL,
+ * `pid` int(11) NOT NULL,
+ * `level` int(11) DEFAULT '0',
+ * `sort_order` int(11) DEFAULT '0'
+ * ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+ *
+ *
+ *
+ *
  * @table Table Schema
  *
  */
