@@ -2,7 +2,6 @@
 
 namespace app\zap\controllers;
 
-use http\Env\Request;
 use zap\AdminController;
 
 use zap\http\Response;

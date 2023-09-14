@@ -2,6 +2,12 @@
 
 namespace zap;
 
+/**
+ * Category
+ *
+ * @table Table Schema
+ *
+ */
 class Category
 {
 
@@ -31,15 +37,24 @@ class Category
     {
         if ($pid > 0) {
             $parent = DB::table($this->table)->where('id', $pid)->fetch();
-            $data[$this->pathColumn] = sprintf('%s,%s',$parent->path,$parent->id);
+//            $data[$this->pathColumn] = sprintf('%s,%s',$parent->path,$parent->id);
+            $data[$this->pathColumn] = $parent->path;
             $data[$this->levelColumn] = $parent->level + 1;
         } else {
-            $data[$this->pathColumn] = '0';
-            $data[$this->levelColumn] = 0;
+            $data[$this->pathColumn] = '';
+            $data[$this->levelColumn] = 1;
         }
 
         $data[$this->parentColumn] = $pid;
-        return DB::insert($this->table, $data);
+        $category_id = DB::insert($this->table, $data);
+        if($pid == 0){
+            DB::update($this->table,[$this->pathColumn => $category_id],[$this->primaryKey => $category_id]);
+        }else{
+            DB::update($this->table,[
+                $this->pathColumn => sprintf("%s,%s",$data[$this->pathColumn],$category_id)
+            ],[$this->primaryKey => $category_id]);
+        }
+        return $category_id;
     }
 
     public function update($data,$id){
@@ -110,7 +125,7 @@ class Category
     /**
      * @return Category
      */
-    public static function instance()
+    public static function instance(): Category
     {
         if(is_null(static::$instance)){
             static::$instance = new static;

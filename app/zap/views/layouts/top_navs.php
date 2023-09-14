@@ -17,14 +17,14 @@
                     <a class="nav-link" href="<?php echo Url::action('Content');?>"><i class="fa fa-cube"></i> 内容管理</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="<?php echo Url::action('Catalog');?>"><i class="fa fa-ellipsis"></i> 栏目</a>
+                    <a class="nav-link" href="<?php echo Url::action('Catalog');?>"><i class="fa fa-square-poll-horizontal"></i> 栏目</a>
                 </li>
 
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fa fa-gear"></i> 设置</a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="<?php echo Url::action('System@settings');?>">系统设置</a></li>
+                        <li><a class="dropdown-item" href="<?php echo Url::action('System@settings');?>">基础设置</a></li>
                         <li><a class="dropdown-item" href="<?php echo Url::action('AdminMenu');?>">系统菜单设置</a></li>
 
                     </ul>
@@ -34,9 +34,9 @@
 
             <ul class="navbar-nav d-flex mb-2 mb-lg-0">
 
-                <!--                <li class="nav-item">-->
-                <!--                    <a class="nav-link" href="#">Switch account</a>-->
-                <!--                </li>-->
+                <li class="nav-item">
+                    <a class="nav-link" href="<?php echo base_url('/'); ?>" target="_blank">网站首页</a>
+                </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fa fa-user-cog"></i> <?php echo $zap_admin['username']; ?></a>

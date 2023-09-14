@@ -35,8 +35,6 @@
         <script src="<?php echo base_url();?>/assets/bootstrap/5.3.1/js/bootstrap.bundle.min.js" ></script>
         <script src="<?php echo base_url();?>/assets/admin/js/admin.js"></script>
         <?php
-        print_styles(ASSETS_BODY);
-        print_styles(ASSETS_BODY_TEXT);
         print_scripts(ASSETS_BODY);
         print_scripts(ASSETS_BODY_TEXT);
         

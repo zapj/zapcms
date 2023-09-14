@@ -17,14 +17,14 @@ $this->layout('layouts/common');
                     <li class="breadcrumb-item"><a href="<?php echo Url::action('Content') ?>">内容管理</a></li>
                     <li class="breadcrumb-item" aria-current="page"><a
                                 href="<?php echo Url::action('Zap@news') ?>">新闻模块</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">添加新闻</li>
+                    <li class="breadcrumb-item active" aria-current="page"><?php echo $title;?></li>
                 </ol>
             </nav>
             <div class=" text-end">
                 <a class="btn btn-dark btn-sm" href="<?php echo url_action('Zap@news'); ?>"><i class="fa fa-cancel"></i>
                     取消</a>
-                <button type="button" class="btn btn-success btn-sm" onclick="save();"><i class="fa fa-save"></i> 保存
-                </button>
+                <button type="button" class="btn btn-success btn-sm" onclick="save();">
+                    <i class="fa fa-save"></i> 保存</button>
 <!--                <a class="btn btn-primary btn-sm" href="--><?php //echo url_action('Zap@news'); ?><!--">返回</a>-->
             </div>
         </div>
@@ -32,6 +32,7 @@ $this->layout('layouts/common');
     </nav>
 
     <form id="zapForm">
+        <input type="hidden" value="<?php echo $node->id; ?>" name="node_id" >
         <main class="container mt-65px">
 
             <div class="card  shadow">
@@ -40,7 +41,7 @@ $this->layout('layouts/common');
                     <ul class="nav nav-tabs card-header-tabs">
                         <li class="nav-item">
                             <a class="nav-link active" data-bs-toggle="pill" data-bs-target="#zapTabPanel1"
-                               aria-current="true" href="#">基础信息</a>
+                               aria-current="true" href="#">常规信息</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#" data-bs-toggle="pill" data-bs-target="#zapTabPanel2">SEO</a>
@@ -68,19 +69,30 @@ $this->layout('layouts/common');
                                    value="<?php echo $node->getPubTimeToDate(); ?>" required/>
                         </div>
 
+                        <a class="btn btn-link text-black-50 text-decoration-none ps-0" data-bs-toggle="collapse" href="#morenodesettings" role="button" aria-expanded="false" aria-controls="morenodesettings">
+                            <i class="fa fa-angle-double-right"></i> 更多设置
+                        </a>
+                        <div class="collapse" id="morenodesettings">
+                            <div class="mb-3">
+                                <label for="node_hits" class="form-label">文章点击量</label>
+                                <input type="text" class="form-control" name="node[hits]" id="node_hits"
+                                       placeholder="文章点击量"  value="<?php echo $node->hits ?? 0; ?>" />
+                            </div>
+                        </div>
+
 
                     </div>
                     <div class="card-body tab-pane" role="tabpanel" id="zapTabPanel2">
                         <div class="mb-3">
                             <label for="node_keywords" class="form-label">SEO 关键词</label>
                             <input type="text" class="form-control" name="node[keywords]" id="node_keywords"
-                                   placeholder="请输入文章关键词，以逗号分隔"/>
+                                   placeholder="请输入文章关键词，以逗号分隔"  value="<?php echo $node->keywords; ?>" />
                         </div>
 
                         <div class="mb-3">
                             <label for="node_description" class="form-label">SEO 简介</label>
-                            <input type="text" class="form-control" name="node[description]" id="node_description"
-                                   placeholder="简介"/>
+                            <textarea type="text" class="form-control" name="node[description]" id="node_description"
+                                      placeholder="简介" ><?php echo $node->description; ?></textarea>
                         </div>
                     </div>
                 </div>
@@ -111,21 +123,27 @@ $this->layout('layouts/common');
         });
 
         function save() {
-            if (!$('#zapForm').valid()) {
+            const zapForm = $('#zapForm');
+            if (!zapForm.valid()) {
                 ZapToast.alert('请修改错误项，重新提交', {bgColor: bgDanger, position: Toast_Pos_Center});
                 return false;
             }
             const index = Zap.loadding('正在保存，请稍后', 1);
             $.ajax({
-                url: '<?php echo url_action('Zap@News/index/add');?>',
+                url: '<?php echo Url::current();?>',
                 method: 'post',
-                data: $('#zapForm').serialize(),
+                data: zapForm.serialize(),
                 dataType: 'json',
                 success: function (data) {
                     if (data.code === 0) {
                         ZapToast.alert(data.msg, {
                             bgColor: bgSuccess, position: Toast_Pos_Center, callback: function () {
-                                location.href = '<?php echo url_action('Zap@News');?>';
+                                <?php if($node->id){ ?>
+                                    location.reload();
+                                <?php }else{ ?>
+                                location.href = '<?php echo url_action("Zap@News/index/edit/");?>' + data.id;
+                                <?php } ?>
+
                             }
                         });
                     } else {

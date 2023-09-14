@@ -10,7 +10,7 @@ class Node extends AbstractModel
 
     protected $primaryKey = 'id';
 
-    public static function tableName()
+    public static function tableName(): string
     {
         return 'node';
     }
@@ -21,6 +21,7 @@ class Node extends AbstractModel
         }
         return date(Z_DATE_TIME);
     }
+
 
 
 }

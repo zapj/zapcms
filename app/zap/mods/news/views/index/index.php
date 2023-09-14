@@ -46,7 +46,7 @@ $this->layout('layouts/common');
                 <tr>
                     <th scope="row"><?php echo $row['id'];?></th>
                     <td>
-                        <a href="<?php echo url_action('Zap@news/index');?>">
+                        <a href="<?php echo url_action("Zap@news/index/edit/{$row['id']}");?>">
                         <?php echo $row['title'];?>
                         </a>
                     </td>
@@ -61,19 +61,22 @@ $this->layout('layouts/common');
 
                 </tbody>
             </table>
+            <div>
+                <?php echo $page->render(7,'pagination  justify-content-center','page-item' ,'page-link'); ?>
+            </div>
         </div>
     </div>
 
 
 </main>
-<script>
+<script >
 
-    function remove(_id,title){
+    function remove(id,title){
         layer.confirm("确实删除 【"+title+"】 吗？", {icon: 3, title:'提示'}, function(index){
             $.ajax({
                 url: '<?php echo url_action('Zap@News/index/remove');?>',
                 method: 'POST',
-                data: {id:_id},
+                data: {id:id},
                 dataType: 'json',
                 success: function (data) {
                     if(data.code === 0){
@@ -88,4 +91,7 @@ $this->layout('layouts/common');
 
         });
     }
+    <?php
+    \zap\AdminPage::instance()->showFlashMessages();
+    ?>
 </script>

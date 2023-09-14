@@ -5,7 +5,9 @@ $(function(){
             document.querySelector('.offcanvas-collapse').classList.toggle('open')
         })
     }
+
 });
+
 
 const bgPrimary = 'text-bg-primary';
 const bgSecondary = 'text-bg-secondary';
@@ -189,6 +191,10 @@ var Zap = {
     },
     closeAllLayer:function(){
         layer.closeAll()
+    },
+    EnableToolTip:function (){
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
     }
 
 }

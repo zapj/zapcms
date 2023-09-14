@@ -1,7 +1,8 @@
 {
   "require": {
     "zapj/zap-php-framework": "dev-main",
-    "ext-pdo": "*"
+    "ext-pdo": "*",
+    "ext-gd": "*"
   },
   "autoload": {
     "files":[],

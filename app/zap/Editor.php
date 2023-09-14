@@ -76,7 +76,7 @@ function zapUploadFile(file,callback) {
       type: "POST",
       url: "{$this->options['upload_url']}",
       cache: false,
-      contentType: 'multipart/form-data',
+      contentType: false,
       processData: false,
       dataType:'json',
       success: function(data) {

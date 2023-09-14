@@ -4,8 +4,21 @@ use zap\facades\Url;
 $this->layout('layouts/common');
 ?>
 
+<nav class="navbar bg-body-tertiary position-fixed w-100 shadow z-3 ">
+    <div class="container-fluid">
+        <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);"
+             aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item active"><a href="<?php echo Url::action('Catalog') ?>">栏目管理</a></li>
+            </ol>
+        </nav>
+        <div class=" text-end" >
+            <button type="button" class="btn btn-sm btn-success" onclick="add(0)"><i class="fa fa-plus"></i> 添加</button>
+        </div>
+    </div>
 
-<main class="container">
+</nav>
+<main class="container mt-65px">
 
 
     <div class="my-3 bg-body rounded shadow">
@@ -42,6 +55,7 @@ $this->layout('layouts/common');
             <tbody>
             <?php
             $menu->forEachAll(function ($admin_menu) {
+                $paddingLeft = ($admin_menu['level'] - 1) + ($admin_menu['level'] - 1) * 0.5;
                 ?>
                 <tr>
                     <td>
@@ -58,7 +72,7 @@ $this->layout('layouts/common');
 
                     </td>
                     <td>
-                        <div style="padding-left:<?php echo $admin_menu['level']+($admin_menu['level']*0.5); ?>rem!important;">
+                        <div style="padding-left:<?php echo $paddingLeft; ?>rem!important;">
                             <i class="<?php echo $admin_menu['icon']; ?>"></i>
                             <input name="catalog[<?php echo $admin_menu['id']; ?>][title]"
                                    value="<?php echo $admin_menu['title']; ?>"
@@ -73,7 +87,7 @@ $this->layout('layouts/common');
                         </select>
 
                         </td>
-                    <td><?php echo \zap\NodeType::getNodeTypeName($admin_menu['module_name']); ?></td>
+                    <td><?php echo \zap\NodeType::getNodeTypeName($admin_menu['node_type']); ?></td>
                     <td><?php echo $admin_menu['seo_url']; ?></td>
                     <td>
                         <button type="button" class="btn btn-info btn-sm">设置</button>
@@ -111,8 +125,7 @@ $this->layout('layouts/common');
 </main>
 <script>
     $(function (){
-        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+        Zap.EnableToolTip();
     })
 
     function save(){
