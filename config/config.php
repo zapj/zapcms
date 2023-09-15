@@ -2,6 +2,8 @@
 
 return [
 
+    "log"=>true,
+
     // Theme
     "theme" => "basic",
 

@@ -2,7 +2,8 @@
   "require": {
     "zapj/zap-php-framework": "dev-main",
     "ext-pdo": "*",
-    "ext-gd": "*"
+    "ext-gd": "*",
+    "monolog/monolog": "^2.9"
   },
   "autoload": {
     "files":[],

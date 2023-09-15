@@ -1,3 +1,4 @@
 .idea
 storage/cache/*
-storage/images
+storage/images/*
+storage/logs/*

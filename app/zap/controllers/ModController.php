@@ -3,8 +3,6 @@
 namespace app\zap\controllers;
 
 use zap\AdminController;
-
-use zap\Node;
 use zap\view\View;
 
 class ModController extends AdminController
@@ -15,10 +13,16 @@ class ModController extends AdminController
         if($module == 'index'){
             $this->$module();
         }else{
+            View::paths(base_path("/app/mods/{$module}/views"));
             $controller = array_shift($params) ?? 'Index';
             $action = array_shift($params) ?? 'index';
             $controller = str_replace('-','',ucwords($controller,"-"));
             $action = str_replace('-','',ucwords($action,"-"));
+
+            $mod = "\\app\\mods\\{$module}\\Mod";
+            if(class_exists($mod)){
+                return call_user_func_array(array($mod, 'invoke'), [$module,$controller,$action,$params]);
+            }
 
             $class = "\\app\\mods\\{$module}\\controllers\\{$controller}Controller";
 
@@ -40,10 +44,7 @@ class ModController extends AdminController
                     'error'=> "{$class}::{$action} - Method does not exist!!"
                 ]);
             }
-
-            View::paths(base_path("/app/mods/{$module}/views"));
             call_user_func_array(array($class, $action), $params);
-
         }
     }
 

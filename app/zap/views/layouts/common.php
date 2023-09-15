@@ -18,7 +18,7 @@
 </head>
 
 <body class="bg-body-tertiary">
-<?php $this->include('layouts/top_navs','top_navs');?>
+        <?php $this->include('layouts/top_navs','top_navs');?>
         <?php echo $this->block('top_navs');?>
         <?php echo $this->block('content');?>
         <footer class="my-5 pt-5 text-body-secondary text-center text-small ">
@@ -37,7 +37,6 @@
         <?php
         print_scripts(ASSETS_BODY);
         print_scripts(ASSETS_BODY_TEXT);
-        
         ?>
     </body>
 </html>
