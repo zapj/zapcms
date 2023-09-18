@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ZAP</title>
     <link href="<?php echo base_url();?>/assets/bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">
-    <link href="<?php echo base_url();?>/assets/admin/css/default.css" rel="stylesheet">
+<!--    <link href="--><?php //echo base_url();?><!--/assets/admin/css/default.css" rel="stylesheet">-->
     <script src="<?php echo base_url();?>/assets/jquery/jquery-3.6.4.min.js"></script>
     <style>
         html,
@@ -51,7 +51,7 @@
             <label for="username">用户名</label>
         </div>
         <div class="form-floating">
-            <input type="password" class="form-control" id="password" name="password" placeholder="密码">
+            <input type="password" class="form-control" id="password" name="password" placeholder="密码" >
             <label for="password">密码</label>
         </div>
 
@@ -74,7 +74,7 @@
                 if(data.code === 0){
                     ZapToast.alert(data.msg,{
                         bgColor:bgSuccess,
-                        delay:2000,
+                        delay:1500,
                         callback:function(){
                             location.href=data.redirect_to;
                         }

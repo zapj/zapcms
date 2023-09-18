@@ -118,10 +118,7 @@ $this->layout('layouts/common');
                         </div>
                     </div>
 
-                   
-
                 </div>
-
 
             </div>
             <div class="card-footer text-center">

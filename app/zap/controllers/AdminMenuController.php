@@ -33,10 +33,14 @@ class AdminMenuController extends AdminController
     public function saveAdminMenu(){
         if(Request::isPost()){
             $data = Request::post('zap_data',[]);
-            if(empty($data['icon'])){
-                $data['icon'] = 'fa fa-circle-notch';
+            $menu_id = intval(Request::post('menu_id'));
+            $data['icon'] = $data['icon'] ?? 'fa fa-circle-notch';
+            if($menu_id){
+                AdminMenu::instance()->update($data,$menu_id);
+            }else{
+                AdminMenu::instance()->add($data,$data['pid']);
             }
-            AdminMenu::instance()->add($data,$data['pid']);
+
             Response::json(['code'=>0,'msg'=>'保存成功']);
         }
     }
@@ -55,8 +59,12 @@ class AdminMenuController extends AdminController
     {
 
         $data['pid'] = intval(Request::get('pid',0));
+        $data['id'] = intval(Request::get('id',0));
         if($data['pid']){
             $data['parent'] = AdminMenu::instance()->get($data['pid']);
+        }
+        if($data['id']){
+            $data['menu'] = AdminMenu::instance()->get($data['id']);
         }
 //        $data['catalog'] = Catalog::instance()->getTreeArray();
 //        print_r($data['parent']);

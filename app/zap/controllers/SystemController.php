@@ -13,18 +13,20 @@ use zap\view\View;
 class SystemController extends AdminController
 {
     function settings(){
+        $keyPrefix = '^website\.';
         if(Request::isPost()){
             $options = Request::post('options',[]);
-            $options_keys = array_keys($options);
-            $keys = array_unique(array_map(function($key){return explode('.', $key)[0];},$options_keys));
-            $regexKeys = array_map(function($key){
-                return "^{$key}\.";
-            },$keys);
-            if(count($regexKeys)){
-                $optionKeys = Option::getKeys(join('|',$regexKeys),'REGEXP');
-            }else{
-                $optionKeys = [];
-            }
+//            $options_keys = array_keys($options);
+//            $keys = array_unique(array_map(function($key){return explode('.', $key)[0];},$options_keys));
+//            $regexKeys = array_map(function($key){
+//                return "^{$key}\.";
+//            },$keys);
+//            if(count($regexKeys)){
+//                $optionKeys = Option::getKeys(join('|',$regexKeys),'REGEXP');
+//            }else{
+//                $optionKeys = [];
+//            }
+            $optionKeys = Option::getKeys($keyPrefix,'REGEXP');
             foreach ($options as $key=>$value){
                 if(in_array($key,$optionKeys)){
                     Option::update($key,$value);
@@ -35,9 +37,10 @@ class SystemController extends AdminController
             Response::json(['code'=>0,'msg'=>'保存成功']);
         }
         $data = [
-            'options'=> Option::getArray('^website\.','REGEXP')
+            'options'=> Option::getArray($keyPrefix,'REGEXP')
         ];
         View::render("system.settings",$data);
     }
+
 
 }

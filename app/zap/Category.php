@@ -71,12 +71,21 @@ class Category
     }
 
     public function update($data,$id){
-        $category = DB::table($this->table)->where($this->primaryKey, $id)->fetch(FETCH_ASSOC);
+        $category = $this->get($id);
         if(is_null($category)){
             return false;
         }
-        $path = $category[$this->pathColumn];
-        DB::table($this->table)->where($this->pathColumn,'LIKE',"{$path}%")->update();
+        //修改父类 需要更新
+        if($data[$this->parentColumn] != $category[$this->parentColumn]){
+            $parent = $this->get($data[$this->parentColumn]);
+            $data[$this->pathColumn] = "{$parent[$this->pathColumn]},{$id}";
+
+            //更新下级所有菜单 path
+            $pathPrefix = $category[$this->pathColumn];
+            DB::table($this->table)->where($this->pathColumn,'LIKE',"{$pathPrefix},%")
+                ->set($this->pathColumn,DB::raw("REPLACE({$this->pathColumn},'{$pathPrefix}','{$data[$this->pathColumn]}')"))
+                ->update();
+        }
         DB::update($this->table,$data,['id'=>$id]);
     }
 
@@ -92,7 +101,7 @@ class Category
     }
 
 
-    public function getTreeArray()
+    public function getTreeArray(): array
     {
         $data = DB::table($this->table)
             ->orderBy("{$this->parentColumn} ASC,sort_order ASC")

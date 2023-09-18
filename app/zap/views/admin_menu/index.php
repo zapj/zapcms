@@ -9,11 +9,12 @@ $this->layout('layouts/common');
         <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);"
              aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item "><a href="<?php echo Url::action('System@settings') ?>">设置</a></li>
                 <li class="breadcrumb-item active"><a href="<?php echo Url::action('AdminMenu') ?>">系统菜单管理</a></li>
             </ol>
         </nav>
         <div class=" text-end" >
-            <button type="button" class="btn btn-sm btn-success" onclick="add(0)"><i class="fa fa-plus"></i> 添加</button>
+            <button type="button" class="btn btn-sm btn-success" onclick="addOrEdit(0)"><i class="fa fa-plus"></i> 添加</button>
         </div>
     </div>
 
@@ -89,11 +90,11 @@ $this->layout('layouts/common');
 
 
                     <td>
-                        <button type="button" class="btn btn-info btn-sm">设置</button>
+                        <button type="button" class="btn btn-outline-success btn-sm" onclick="addOrEdit(<?php echo $admin_menu['pid'],',',$admin_menu['id'];?>)">设置</button>
                         <div class="btn-group">
                             <button type="button" class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">更多</button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="javascript:void(0)" onclick="add(<?php echo $admin_menu['id'];?>)">添加子类</a></li>
+                                <li><a class="dropdown-item" href="javascript:void(0)" onclick="addOrEdit(<?php echo $admin_menu['id'];?>)">添加子类</a></li>
 
 <!--                                <li><hr class="dropdown-divider"></li>-->
                             </ul>
@@ -159,22 +160,26 @@ $this->layout('layouts/common');
         })
     }
 
-    function add(pid){
-        m = ZapModal.create({
-            id:'addAdminMenu',
-            title:'添加栏目',
+    function addOrEdit(pid,menuId){
+        var formUrl = '<?php echo Url::action("AdminMenu@form");?>?modalId=adminMenu&pid='+pid;
+        if(menuId!==undefined){
+            formUrl += '&id='+menuId;
+        }
+        const m = ZapModal.create({
+            id:'adminMenu',
+            title: menuId===undefined ? '添加栏目' : '修改栏目',
             content:ZapModal.loadding(),
             backdrop:false,
-            url:'<?php echo Url::action("AdminMenu@form");?>?modalId=addAdminMenu&pid='+pid,
+            url: formUrl,
             buttons:[{close:true,title:"关闭"},{title:"保存",class:'btn-success',callback:function(){alert(123);}}],
             btn2:function (){
                 $.ajax({
                     url:'<?php echo Url::action("AdminMenu@saveAdminMenu");?>',
                     method:'post',
-                    data:$('#addAdminMenu form').serialize(),
+                    data:$('#adminMenu form').serialize(),
                     success:function (data){
-                        ZapToast.alert(data.msg,{bgColor:data.code===0?bgSuccess:bgDanger,position:Toast_Pos_Center,delay:2000,callback:function(){
-                            // location.reload();
+                        ZapToast.alert(data.msg,{bgColor:data.code===0?bgSuccess:bgDanger,position:Toast_Pos_Center,delay:1500,callback:function(){
+                            location.reload();
                             }
                         });
                     }
