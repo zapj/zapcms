@@ -10,6 +10,9 @@
     <link href="<?php echo base_url();?>/assets/fontawesome/6.4.2/css/all.min.css" rel="stylesheet">
     <script src="<?php echo base_url();?>/assets/jquery/jquery-3.6.4.min.js"></script>
     <script src="<?php echo base_url();?>/assets/layer/layer.js"></script>
+    <script>
+        window.ZAP_BASE_URL = '<?php echo \zap\facades\Url::home(); ?>';
+    </script>
     <?php
     print_styles();
     print_scripts();

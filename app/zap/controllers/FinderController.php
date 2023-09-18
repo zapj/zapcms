@@ -21,6 +21,10 @@ class FinderController extends AdminController
 
     }
 
+    function faIcons(){
+        View::render('finder.faicons');
+    }
+
 
 
 }

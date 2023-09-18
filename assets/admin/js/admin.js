@@ -139,7 +139,7 @@ const ZapModal = {
             $(document.body).append(modalTpl);
         }
         if(params.url!==false){
-            $('#' + params.id + ' .modal-body').load(params.url);
+            $('#' + params.id + ' .modal-body').load(params.url,params.callback);
         }
         $('#' + params.id + ' .modal-footer > button').on('click',function (e) {
             const btnName = 'btn'+$(e.target).data('index');
@@ -183,8 +183,6 @@ var Zap = {
                 '</div>'+
                 '<div class="text-center">'+title+'</div>'
         });
-
-
     },
     closeLayer:function(index){
         layer.close(index)
@@ -195,6 +193,25 @@ var Zap = {
     EnableToolTip:function (){
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
         const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    },
+    faIcons:function(el){
+        const m = ZapModal.create({
+            id:'faIcons',
+            title: 'FA ICONS',
+            content:ZapModal.loadding(),
+            backdrop:false,
+            url: ZAP_BASE_URL + '/finder/faicons',
+            callback:function(){
+                const $el = el;
+                $('#faIcons .modal-body').on('click','button',(e)=>{
+                    $($el).removeClass().addClass(e.target.innerText);
+                    $($el).next().val(e.target.innerText)
+                    m.hide();
+                })
+            }
+        },true)
+        m.show();
+
     }
 
 }

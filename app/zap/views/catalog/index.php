@@ -30,13 +30,11 @@ $this->layout('layouts/common');
             }
         </script>
         <form action="post" id="reqForm">
-        <div class="pt-2 pb-2 ps-1">
-            <button type="button" class="btn btn-success" onclick="add(0)">添加</button>
-        </div>
+
             <div class="table-responsive">
             <table class="table table-hover text-nowrap">
             <thead>
-                <tr class="table-success">
+                <tr class="table-secondary">
                     <th scope="col" style="width: 50px">
                         <label>
                             <input class="form-check-input" type="checkbox" onclick="checkAll(this)"/>

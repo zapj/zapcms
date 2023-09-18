@@ -72,7 +72,9 @@ $this->layout('layouts/common');
                     </td>
                     <td>
                         <div style="padding-left:<?php echo $paddingLeft; ?>rem!important;">
-                            <i class="<?php echo $admin_menu['icon']; ?>"></i>
+<!--                            $(this).next().val(this.className)-->
+                            <i class="<?php echo $admin_menu['icon']; ?>" onclick="Zap.faIcons(this);" ></i>
+                            <input name="admin_menu[<?php echo $admin_menu['id']; ?>][icon]" type="hidden" value="<?php echo $admin_menu['icon']; ?>" />
                             <input name="admin_menu[<?php echo $admin_menu['id']; ?>][title]"
                                    value="<?php echo $admin_menu['title']; ?>"
                                    class="d-inline form-control form-control-sm w-auto"/>
@@ -171,7 +173,7 @@ $this->layout('layouts/common');
             content:ZapModal.loadding(),
             backdrop:false,
             url: formUrl,
-            buttons:[{close:true,title:"关闭"},{title:"保存",class:'btn-success',callback:function(){alert(123);}}],
+            buttons:[{close:true,title:"关闭"},{title:"保存",class:'btn-success'}],
             btn2:function (){
                 $.ajax({
                     url:'<?php echo Url::action("AdminMenu@saveAdminMenu");?>',
