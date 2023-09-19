@@ -72,12 +72,12 @@ $this->layout('layouts/common');
                     </td>
                     <td>
                         <div style="padding-left:<?php echo $paddingLeft; ?>rem!important;">
-<!--                            $(this).next().val(this.className)-->
-                            <i class="<?php echo $admin_menu['icon']; ?>" onclick="Zap.faIcons(this);" ></i>
+                            <i class="<?php echo $admin_menu['icon']; ?>" onclick="ZapFaIcons(this,adminMenuIcon);" ></i>
                             <input name="admin_menu[<?php echo $admin_menu['id']; ?>][icon]" type="hidden" value="<?php echo $admin_menu['icon']; ?>" />
                             <input name="admin_menu[<?php echo $admin_menu['id']; ?>][title]"
                                    value="<?php echo $admin_menu['title']; ?>"
                                    class="d-inline form-control form-control-sm w-auto"/>
+
                         </div>
                     </td>
                     <td><?php echo $admin_menu['link_to']; ?></td>
@@ -125,7 +125,22 @@ $this->layout('layouts/common');
 
 
 </main>
+
 <script>
+    function adminMenuIcon(el,iconClass){
+        if(el.tagName === 'INPUT'){
+            $(el).val(iconClass);
+            var inputIcon = $(el).val();
+            if(inputIcon.length < 6){
+                inputIcon = inputIcon.length < 6 ? 'fa fa-circle-notch' : inputIcon;
+                $(el).val(inputIcon);
+            }
+            $(el).next().find('i').removeClass().addClass(inputIcon );
+        }else{
+            $(el).removeClass().addClass(iconClass);
+            $(el).next().val(iconClass)
+        }
+    }
     $(function (){
         Zap.EnableToolTip();
     })

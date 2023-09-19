@@ -2,8 +2,13 @@
 
 namespace zap;
 
+use zap\traits\SingletonTrait;
+
 class Catalog extends Category
 {
+
+    use SingletonTrait;
+
     const POSITION_TOP = 1;
     const POSITION_LEFT = 2;
     const POSITION_RIGHT = 4;

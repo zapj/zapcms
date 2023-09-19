@@ -194,25 +194,27 @@ var Zap = {
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
         const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
     },
-    faIcons:function(el){
-        const m = ZapModal.create({
-            id:'faIcons',
-            title: 'FA ICONS',
-            content:ZapModal.loadding(),
-            backdrop:false,
-            url: ZAP_BASE_URL + '/finder/faicons',
-            callback:function(){
-                const $el = el;
-                $('#faIcons .modal-body').on('click','button',(e)=>{
-                    $($el).removeClass().addClass(e.target.innerText);
-                    $($el).next().val(e.target.innerText)
-                    m.hide();
-                })
-            }
-        },true)
-        m.show();
 
-    }
+
+}
+
+function ZapFaIcons(el,callback){
+    const m = ZapModal.create({
+        id:'faIcons',
+        title: 'FA ICONS',
+        content:ZapModal.loadding(),
+        backdrop:false,
+        url: ZAP_BASE_URL + '/finder/faicons',
+        callback:function(){
+            const $el = el;
+            const $callback = callback;
+            $('#faIcons .modal-body').on('click','button',(e)=>{
+                $callback($el,e.target.innerText);
+                m.hide();
+            })
+        }
+    },true)
+    m.show();
 
 }
 

@@ -3,9 +3,11 @@
 namespace zap;
 
 use zap\Category;
+use zap\traits\SingletonTrait;
 
 class AdminMenu extends Category
 {
+    use SingletonTrait;
 
     const POSITION_TOP = 1;
     const POSITION_LEFT = 2;

@@ -23,8 +23,6 @@ namespace zap;
  */
 class Category
 {
-
-    protected static $instance;
     //表名
     protected $table;
     //分类Path
@@ -143,17 +141,5 @@ class Category
     public function get($id){
         return DB::table($this->table)->where($this->primaryKey, $id)->fetch(FETCH_ASSOC);
     }
-
-    /**
-     * @return Category
-     */
-    public static function instance(): Category
-    {
-        if(is_null(static::$instance)){
-            static::$instance = new static;
-        }
-        return static::$instance;
-    }
-
 
 }

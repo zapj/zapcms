@@ -11,8 +11,9 @@ use zap\AdminMenu;
         <label for="data_icon" class="form-label">图标</label>
         <div class="input-group mb-3">
             <input type="text" class="form-control form-control-sm" placeholder="菜单ICON" aria-label="菜单ICON" aria-describedby="preview-icon"
-                   name="zap_data[icon]" id="data_icon" value="<?php echo $menu['icon'] ?? 'fa fa-circle-notch';?>" onchange="changeIcon(this)">
-            <span class="input-group-text" id="preview-icon"><i class="fa fa-circle-notch"></i></span>
+                   name="zap_data[icon]" id="data_icon" value="<?php echo $menu['icon'] ?? 'fa fa-circle-notch';?>"
+                   onclick="ZapFaIcons(this,adminMenuIcon);" onchange="this.value">
+            <span class="input-group-text" id="preview-icon"><i class="<?php echo $menu['icon'] ?? 'fa fa-circle-notch';?>"></i></span>
         </div>
     </div>
     <div class="col-md-12">
@@ -72,13 +73,5 @@ use zap\AdminMenu;
 </form>
 <script>
     var CATALOG_PID = <?php echo isset($parent['id']) ? $parent['id'] : 0;?>;
-    function changeIcon(el){
-        var inputIcon = $(el).val();
-        if(inputIcon.length < 6){
-            inputIcon = inputIcon.length < 6 ? 'fa fa-circle-notch' : inputIcon;
-            $(el).val(inputIcon);
-        }
 
-        $(el).next().find('i').removeClass().addClass(inputIcon );
-    }
 </script>
