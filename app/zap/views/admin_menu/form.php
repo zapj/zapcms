@@ -12,8 +12,8 @@ use zap\AdminMenu;
         <div class="input-group mb-3">
             <input type="text" class="form-control form-control-sm" placeholder="菜单ICON" aria-label="菜单ICON" aria-describedby="preview-icon"
                    name="zap_data[icon]" id="data_icon" value="<?php echo $menu['icon'] ?? 'fa fa-circle-notch';?>"
-                   onclick="ZapFaIcons(this,adminMenuIcon);" onchange="this.value">
-            <span class="input-group-text" id="preview-icon"><i class="<?php echo $menu['icon'] ?? 'fa fa-circle-notch';?>"></i></span>
+                   onclick="ZapFaIcons(['#preview-icon-i','#data_icon']);" >
+            <span class="input-group-text" id="preview-icon"><i class="<?php echo $menu['icon'] ?? 'fa fa-circle-notch';?>" id="preview-icon-i"></i></span>
         </div>
     </div>
     <div class="col-md-12">

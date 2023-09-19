@@ -45,7 +45,6 @@ $this->layout('layouts/common');
                     <th scope="col" class="w-100">菜单名称</th>
                     <th scope="col">链接</th>
                     <th scope="col">显示位置</th>
-
                     <th scope="col">操作</th>
 
 
@@ -72,8 +71,8 @@ $this->layout('layouts/common');
                     </td>
                     <td>
                         <div style="padding-left:<?php echo $paddingLeft; ?>rem!important;">
-                            <i class="<?php echo $admin_menu['icon']; ?>" onclick="ZapFaIcons(this,adminMenuIcon);" ></i>
-                            <input name="admin_menu[<?php echo $admin_menu['id']; ?>][icon]" type="hidden" value="<?php echo $admin_menu['icon']; ?>" />
+                            <i class="<?php echo $admin_menu['icon']; ?>" onclick="ZapFaIcons(['#ami-<?php echo $admin_menu['id']; ?>','#amii-<?php echo $admin_menu['id']; ?>']);" id="ami-<?php echo $admin_menu['id']; ?>" ></i>
+                            <input name="admin_menu[<?php echo $admin_menu['id']; ?>][icon]" type="hidden" value="<?php echo $admin_menu['icon']; ?>" id="amii-<?php echo $admin_menu['id']; ?>" />
                             <input name="admin_menu[<?php echo $admin_menu['id']; ?>][title]"
                                    value="<?php echo $admin_menu['title']; ?>"
                                    class="d-inline form-control form-control-sm w-auto"/>
@@ -127,20 +126,7 @@ $this->layout('layouts/common');
 </main>
 
 <script>
-    function adminMenuIcon(el,iconClass){
-        if(el.tagName === 'INPUT'){
-            $(el).val(iconClass);
-            var inputIcon = $(el).val();
-            if(inputIcon.length < 6){
-                inputIcon = inputIcon.length < 6 ? 'fa fa-circle-notch' : inputIcon;
-                $(el).val(inputIcon);
-            }
-            $(el).next().find('i').removeClass().addClass(inputIcon );
-        }else{
-            $(el).removeClass().addClass(iconClass);
-            $(el).next().val(iconClass)
-        }
-    }
+
     $(function (){
         Zap.EnableToolTip();
     })

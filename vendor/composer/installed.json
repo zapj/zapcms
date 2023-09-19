@@ -2,17 +2,17 @@
     "packages": [
         {
             "name": "monolog/monolog",
-            "version": "2.9.1",
-            "version_normalized": "2.9.1.0",
+            "version": "2.x-dev",
+            "version_normalized": "2.9999999.9999999.9999999-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "f259e2b15fb95494c83f52d3caad003bbf5ffaa1"
+                "reference": "1b93764d154ba06b18fe11f252bf991b9ef9aa62"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/f259e2b15fb95494c83f52d3caad003bbf5ffaa1",
-                "reference": "f259e2b15fb95494c83f52d3caad003bbf5ffaa1",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/1b93764d154ba06b18fe11f252bf991b9ef9aa62",
+                "reference": "1b93764d154ba06b18fe11f252bf991b9ef9aa62",
                 "shasum": ""
             },
             "require": {
@@ -58,7 +58,7 @@
                 "rollbar/rollbar": "Allow sending log messages to Rollbar",
                 "ruflin/elastica": "Allow sending log messages to an Elastic Search server"
             },
-            "time": "2023-02-06T13:44:46+00:00",
+            "time": "2023-06-22T06:44:58+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -91,7 +91,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Seldaek/monolog/issues",
-                "source": "https://github.com/Seldaek/monolog/tree/2.9.1"
+                "source": "https://github.com/Seldaek/monolog/tree/2.x"
             },
             "funding": [
                 {
@@ -165,12 +165,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/zapj/zap-php-framework.git",
-                "reference": "cc574500619461f73a9e79b2c871a270a0739320"
+                "reference": "4ed669495cb6f23baecbb8d53f2073a4bd79d1f6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/cc574500619461f73a9e79b2c871a270a0739320",
-                "reference": "cc574500619461f73a9e79b2c871a270a0739320",
+                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/4ed669495cb6f23baecbb8d53f2073a4bd79d1f6",
+                "reference": "4ed669495cb6f23baecbb8d53f2073a4bd79d1f6",
                 "shasum": ""
             },
             "require": {
@@ -183,10 +183,10 @@
                 "ext-simplexml": "*",
                 "php": ">=7.1.0"
             },
-            "time": "2023-09-15T06:00:31+00:00",
+            "time": "2023-09-19T15:00:39+00:00",
             "default-branch": true,
             "type": "library",
-            "installation-source": "source",
+            "installation-source": "dist",
             "autoload": {
                 "files": [
                     "src/functions.php"

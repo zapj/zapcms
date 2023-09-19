@@ -1,74 +1,66 @@
 <?php
-$this->layout('layouts/common');
+use zap\facades\Url;
 
+$this->layout('layouts/common');
 ?>
 
-
-<main class="container">
-
-
-    <div class="my-3 p-3 bg-body rounded shadow-sm">
-        <h6 class="border-bottom pb-2 mb-0">修改密码</h6>
-        <div class="d-flex text-body-secondary pt-3">
-            <svg class="bd-placeholder-img flex-shrink-0 me-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 32x32" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#007bff"/><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text></svg>
-            <p class="pb-3 mb-0 small lh-sm border-bottom">
-                <strong class="d-block text-gray-dark">@username</strong>
-                Some representative placeholder content, with some information about this user. Imagine this being some sort of status update, perhaps?
-            </p>
+<nav class="navbar bg-body-tertiary position-fixed w-100 shadow z-3 zap-top-bar">
+    <div class="container-fluid">
+        <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);"
+             aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item "><a href="<?php echo Url::action('System@settings') ?>">设置</a></li>
+                <li class="breadcrumb-item active"><a href="<?php echo Url::action('User@changePassword') ?>">修改密码</a></li>
+            </ol>
+        </nav>
+        <div class=" text-end" >
+            <button type="button" class="btn btn-success btn-sm" onclick="changePassword()"><i class="fa fa-save"></i> 保存</button>
         </div>
-        <div class="d-flex text-body-secondary pt-3">
-            <svg class="bd-placeholder-img flex-shrink-0 me-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 32x32" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#e83e8c"/><text x="50%" y="50%" fill="#e83e8c" dy=".3em">32x32</text></svg>
-            <p class="pb-3 mb-0 small lh-sm border-bottom">
-                <strong class="d-block text-gray-dark">@username</strong>
-                Some more representative placeholder content, related to this other user. Another status update, perhaps.
-            </p>
-        </div>
-        <div class="d-flex text-body-secondary pt-3">
-            <svg class="bd-placeholder-img flex-shrink-0 me-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 32x32" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#6f42c1"/><text x="50%" y="50%" fill="#6f42c1" dy=".3em">32x32</text></svg>
-            <p class="pb-3 mb-0 small lh-sm border-bottom">
-                <strong class="d-block text-gray-dark">@username</strong>
-                This user also gets some representative placeholder content. Maybe they did something interesting, and you really want to highlight this in the recent updates.
-            </p>
-        </div>
-        <small class="d-block text-end mt-3">
-            <a href="#">All updates</a>
-        </small>
     </div>
 
-    <div class="my-3 p-3 bg-body rounded shadow-sm">
-        <h6 class="border-bottom pb-2 mb-0">Suggestions</h6>
-        <div class="d-flex text-body-secondary pt-3">
-            <svg class="bd-placeholder-img flex-shrink-0 me-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 32x32" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#007bff"/><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text></svg>
-            <div class="pb-3 mb-0 small lh-sm border-bottom w-100">
-                <div class="d-flex justify-content-between">
-                    <strong class="text-gray-dark">Full Name</strong>
-                    <a href="#">Follow</a>
+</nav>
+<main class="container zap-main">
+
+
+    <div class="card shadow">
+        <div class="card-header">修改密码</div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <label for="cur_password" class="col-sm-2 col-form-label">当前密码</label>
+                <div class="col-sm-10">
+                    <input type="password" class="form-control" id="cur_password" name="cur_password" placeholder="请输入当前密码" required>
                 </div>
-                <span class="d-block">@username</span>
             </div>
-        </div>
-        <div class="d-flex text-body-secondary pt-3">
-            <svg class="bd-placeholder-img flex-shrink-0 me-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 32x32" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#007bff"/><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text></svg>
-            <div class="pb-3 mb-0 small lh-sm border-bottom w-100">
-                <div class="d-flex justify-content-between">
-                    <strong class="text-gray-dark">Full Name</strong>
-                    <a href="#">Follow</a>
+            <div class="row mb-3">
+                <label for="new_password" class="col-sm-2 col-form-label">请输入新密码</label>
+                <div class="col-sm-10">
+                    <input type="password" class="form-control" id="new_password" name="new_password" placeholder="请输入新密码">
                 </div>
-                <span class="d-block">@username</span>
             </div>
-        </div>
-        <div class="d-flex text-body-secondary pt-3">
-            <svg class="bd-placeholder-img flex-shrink-0 me-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 32x32" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#007bff"/><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text></svg>
-            <div class="pb-3 mb-0 small lh-sm border-bottom w-100">
-                <div class="d-flex justify-content-between">
-                    <strong class="text-gray-dark">Full Name</strong>
-                    <a href="#">Follow</a>
+            <div class="row mb-3">
+                <label for="renew_password" class="col-sm-2 col-form-label">再次输入新密码</label>
+                <div class="col-sm-10">
+                    <input type="password" class="form-control" id="renew_password" name="renew_password" placeholder="再次输入新密码">
                 </div>
-                <span class="d-block">@username</span>
             </div>
+
+
+
         </div>
-        <small class="d-block text-end mt-3">
-            <a href="#">All suggestions</a>
-        </small>
+        <div class="card-footer text-center">
+            <button type="button" class="btn btn-success" onclick="changePassword()">修改密码</button>
+        </div>
     </div>
+
+
 </main>
+<script>
+    $(function(){
+        $.validate({ignore:''});
+    })
+    function changePassword(){
+        if(!$.valid()){
+
+        }
+    }
+</script>

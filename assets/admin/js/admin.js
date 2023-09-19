@@ -198,7 +198,7 @@ var Zap = {
 
 }
 
-function ZapFaIcons(el,callback){
+function ZapFaIcons(target,callback){
     const m = ZapModal.create({
         id:'faIcons',
         title: 'FA ICONS',
@@ -206,10 +206,28 @@ function ZapFaIcons(el,callback){
         backdrop:false,
         url: ZAP_BASE_URL + '/finder/faicons',
         callback:function(){
-            const $el = el;
-            const $callback = callback;
+            const $callback = callback
+            const $targetArray = typeof target === 'string' ? [target] : target;
             $('#faIcons .modal-body').on('click','button',(e)=>{
-                $callback($el,e.target.innerText);
+                let className = 'fa fa-square-poll-horizontal';
+                if(e.target.tagName === 'I'){
+                    className = e.target.className
+                }else if(e.target.tagName === 'INPUT' || e.target.tagName ===  'BUTTON'){
+                    className = e.target.querySelector('i').className
+                }
+
+                if(typeof $callback === 'function'){
+                    $callback($targetArray,className)
+                }
+        // console.log($($target))
+                $targetArray.forEach(($target)=>{
+                    if($($target).is('input')){
+                        $($target).val(className);
+                    }else if($($target).is('i')){
+                        $($target).prop('class',className);
+                    }
+                })
+
                 m.hide();
             })
         }

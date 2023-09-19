@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit6138f7e93d4e6eb699a77723a4defc17
+class ComposerStaticInit501184272d4d7ed612cf428f1bb86753
 {
     public static $files = array (
         'ed7610ef029ae6b6d5177039e3fb3277' => __DIR__ . '/..' . '/zapj/zap-php-framework/src/functions.php',
@@ -56,9 +56,9 @@ class ComposerStaticInit6138f7e93d4e6eb699a77723a4defc17
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit6138f7e93d4e6eb699a77723a4defc17::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit6138f7e93d4e6eb699a77723a4defc17::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit6138f7e93d4e6eb699a77723a4defc17::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit501184272d4d7ed612cf428f1bb86753::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit501184272d4d7ed612cf428f1bb86753::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit501184272d4d7ed612cf428f1bb86753::$classMap;
 
         }, null, ClassLoader::class);
     }

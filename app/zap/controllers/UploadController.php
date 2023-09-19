@@ -33,7 +33,7 @@ class UploadController extends AdminController
                 $name = md5(rand(100, 200));
                 $ext = explode('.', $_FILES['file']['name']);
                 $filename = $name . '.' . $ext[1];
-                $destination = storage_path('/images/' . $filename);
+                $destination = storage_path('images/' . $filename);
                 $location = $_FILES["file"]["tmp_name"];
                 move_uploaded_file($location, $destination);
                 Response::json(['code' => 0, 'url' => base_url('/storage/images/' . $filename)]);

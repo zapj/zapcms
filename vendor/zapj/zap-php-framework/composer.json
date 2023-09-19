@@ -1,0 +1,29 @@
+{
+  "name": "zapj/zap-php-framework",
+  "description": "zap php framework",
+  "license": "MIT",
+  "type": "library",
+  "authors": [
+    {
+      "name": "z",
+      "email": "z@zap.cn"
+    }
+  ],
+  "require": {
+    "php": ">=7.1.0",
+    "ext-pdo": "*",
+    "ext-curl": "*",
+    "ext-mbstring": "*",
+    "ext-json": "*",
+    "ext-openssl": "*",
+    "ext-dom": "*",
+    "ext-simplexml": "*"
+  },
+  "autoload": {
+    "files": ["src/functions.php"],
+    "psr-4": {
+      "zap\\": "src/"
+    }
+  },
+  "minimum-stability": "dev"
+}

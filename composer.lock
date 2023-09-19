@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "12fa0792f73643d0d6890db42c0b2589",
+    "content-hash": "4cd136c6db4d20f03b3bcbb4d4c26e3e",
     "packages": [
         {
             "name": "monolog/monolog",
-            "version": "2.9.1",
+            "version": "2.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "f259e2b15fb95494c83f52d3caad003bbf5ffaa1"
+                "reference": "1b93764d154ba06b18fe11f252bf991b9ef9aa62"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/f259e2b15fb95494c83f52d3caad003bbf5ffaa1",
-                "reference": "f259e2b15fb95494c83f52d3caad003bbf5ffaa1",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/1b93764d154ba06b18fe11f252bf991b9ef9aa62",
+                "reference": "1b93764d154ba06b18fe11f252bf991b9ef9aa62",
                 "shasum": ""
             },
             "require": {
@@ -94,7 +94,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Seldaek/monolog/issues",
-                "source": "https://github.com/Seldaek/monolog/tree/2.9.1"
+                "source": "https://github.com/Seldaek/monolog/tree/2.x"
             },
             "funding": [
                 {
@@ -106,7 +106,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-02-06T13:44:46+00:00"
+            "time": "2023-06-22T06:44:58+00:00"
         },
         {
             "name": "psr/log",
@@ -164,12 +164,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/zapj/zap-php-framework.git",
-                "reference": "cc574500619461f73a9e79b2c871a270a0739320"
+                "reference": "4ed669495cb6f23baecbb8d53f2073a4bd79d1f6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/cc574500619461f73a9e79b2c871a270a0739320",
-                "reference": "cc574500619461f73a9e79b2c871a270a0739320",
+                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/4ed669495cb6f23baecbb8d53f2073a4bd79d1f6",
+                "reference": "4ed669495cb6f23baecbb8d53f2073a4bd79d1f6",
                 "shasum": ""
             },
             "require": {
@@ -207,12 +207,12 @@
                 "issues": "https://github.com/zapj/zap-php-framework/issues",
                 "source": "https://github.com/zapj/zap-php-framework/tree/main"
             },
-            "time": "2023-09-15T06:00:31+00:00"
+            "time": "2023-09-19T15:00:39+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "stability-flags": {
         "zapj/zap-php-framework": 20
     },

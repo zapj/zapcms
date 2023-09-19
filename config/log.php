@@ -5,7 +5,7 @@ return [
     "app"=>[
         "handler"=>\Monolog\Handler\RotatingFileHandler::class,
         "params"=>[
-            'filename'=> storage_path('/logs/app.log')
+            'filename'=> var_path('logs/app.log')
         ]
     ]
 ];
