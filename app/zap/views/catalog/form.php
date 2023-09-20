@@ -28,7 +28,7 @@ use zap\NodeType;
             <td>
                     <select name="catalog[0][content_type]" class="form-select form-select-sm w-auto">
                         <?php foreach (NodeType::getNodeTypes() as $row): ?>
-                        <option value="<?php echo $row['id'];?>"><?php echo $row['name'];?></option>
+                        <option value="<?php echo $row['id'];?>"><?php echo $row['title'];?></option>
                         <?php endforeach; ?>
                     </select>
             </td>
@@ -38,7 +38,7 @@ use zap\NodeType;
                 <?php
                 Catalog::instance()->forEachAll(function($row){
                     ?>
-                    <option value="<?php echo $row['id'];?>"><?php echo  str_repeat("&nbsp;&nbsp;",$row['level']) ?><?php echo $row['title'];?></option>
+                    <option value="<?php echo $row['id'];?>"><?php echo  str_repeat("&nbsp;&nbsp;",$row['level']-1) ?><?php echo $row['title'];?></option>
                 <?php
                 });
                 ?>

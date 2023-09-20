@@ -48,7 +48,7 @@ $this->layout('layouts/common');
                 <tr>
                     <td>
                         <i class="<?php echo $catalog['icon'];?>"></i>
-                      <a href="<?php echo Url::action("{$nodeType['module_type']}@{$nodeType['module_name']}",['catalog_id'=>$catalog['id']]); ?>">
+                      <a href="<?php echo Url::action("{$nodeType['owner']}@{$nodeType['node_type']}",['catalog_id'=>$catalog['id']]); ?>">
                           <span style="padding-left: <?php echo $paddingLeft;?>rem!important;"><?php echo $catalog['title'];?></span>
                       </a>
                     </td>

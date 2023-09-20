@@ -11,11 +11,11 @@ $this->layout('layouts/common');
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="<?php echo Url::action('Content') ?>">内容管理</a></li>
                 <li class="breadcrumb-item active" aria-current="page"><a
-                            href="<?php echo Url::action('Zap@news') ?>">新闻模块</a></li>
+                            href="<?php echo Url::action('Zap@News',$_GET) ?>">新闻模块</a></li>
             </ol>
         </nav>
         <div class=" text-end" >
-            <a class="btn btn-success btn-sm" href="<?php echo url_action('Zap@news/index/add');?>">
+            <a class="btn btn-success btn-sm" href="<?php echo url_action('Zap@News/add',$_GET);?>">
                 <i class="fa fa-add"></i> 添加</a>
         </div>
     </div>
@@ -46,13 +46,13 @@ $this->layout('layouts/common');
                 <tr>
                     <th scope="row"><?php echo $row['id'];?></th>
                     <td>
-                        <a href="<?php echo url_action("Zap@news/index/edit/{$row['id']}");?>">
+                        <a href="<?php echo url_action("Zap@news/edit/{$row['id']}",$_GET);?>">
                         <?php echo $row['title'];?>
                         </a>
                     </td>
                     <td><?php echo date(Z_DATE_TIME,$row['pub_time']); ?></td>
                     <td>
-                        <a href="<?php echo url_action("Zap@news/index/edit/{$row['id']}");?>" class="btn btn-sm btn-success"><i class="fa fa-edit"></i> 编辑</a>
+                        <a href="<?php echo url_action("Zap@news/edit/{$row['id']}");?>" class="btn btn-sm btn-success"><i class="fa fa-edit"></i> 编辑</a>
                         <a href="javascript:void(0);" onclick="remove(<?php echo $row['id'];?>,'<?php echo $row['title'];?>');" class="btn btn-sm btn-danger"><i class="fa fa-remove"></i> 删除</a>
 
                     </td>
@@ -74,7 +74,7 @@ $this->layout('layouts/common');
     function remove(id,title){
         layer.confirm("确实删除 【"+title+"】 吗？", {icon: 3, title:'提示'}, function(index){
             $.ajax({
-                url: '<?php echo url_action('Zap@News/index/remove');?>',
+                url: '<?php echo url_action('Zap@News/remove');?>',
                 method: 'POST',
                 data: {id:id},
                 dataType: 'json',

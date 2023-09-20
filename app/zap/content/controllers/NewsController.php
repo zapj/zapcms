@@ -1,6 +1,6 @@
 <?php
 
-namespace zap\mods\news\controllers;
+namespace zap\content\controllers;
 
 
 use zap\facades\Url;
@@ -11,16 +11,16 @@ use zap\http\Session;
 use zap\Node;
 use zap\view\View;
 
-class IndexController
+class NewsController
 {
     public function index(){
 
         $data['title'] = '新闻管理';
-        $page = new Pagination(intval(Request::all('page')),2,Request::get(null));
+        $page = new Pagination(intval(Request::all('page')),2,Request::get());
         $page->setTotal(Node::count('id',['node_type'=>1]));
         $data['data'] = Node::findAll(['node_type'=>1],['orderBy'=>'id desc','limit'=>[$page->getLimit(),$page->getOffset()]]);
         $data['page'] = $page;
-        View::render('index.index',$data);
+        View::render('news.index',$data);
     }
 
     public function edit($id = 0){
@@ -42,7 +42,7 @@ class IndexController
         }
         $data['title'] = '编辑新闻';
         $data['node'] = Node::findById($id);
-        View::render('index.form',$data);
+        View::render('news.form',$data);
     }
 
     public function add()
@@ -63,7 +63,7 @@ class IndexController
         }
         $data['title'] = '添加新闻';
         $data['node'] = new Node();
-        View::render('index.form',$data);
+        View::render('news.form',$data);
     }
 
     function remove(){

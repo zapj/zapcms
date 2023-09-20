@@ -21,7 +21,7 @@ class NodeType
         if(is_null(static::$nodeTypes)){
             $resultSet = DB::table('node_types')->orderBy('sort_order ASC')->get(FETCH_ASSOC);
             foreach ($resultSet as $row){
-                static::$nodeTypeNames[$row['id']] = $row['name'];
+                static::$nodeTypeNames[$row['id']] = $row['title'];
                 static::$nodeTypes[$row['id']] = $row;
             }
         }

@@ -45,6 +45,7 @@ class AuthController extends Controller
                 'last_access_time'=>$admin->last_access_time,
                 'id'=>$admin->id,
                 'username'=>$admin->username,
+                'fullname'=> $admin->fullname ?: $admin->username
             ]);
 
             if (Request::isAjax()) {

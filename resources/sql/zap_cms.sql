@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主机： localhost
--- 生成日期： 2023-09-14 17:52:43
+-- 生成日期： 2023-09-20 17:22:47
 -- 服务器版本： 5.7.26
 -- PHP 版本： 7.3.4
 
@@ -38,6 +38,8 @@ CREATE TABLE `zap_admin` (
   `avatar_url` varchar(255) DEFAULT NULL,
   `last_ip` varchar(255) DEFAULT NULL,
   `last_access_time` int(11) DEFAULT NULL,
+  `status` varchar(32) DEFAULT NULL,
+  `updated_at` int(11) DEFAULT NULL,
   `created_at` int(11) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
@@ -45,8 +47,8 @@ CREATE TABLE `zap_admin` (
 -- 转存表中的数据 `zap_admin`
 --
 
-INSERT INTO `zap_admin` (`id`, `username`, `password`, `fullname`, `phone_number`, `email`, `avatar_url`, `last_ip`, `last_access_time`, `created_at`) VALUES
-(1, 'admin', '$2y$10$joUwD80AFeD7v1ikTuWmlOLwHrBCOTj5fQrKNKFwB/o1.R61mWbem', NULL, NULL, NULL, NULL, '127.0.0.1', 1694506609, 1693297157);
+INSERT INTO `zap_admin` (`id`, `username`, `password`, `fullname`, `phone_number`, `email`, `avatar_url`, `last_ip`, `last_access_time`, `status`, `updated_at`, `created_at`) VALUES
+(1, 'admin', '$2y$10$2ilnde/EUAD.hq8QSkusqeh2UKQAKT6KibISwOzYBOXeQuVKd09aC', NULL, NULL, NULL, NULL, '127.0.0.1', 1695201324, NULL, 1695192655, 1693297157);
 
 -- --------------------------------------------------------
 
@@ -94,11 +96,11 @@ CREATE TABLE `zap_admin_menu` (
 --
 
 INSERT INTO `zap_admin_menu` (`id`, `title`, `pid`, `path`, `level`, `icon`, `link_to`, `link_target`, `link_type`, `active_rule`, `show_position`, `sort_order`, `updated_at`, `created_at`) VALUES
-(1, '内容管理', 0, '1', 1, 'fa fa-circle-notch', NULL, NULL, 'action', NULL, 1, 1, 1694683755, 1694683755),
-(2, '栏目', 0, '2', 1, 'fa fa-circle-notch', 'Catalog', '', 'action', '', 1, 2, 1694684638, 1694684638),
-(3, '设置', 0, '3', 1, 'fa fa-circle-notch', '', '_self', 'action', '', 1, 3, 1694684685, 1694684685),
-(4, '基础设置', 3, '3,4', 2, 'fa fa-circle-notch', '', '_self', 'action', '', 0, 0, 1694684704, 1694684704),
-(5, '系统菜单设置', 3, '3,5', 2, 'fa fa-circle-notch', '', '_self', 'action', '', 0, 0, 1694684714, 1694684714);
+(1, '内容管理', 0, '1', 1, 'fa fa-cube', 'Content', '_self', 'action', '(content/.*|zap/.*)', 1, 1, 1694683755, 1694683755),
+(2, '栏目', 0, '2', 1, 'fa fa-square-poll-horizontal', 'Catalog', '_self', 'action', 'catalog/.*', 1, 2, 1694684638, 1694684638),
+(3, '设置', 0, '3', 1, 'fa fa-gear', '', '_self', 'action', '(admin-menu/.*|system/.*)', 1, 3, 1694684685, 1694684685),
+(4, '基础设置', 3, '3,4', 2, ' fa-solid fa-caret-right', 'System@settings', '_self', 'action', '(system/.*)', 1, 0, 1694684704, 1694684704),
+(5, '系统菜单设置', 3, '3,5', 2, ' fa-solid fa-caret-right', 'AdminMenu', '_self', 'action', '(admin-menu/.*|system/.*)', 1, 1, 1694684714, 1694684714);
 
 -- --------------------------------------------------------
 
@@ -144,6 +146,7 @@ INSERT INTO `zap_catalog` (`id`, `seo_name`, `title`, `content`, `pid`, `path`, 
 
 CREATE TABLE `zap_node` (
   `id` int(11) NOT NULL,
+  `author_id` int(11) NOT NULL,
   `node_type` int(11) DEFAULT NULL,
   `title` varchar(255) NOT NULL,
   `seo_name` varchar(255) DEFAULT NULL,
@@ -156,16 +159,33 @@ CREATE TABLE `zap_node` (
   `pub_time` int(11) DEFAULT NULL,
   `update_time` int(11) DEFAULT NULL,
   `add_time` int(11) DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- 转存表中的数据 `zap_node`
 --
 
-INSERT INTO `zap_node` (`id`, `node_type`, `title`, `seo_name`, `content`, `keywords`, `description`, `hits`, `sort_order`, `status`, `pub_time`, `update_time`, `add_time`) VALUES
-(2, 1, '测试新闻模块', NULL, '<p>测试新闻模块</p><p><img src=\"/storage/images/a5e00132373a7031000fd987a3c9f87b.png\" style=\"width: 1241.33px;\"></p>', '', '', 1000, 0, 1, 1694507942, 1694660069, NULL),
-(8, 1, '测试新闻系统', NULL, '<p>测试新闻系统<br></p>', '', '', 0, 0, 1, 1694660587, 1694660590, 1694660590),
-(9, 1, '测试新闻系统1', NULL, '<p>测试新闻系统</p><p><img src=\"/storage/images/2723d092b63885e0d7c260cc007e8b9d.png\" style=\"width: 331px;\"><br></p>', '', '', 1000, 0, 1, 1695438223, 1694672674, 1694660626);
+INSERT INTO `zap_node` (`id`, `author_id`, `node_type`, `title`, `seo_name`, `content`, `keywords`, `description`, `hits`, `sort_order`, `status`, `pub_time`, `update_time`, `add_time`) VALUES
+(2, 0, 1, '测试新闻模块', NULL, '<p>测试新闻模块</p><p><img src=\"/storage/images/a5e00132373a7031000fd987a3c9f87b.png\" style=\"width: 1241.33px;\"></p>', '', '', 1000, 0, 1, 1694507942, 1694660069, 1694660590),
+(8, 1, 1, '测试新闻系统', NULL, '<p>测试新闻系统<br></p>', '', '', 0, 0, 1, 1694660587, 1695201736, 1694660590),
+(9, 1, 1, '测试新闻系统', NULL, '<p>测试新闻系统</p><p><img src=\"/storage/images/2723d092b63885e0d7c260cc007e8b9d.png\" style=\"width: 331px;\"><br></p>', '', '', 1000, 0, 1, 1695438223, 1695201729, 1694660626);
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `zap_node_field`
+--
+
+CREATE TABLE `zap_node_field` (
+  `field_id` int(11) NOT NULL,
+  `node_id` int(11) NOT NULL,
+  `field_name` varchar(255) NOT NULL,
+  `field_label` varchar(255) NOT NULL,
+  `field_value` text,
+  `sort_order` int(11) DEFAULT '0',
+  `type` varchar(64) DEFAULT NULL,
+  `placeholder` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -178,7 +198,7 @@ CREATE TABLE `zap_node_meta` (
   `node_id` int(11) NOT NULL,
   `meta_name` varchar(255) DEFAULT NULL,
   `meta_value` text
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -190,7 +210,7 @@ CREATE TABLE `zap_node_relationships` (
   `content_type` int(11) NOT NULL,
   `object_id` int(11) NOT NULL,
   `catalog_id` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -200,11 +220,11 @@ CREATE TABLE `zap_node_relationships` (
 
 CREATE TABLE `zap_node_types` (
   `id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL,
+  `title` varchar(255) NOT NULL,
   `description` text COMMENT '简介',
-  `module_name` varchar(255) DEFAULT NULL,
-  `modue_version` varchar(32) DEFAULT '0.0.0',
-  `module_type` varchar(32) DEFAULT NULL,
+  `node_type` varchar(255) DEFAULT NULL,
+  `version` varchar(32) DEFAULT '0.0.0',
+  `owner` varchar(32) DEFAULT NULL,
   `sort_order` int(11) DEFAULT '0',
   `updated_at` int(11) DEFAULT NULL,
   `created_at` int(11) DEFAULT NULL
@@ -214,12 +234,12 @@ CREATE TABLE `zap_node_types` (
 -- 转存表中的数据 `zap_node_types`
 --
 
-INSERT INTO `zap_node_types` (`id`, `name`, `description`, `module_name`, `modue_version`, `module_type`, `sort_order`, `updated_at`, `created_at`) VALUES
-(1, '新闻', NULL, 'news', '1.0.0', 'zap', 0, NULL, 1694153650),
-(2, '产品', NULL, 'product', '1.0.0', 'zap', 0, NULL, 1694153650),
-(3, '单页', NULL, 'page', '1.0.0', 'zap', 0, NULL, 1694153650),
-(4, '文档', NULL, 'document', '1.0.0', 'zap', 0, NULL, 1694153650),
-(5, '链接', '链接地址', 'linkurl', '1.0.0', 'zap', 0, NULL, 1694153650);
+INSERT INTO `zap_node_types` (`id`, `title`, `description`, `node_type`, `version`, `owner`, `sort_order`, `updated_at`, `created_at`) VALUES
+(1, '新闻', NULL, 'news', '1.0.0', 'zap', 0, 1694153650, 1694153650),
+(2, '产品', NULL, 'product', '1.0.0', 'zap', 0, 1694153650, 1694153650),
+(3, '单页', NULL, 'page', '1.0.0', 'zap', 0, 1694153650, 1694153650),
+(4, '文档', NULL, 'document', '1.0.0', 'zap', 0, 1694153650, 1694153650),
+(5, '链接', '链接地址', 'linkurl', '1.0.0', 'zap', 0, 1694153650, 1694153650);
 
 -- --------------------------------------------------------
 
@@ -240,9 +260,16 @@ CREATE TABLE `zap_options` (
 --
 
 INSERT INTO `zap_options` (`id`, `option_name`, `option_value`, `sort_order`, `autoload`) VALUES
-(103, 'test', 'test2023-09-14 15:00:36', 0, 0),
-(2, 'web.sitename', 'ZAP WEB', 0, 0),
-(18, 'web.site_slogan', 'ZAP WEBSITE 1222', 0, 0);
+(11, 'website.title', 'ZAP CMS', 0, 1),
+(12, 'website.slogan', 'OpenSource', 0, 1),
+(13, 'website.keywords', 'ZAP,CMS,PHP OpenSource CMS', 0, 1),
+(14, 'website.description', '', 0, 1),
+(15, 'website.icp', '浙ICP备0000000000号', 0, 1),
+(16, 'website.copyright', 'ZAPCMS 版权所有', 0, 1),
+(17, 'website.address', '公司详细地址', 0, 1),
+(18, 'website.tel', '057388888888', 0, 1),
+(19, 'website.head_script', '', 0, 1),
+(20, 'website.foot_script', '', 0, 1);
 
 --
 -- 转储表的索引
@@ -278,7 +305,16 @@ ALTER TABLE `zap_catalog`
 --
 ALTER TABLE `zap_node`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `content_type` (`node_type`);
+  ADD KEY `content_type` (`node_type`),
+  ADD KEY `author_id` (`author_id`),
+  ADD KEY `status` (`status`);
+
+--
+-- 表的索引 `zap_node_field`
+--
+ALTER TABLE `zap_node_field`
+  ADD PRIMARY KEY (`field_id`),
+  ADD KEY `node_id` (`node_id`);
 
 --
 -- 表的索引 `zap_node_meta`
@@ -314,7 +350,7 @@ ALTER TABLE `zap_admin`
 -- 使用表AUTO_INCREMENT `zap_admin_menu`
 --
 ALTER TABLE `zap_admin_menu`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- 使用表AUTO_INCREMENT `zap_catalog`
@@ -327,6 +363,12 @@ ALTER TABLE `zap_catalog`
 --
 ALTER TABLE `zap_node`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
+-- 使用表AUTO_INCREMENT `zap_node_field`
+--
+ALTER TABLE `zap_node_field`
+  MODIFY `field_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- 使用表AUTO_INCREMENT `zap_node_meta`
@@ -344,7 +386,7 @@ ALTER TABLE `zap_node_types`
 -- 使用表AUTO_INCREMENT `zap_options`
 --
 ALTER TABLE `zap_options`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=104;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
