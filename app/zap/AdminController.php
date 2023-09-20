@@ -11,7 +11,7 @@ class AdminController extends Controller
     public function __construct()
     {
         Auth::check();
-        View::share('zap_admin',session()->get('zap.admin'));
+        View::share('zapAdmin',Auth::user());
     }
 
 }

@@ -78,11 +78,11 @@ use zap\AdminMenu;
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fa fa-user-cog"></i> <?php echo $zap_admin['username']; ?></a>
+                        <i class="fa fa-user-cog"></i> <?php echo $zapAdmin['username']; ?></a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="<?php echo \zap\facades\Url::action('User@changePassword'); ?>">
+                        <li><a class="dropdown-item" href="<?php echo Url::action('User@changePassword'); ?>">
                                 <i class="fa fa-key"></i> 修改密码</a></li>
-                        <li><a class="dropdown-item" href="<?php echo \zap\facades\Url::action('Auth@signOut'); ?>">
+                        <li><a class="dropdown-item" href="<?php echo Url::action('Auth@signOut'); ?>">
                                 <i class="fa fa-sign-out"></i> 安全退出</a></li>
 
                     </ul>

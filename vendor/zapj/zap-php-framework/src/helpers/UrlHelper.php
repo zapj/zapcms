@@ -27,6 +27,24 @@ class UrlHelper
         return app()->router->baseUrl . Str::format($format,$args);
     }
 
+    public function to($format,$params = [],$queryString = true ){
+        $prefix = rtrim(app()->router->currentRoute['pattern'],'.*/');
+        $url = app()->router->baseUrl . $prefix .$format;
+
+        if (is_array($params) && !$queryString) {
+            return Str::format($url, $params);
+        }
+        return $url . '?' . http_build_query($params);
+    }
+
+    public function controller(){
+        return app()->dispatcher->controller;
+    }
+
+    public function method(){
+        return app()->_currentAction ?: app()->method;
+    }
+
     public function active($action,$output = 'active'){
         $currentAction = app()->dispatcher->controller . (app()->dispatcher->method ? '/' . app()->dispatcher->method : '');
         if(app()->_currentAction){

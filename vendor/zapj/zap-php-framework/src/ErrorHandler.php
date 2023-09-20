@@ -20,9 +20,12 @@ class ErrorHandler
             if (ob_get_length()) {
                 ob_end_clean();
             }
-
-            $html = $this->zapHighlightFile($error['file'], $error['line'], $error['message'], 'Shutdown Error');
-            ZView::render(ZAP_SRC . "/resources/views/errors/error.php",['html' => $html,'handler'=>$this]);
+            if(app()->isConsole()){
+                Log::error("{$error['message']}",$error);
+            }else{
+                $html = $this->zapHighlightFile($error['file'], $error['line'], $error['message'], 'Shutdown Error');
+                ZView::render(ZAP_SRC . "/resources/views/errors/error.php",['html' => $html,'handler'=>$this]);
+            }
             exit;
         }
     }
@@ -35,11 +38,11 @@ class ErrorHandler
             $html = $this->zapHighlightFile($error_file, $error_line, $errstr, 'PHP错误 Errno:' . $errno);
 
             if(config('config.debug',false) === true){
-                Log::emergency("Error (ErrNo {$errno}) : " . $errstr,['file'=>$error_file, 'line'=>$error_line]);
                 ZView::render(ZAP_SRC . "/resources/views/errors/error.php",['html' => $html,'handler'=>$this]);
             }else{
                 ZView::render(ZAP_SRC . "/resources/views/http/500.html");
             }
+            Log::emergency("Error (ErrNo {$errno}) : " . $errstr,['file'=>$error_file, 'line'=>$error_line]);
             exit;
         }
     }
@@ -49,11 +52,11 @@ class ErrorHandler
             ob_end_clean();
         }
         if(config('config.debug',false) === true){
-            Log::emergency("Exception Type:" . get_class($exception),['message'=>$exception->getMessage(),'file'=>$exception->getFile(), 'line'=>$exception->getLine()]);
             ZView::render(ZAP_SRC . "/resources/views/errors/exception.php",['exception' => $exception,'handler'=>$this]);
         }else{
             ZView::render(ZAP_SRC . "/resources/views/http/500.html");
         }
+        Log::emergency("Exception Type:" . get_class($exception),['message'=>$exception->getMessage(),'file'=>$exception->getFile(), 'line'=>$exception->getLine()]);
         exit;
     }
 

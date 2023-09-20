@@ -3,44 +3,51 @@
 
 use zap\util\Str;
 
-define('Z_DAY',86400);
-define('Z_HOUR',3600);
+const Z_DAY = 86400;
+const Z_HOUR = 3600;
 
-define('Z_DATE_TIME','Y-m-d H:i:s');
-define('Z_DATE','Y-m-d');
-define('Z_TIME','H:i:s');
+const Z_DATE_TIME = 'Y-m-d H:i:s';
+const Z_DATE = 'Y-m-d';
+const Z_TIME = 'H:i:s';
 
-define('FLASH_INFO','info');
-define('FLASH_WARNING','warning');
-define('FLASH_ERROR','error');
-define('FLASH_SUCCESS','success');
+const FLASH_INFO = 'info';
+const FLASH_WARNING = 'warning';
+const FLASH_ERROR = 'error';
+const FLASH_SUCCESS = 'success';
 
-define('ASSETS_HEAD','assets_head_urls');
-define('ASSETS_HEAD_TEXT','assets_head_text');
-define('ASSETS_BODY','assets_body_urls');
-define('ASSETS_BODY_TEXT','assets_body_text');
+const ASSETS_HEAD = 'assets_head_urls';
+const ASSETS_HEAD_TEXT = 'assets_head_text';
+const ASSETS_BODY = 'assets_body_urls';
+const ASSETS_BODY_TEXT = 'assets_body_text';
 
 
-define('FETCH_LAZY',1);
-define('FETCH_ASSOC',2);
-define('FETCH_NUM',3);
-define('FETCH_BOTH',4);
-define('FETCH_OBJ',5);
-define('FETCH_BOUND',6);
-define('FETCH_COLUMN',7);
-define('FETCH_CLASS',8);
-define('FETCH_INTO',9);
-define('FETCH_FUNC',10);
-define('FETCH_GROUP',65536);
-define('FETCH_UNIQUE',196608);
-define('FETCH_KEY_PAIR',12);
+const FETCH_LAZY = 1;
+const FETCH_ASSOC = 2;
+const FETCH_NUM = 3;
+const FETCH_BOTH = 4;
+const FETCH_OBJ = 5;
+const FETCH_BOUND = 6;
+const FETCH_COLUMN = 7;
+const FETCH_CLASS = 8;
+const FETCH_INTO = 9;
+const FETCH_FUNC = 10;
+const FETCH_GROUP = 65536;
+const FETCH_UNIQUE = 196608;
+const FETCH_KEY_PAIR = 12;
 
-function app(){
+function app(): \zap\App
+{
     return \zap\App::instance();
 }
 
-function base_url($url = null) {
+function base_url($url = null): string
+{
     return app()->baseUrl($url);
+}
+
+function view($template,$data,$return = false): ?string
+{
+    return \zap\view\View::render($template,$data,$return);
 }
 
 /**
@@ -190,7 +197,8 @@ function base64_url_decode($base64Url)
  * @return \Monolog\Logger
  * @throws \Exception
  */
-function logger($name = 'app'){
+function logger($name = 'app')
+{
     return app()->getLogger($name);
 }
 
@@ -261,7 +269,8 @@ function seems_utf8($str) {
     }
     return true;
 }
-function sanitize($title) {
+function sanitize($title): string
+{
     $title = strip_tags($title);
     // Preserve escaped octets.
     $title = preg_replace('|%([a-fA-F0-9][a-fA-F0-9])|', '---$1---', $title);
@@ -290,12 +299,7 @@ function sanitize($title) {
 
 
 function url_to($url, $params = null, $queryString = true) {
-    if (is_array($params) && $queryString == true) {
-        $url .= '?' . http_build_query($params);
-    } else if (is_array($params) && $queryString == false) {
-        $url = Str::format($url, $params);
-    }
-    return base_url($url);
+    return \zap\facades\Url::to($url,$params,$queryString);
 }
 
 function url_action($controller,$queryParams = null,$pathParams = null){

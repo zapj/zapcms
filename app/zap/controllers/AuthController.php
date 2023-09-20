@@ -3,6 +3,7 @@
 namespace app\zap\controllers;
 
 
+use zap\Auth;
 use zap\DB;
 use zap\facades\Url;
 use zap\http\Controller;
@@ -39,7 +40,7 @@ class AuthController extends Controller
             DB::table('admin')->set('last_ip', Request::ip())
                 ->set('last_access_time', time())
                 ->update();
-            session()->set('zap.admin',[
+            session()->set('zapAdmin',[
                 'last_ip'=>$admin->last_ip,
                 'last_access_time'=>$admin->last_access_time,
                 'id'=>$admin->id,
@@ -57,7 +58,7 @@ class AuthController extends Controller
 
     function signOut()
     {
-        session()->remove('zap.admin');
+        Auth::signOut();
         Response::redirect(Url::action('Auth@signIn'), "您已安全退出", Session::SUCCESS);
     }
 

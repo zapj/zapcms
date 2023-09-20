@@ -139,7 +139,7 @@ $this->layout('layouts/common');
                         ZapToast.alert(data.msg, {
                             bgColor: bgSuccess, position: Toast_Pos_Center, callback: function () {
                                 <?php if($node->id){ ?>
-                                    location.reload();
+                                location.reload();
                                 <?php }else{ ?>
                                 location.href = '<?php echo url_action("Zap@News/index/edit/");?>' + data.id;
                                 <?php } ?>

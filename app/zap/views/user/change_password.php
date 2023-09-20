@@ -1,6 +1,6 @@
 <?php
 use zap\facades\Url;
-
+\zap\Asset::library('jqueryvalidation');
 $this->layout('layouts/common');
 ?>
 
@@ -19,6 +19,7 @@ $this->layout('layouts/common');
     </div>
 
 </nav>
+<form id="zForm">
 <main class="container zap-main">
 
 
@@ -28,19 +29,19 @@ $this->layout('layouts/common');
             <div class="row mb-3">
                 <label for="cur_password" class="col-sm-2 col-form-label">当前密码</label>
                 <div class="col-sm-10">
-                    <input type="password" class="form-control" id="cur_password" name="cur_password" placeholder="请输入当前密码" required>
+                    <input type="password" class="form-control" id="cur_password" name="cur_password" placeholder="请输入当前密码" autocomplete="off" required>
                 </div>
             </div>
             <div class="row mb-3">
                 <label for="new_password" class="col-sm-2 col-form-label">请输入新密码</label>
                 <div class="col-sm-10">
-                    <input type="password" class="form-control" id="new_password" name="new_password" placeholder="请输入新密码">
+                    <input type="password" class="form-control" id="new_password" name="new_password" placeholder="请输入新密码" required>
                 </div>
             </div>
             <div class="row mb-3">
                 <label for="renew_password" class="col-sm-2 col-form-label">再次输入新密码</label>
                 <div class="col-sm-10">
-                    <input type="password" class="form-control" id="renew_password" name="renew_password" placeholder="再次输入新密码">
+                    <input type="password" class="form-control" id="renew_password" name="renew_password" placeholder="再次输入新密码" required>
                 </div>
             </div>
 
@@ -54,13 +55,59 @@ $this->layout('layouts/common');
 
 
 </main>
+</form>
 <script>
     $(function(){
-        $.validate({ignore:''});
+        $('#zForm').validate({
+            rules:{
+                new_password:{
+                    required: true,
+                    rangelength: [6, 18],
+                    pattern:/^[a-zA-Z0-9.@#$]{6,18}$/
+                },
+                renew_password: {
+                    required: true,
+                    equalTo:"#new_password",
+                    rangelength: [6, 18],
+                    pattern:/^[a-zA-Z0-9.@#$]{6,18}$/
+                }
+            },
+            messages:{
+                cur_password:"当前密码必须填写",
+                new_password:{
+                    required:"请输入新密码",
+                    rangelength:"密码长度必须为6~18位的字符或数字",
+                    pattern:"密码必须由6~18位字符组合,支持以下字符 [a-zA-Z0-9.@#$] "
+                },
+                renew_password:{
+                    required:"请再次输入新密码",
+                    rangelength:"密码长度必须为6~18位的字符或数字",
+                    pattern:"密码必须由6~18位字符组合,支持以下字符 [a-zA-Z0-9.@#$] "
+                },
+            }
+        });
     })
     function changePassword(){
-        if(!$.valid()){
-
+        const zForm = $('#zForm');
+        if(!zForm.valid()){
+            return false;
         }
+        $.ajax({
+            url: '<?php echo Url::current();?>',
+            method: 'post',
+            data: zForm.serialize(),
+            dataType: 'json',
+            success: function (data) {
+                if (data.code === 0) {
+                    ZapToast.alert(data.msg, {bgColor: bgSuccess, position: Toast_Pos_Center,callback:function(){
+                        location.href='<?php echo url_action('Auth@signIn');?>';
+                        }});
+                    $('#zForm')[0].reset();
+                } else {
+                    ZapToast.alert(data.msg, {bgColor: bgDanger, position: Toast_Pos_Center});
+                }
+            }
+        });
+
     }
 </script>

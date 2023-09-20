@@ -16,22 +16,12 @@ class SystemController extends AdminController
         $keyPrefix = '^website\.';
         if(Request::isPost()){
             $options = Request::post('options',[]);
-//            $options_keys = array_keys($options);
-//            $keys = array_unique(array_map(function($key){return explode('.', $key)[0];},$options_keys));
-//            $regexKeys = array_map(function($key){
-//                return "^{$key}\.";
-//            },$keys);
-//            if(count($regexKeys)){
-//                $optionKeys = Option::getKeys(join('|',$regexKeys),'REGEXP');
-//            }else{
-//                $optionKeys = [];
-//            }
             $optionKeys = Option::getKeys($keyPrefix,'REGEXP');
             foreach ($options as $key=>$value){
                 if(in_array($key,$optionKeys)){
-                    Option::update($key,$value);
+                    Option::update($key,$value,null,1);
                 }else{
-                    Option::add($key,$value);
+                    Option::add($key,$value,0,1);
                 }
             }
             Response::json(['code'=>0,'msg'=>'保存成功']);

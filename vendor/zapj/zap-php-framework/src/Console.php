@@ -43,16 +43,20 @@ class Console
         return isset(static::$container[$key]);
     }
 
-    public function isWin()
+    public function isWin(): bool
     {
         return DIRECTORY_SEPARATOR === '\\';
     }
 
-    public function isConsole()
+    public function isConsole(): bool
     {
         return php_sapi_name() == 'cli';
     }
 
+    /**
+     * @throws \ReflectionException
+     * @throws \Exception
+     */
     public function getLogger($name = 'zap'){
         if(!class_exists('\Monolog\Logger')){
             throw new \Exception('Class not found [\Monolog\Logger]');

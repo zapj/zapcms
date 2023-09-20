@@ -42,4 +42,8 @@ class Route {
     public static function filter($methods, $pattern, $fn, $options = []){
         return app()->router->filter($methods, $pattern, $fn, $options);
     }
+
+    public static function currentRoute(){
+        return app()->router->currentRoute;
+    }
 }
