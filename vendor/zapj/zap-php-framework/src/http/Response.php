@@ -18,32 +18,30 @@ class Response {
      * 创建Response
      * @param null $content 响应内容
      * @param int $statusCode  HTTP Code
-     * @param null $headers Headers
+     * @param array|null $headers Headers
      * @return Response
      */
-    public static function create($content = null, $statusCode = 200, $headers = []) {
+    public static function create($content = null, int $statusCode = 200, ?array $headers = []) {
         return new Response($content, $statusCode, $headers);
     }
 
     /**
      * 创建Json Response
      *
-     * @param null|array|object $content 响应内容
+     * @param mixed $content 响应内容
      * @param int $statusCode  HTTP Code
-     * @param null $headers Headers
+     * @param array|null $headers Headers
      *
      * @return void
      */
-    public static function json($content = null, $statusCode = 200, $headers = []) {
-        $json = json_encode($content);
-        if ($json === false) {
-            $json = json_encode(array("jsonError"=>json_last_error_msg(),"code"=>-1,"msg"=>"json parse error"));
-        }
+    public static function json($content = null, int $statusCode = 200, ?array $headers = []) {
 
-        (new Response($json, $statusCode, $headers))->setHeader('Content-Type', 'application/json;charset=utf-8')->send();
+
+        (new Response($content, $statusCode, $headers))->withJson();
     }
 
-    public function setStatusCode($code) {
+    public function setStatusCode($code): Response
+    {
         $this->statusCode = $code;
         return $this;
     }
@@ -54,37 +52,59 @@ class Response {
      * @param string $value  Value
      * @return $this
      */
-    public function setHeader($header, $value) {
+    public function header(string $header, string $value): Response
+    {
         $this->headers[$header] = $value;
         return $this;
     }
 
+    public function withHeaders($headers): Response
+    {
+        foreach ($headers as $name=>$value){
+            $this->headers[$name] = $value;
+        }
+        return $this;
+    }
+
+    public function withJson($data = null)
+    {
+        $data = $data ?? $this->content;
+        $respond = json_encode($data,JSON_UNESCAPED_UNICODE);
+        if ($respond === false) {
+            $respond = json_encode(array("jsonError"=>json_last_error_msg(),"code"=>-1,"msg"=>"json parse error"));
+        }
+        $this->content = $respond;
+        $this->header('Content-Type', 'application/json;charset=utf-8');
+        $this->send();
+    }
+
     /**
-     * 设置响应内容
-     * @param string $content 响应内容
+     * @param $content
+     * @return $this
      */
-    public function setContent($content) {
+    public function setContent($content): Response
+    {
         $this->content = $content;
         return $this;
     }
 
     /**
      * Response发送至浏览器
-     * @throws \Exception
      */
     public function send() {
         if (\headers_sent()) {
-            throw new \Exception('tried to change http response code after sending headers!');
+            trigger_error('tried to change http response code after sending headers!',E_USER_ERROR);
         }
         http_response_code($this->statusCode);
         foreach ($this->headers as $header => $value) {
             header(strtoupper($header) . ': ' . $value);
         }
         echo $this->content;
-        die;
+        exit;
     }
 
-    public function flash($message, $type = Session::INFO){
+    public function flash($message, $type = Session::INFO): Response
+    {
         Session::instance()->add_flash($message,$type);
         return $this;
     }
@@ -92,14 +112,18 @@ class Response {
     /**
      * Redirect
      * @param string $url
+     * @param string|null $message
+     * @param string $type Flash类型
      * @throws \Exception
      */
-    public static function redirect($url,$message = null,$type = Session::INFO) {
-        $response = Response::create()->setHeader('Location',$url);
+    public static function redirect(string $url, string $message = null, string $type = Session::INFO) {
+        $response = Response::create()->header('Location',$url);
         if(!is_null($message)){
             $response->flash($message,$type);
         }
         $response->send();
     }
+
+
 
 }

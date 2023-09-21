@@ -1,0 +1,14 @@
+#!/usr/bin/env php
+<?php
+
+if (!in_array(PHP_SAPI, ['cli', 'phpdbg', 'embed'], true)) {
+    echo 'Warning: The console scripts only support running in cli mode, not the '.PHP_SAPI.' SAPI'.PHP_EOL;
+}
+set_time_limit(0);
+
+define("APP_PATH", dirname(__DIR__));
+require APP_PATH . '/vendor/autoload.php';
+
+$console = new \zap\console\Console(APP_PATH);
+$code = $console->execute();
+exit($code);

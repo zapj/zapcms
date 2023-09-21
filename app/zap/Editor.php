@@ -17,9 +17,9 @@ class Editor
     use SingletonTrait;
 
     protected $options = [
-        'height'=>300,
+        'height'=>400,
         'lang'=>'zh-CN',
-        'upload_url'=>'',
+        'upload_url'=>'ZAP_UPLOAD_URL',
         'image_upload'=>'function(files){}',
     ];
 
@@ -28,14 +28,14 @@ class Editor
         Asset::library('summernote');
     }
 
-    public function withOptions($options = []){
+    public function setOptions($options = []){
         $this->options = array_merge($this->options,$options);
         $this->register();
         return $this;
     }
 
     public function create($name,$options = []){
-        $this->withOptions($options);
+        $this->setOptions($options);
         register_scripts(<<<EOF
 $('{$name}').summernote({
     height: {$this->options['height']},
@@ -82,6 +82,8 @@ function zapUploadFile(file,callback) {
       success: function(data) {
         if(data.code == 0){
             callback(data.url);
+        }else{
+            ZapToast.alert(data.msg, {bgColor: bgDanger, position: Toast_Pos_Center});
         }
       }
   });

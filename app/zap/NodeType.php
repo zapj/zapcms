@@ -13,13 +13,20 @@ class NodeType
     protected static $nodeTypes;
 
 
-    /**
-     * @return array
-     */
+    const NEWS = 1;
+    const PRODUCT = 2;
+    const PAGE = 3;
+    const FAQ = 4;
+    const LINK_URL = 5;
+    const COMMENTS = 6;
+
+
     public static function getNodeTypes()
     {
         if(is_null(static::$nodeTypes)){
-            $resultSet = DB::table('node_types')->orderBy('sort_order ASC')->get(FETCH_ASSOC);
+            $resultSet = DB::table('node_types')->where('status',1)
+                ->orderBy('sort_order ASC')
+                ->get(FETCH_ASSOC);
             foreach ($resultSet as $row){
                 static::$nodeTypeNames[$row['id']] = $row['title'];
                 static::$nodeTypes[$row['id']] = $row;

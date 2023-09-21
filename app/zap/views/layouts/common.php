@@ -41,5 +41,10 @@
         print_scripts(ASSETS_BODY);
         print_scripts(ASSETS_BODY_TEXT);
         ?>
+        <script>
+            <?php
+            \zap\AdminPage::instance()->showFlashMessages();
+            ?>
+        </script>
     </body>
 </html>

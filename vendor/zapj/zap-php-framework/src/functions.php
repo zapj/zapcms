@@ -1,7 +1,9 @@
 <?php
 
 
-use zap\util\Str;
+use zap\http\Response;
+use zap\http\Session;
+use zap\http\ZapRequest;
 
 const Z_DAY = 86400;
 const Z_HOUR = 3600;
@@ -390,47 +392,61 @@ function print_styles() {
 }
 
 
-function session() {
-    return \zap\http\Session::instance();
+function session(): Session
+{
+    return Session::instance();
 }
 
 function set_session($name, $value) {
-    \zap\http\Session::instance()->set($name, $value);
+    Session::instance()->set($name, $value);
 }
 
 function get_session($name, $default = null) {
-    return \zap\http\Session::instance()->get($name, $default);
+    return Session::instance()->get($name, $default);
 }
 
-function has_session($name) {
-    return \zap\http\Session::instance()->has($name);
+function has_session($name): bool
+{
+    return Session::instance()->has($name);
 }
 
 function remove_session($name) {
-    \zap\http\Session::instance()->remove($name);
+    Session::instance()->remove($name);
 }
 
-function add_flash($message,$type = FLASH_INFO){
-    return \zap\http\Session::instance()->add_flash($message,$type);
+function add_flash($message,$type = FLASH_INFO): Session
+{
+    return Session::instance()->add_flash($message,$type);
 }
 
 /**
  * @param $type
- * @param $first true|false true 返回第一个消息
+ * @param $first bool true 返回第一个消息
  *
  * @return array|false|mixed
  */
-function get_flash($type = null,$first = false){
+function get_flash($type = null, bool $first = false){
     if(!is_null($type) && $first){
-        return current(\zap\http\Session::instance()->getFlash($type));
+        return current(Session::instance()->getFlash($type));
     }
-    return \zap\http\Session::instance()->getFlash($type);
+    return Session::instance()->getFlash($type);
 }
 
-function has_flash($type = null){
-    return \zap\http\Session::instance()->hasFlash($type);
+function has_flash($type = null): bool
+{
+    return Session::instance()->hasFlash($type);
 }
 
 function clear_flash($type = null){
-    return \zap\http\Session::instance()->clearFlash($type);
+    return Session::instance()->clearFlash($type);
+}
+
+function req(): ZapRequest
+{
+    return ZapRequest::instance();
+}
+
+function response($content = null, int $statusCode = 200, ?array $headers = []): Response
+{
+    return new Response($content, $statusCode, $headers);
 }

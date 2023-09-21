@@ -26,7 +26,7 @@ use zap\NodeType;
             </td>
 
             <td>
-                    <select name="catalog[0][content_type]" class="form-select form-select-sm w-auto">
+                    <select name="catalog[0][node_type]" class="form-select form-select-sm w-auto">
                         <?php foreach (NodeType::getNodeTypes() as $row): ?>
                         <option value="<?php echo $row['id'];?>"><?php echo $row['title'];?></option>
                         <?php endforeach; ?>

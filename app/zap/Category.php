@@ -59,10 +59,10 @@ class Category
         $data[$this->parentColumn] = $pid;
         $category_id = DB::insert($this->table, $data);
         if($pid == 0){
-            DB::update($this->table,[$this->pathColumn => $category_id],[$this->primaryKey => $category_id]);
+            DB::update($this->table,[$this->pathColumn => "{$category_id},"],[$this->primaryKey => $category_id]);
         }else{
             DB::update($this->table,[
-                $this->pathColumn => sprintf("%s,%s",$data[$this->pathColumn],$category_id)
+                $this->pathColumn => sprintf("%s%s,",$data[$this->pathColumn],$category_id)
             ],[$this->primaryKey => $category_id]);
         }
         return $category_id;
@@ -99,11 +99,18 @@ class Category
     }
 
 
-    public function getTreeArray(): array
+    public function getTreeArray($conditions = []): array
     {
-        $data = DB::table($this->table)
-            ->orderBy("{$this->parentColumn} ASC,sort_order ASC")
-            ->get(FETCH_ASSOC);
+        $query = DB::table($this->table)
+            ->orderBy("{$this->parentColumn} ASC,sort_order ASC");
+        foreach ($conditions as $name=>$value){
+            if(is_int($name)){
+                $query->where(...$value);
+            }else{
+                $query->where($name,$value);
+            }
+        }
+        $data = $query->get(FETCH_ASSOC);
         $categories = array();
         foreach ($data as $value) {
             $categories[$value[$this->primaryKey]] = $value;

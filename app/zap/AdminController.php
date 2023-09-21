@@ -4,7 +4,6 @@ namespace zap;
 
 use zap\http\Controller;
 use zap\view\View;
-use zap\Auth;
 
 class AdminController extends Controller
 {

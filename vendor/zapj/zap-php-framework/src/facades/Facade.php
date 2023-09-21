@@ -12,6 +12,11 @@ class Facade
         return true;
     }
 
+    protected static function instance()
+    {
+        return static::getInstance();
+    }
+
     public static function __callStatic($method, $args)
     {
         $instance = static::getInstance();

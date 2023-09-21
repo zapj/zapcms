@@ -2,9 +2,9 @@
 
 namespace zap;
 
-use zap\db\AbstractModel;
+use zap\db\Model;
 
-class Node extends AbstractModel
+class Node extends Model
 {
     protected $table = 'node';
 

@@ -2,9 +2,9 @@
 
 namespace app\zap;
 
-use zap\db\AbstractModel;
+use zap\db\Model;
 
-class AdminLogs extends AbstractModel
+class AdminLogs extends Model
 {
     protected $table = 'admin_logs';
 }

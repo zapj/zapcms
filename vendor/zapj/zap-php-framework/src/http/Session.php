@@ -10,6 +10,7 @@ class Session
     public const WARNING = 'warning';
     public const ERROR = 'error';
     const defaultType = 'info';
+    const FLASH_MESSAGE_KEY = '_flash_messages';
 
     /**
      *
@@ -38,40 +39,41 @@ class Session
     }
 
 
-    public function info($message)
+    public function info($message): Session
     {
         return $this->add_flash($message, self::INFO);
     }
 
-    public function success($message)
+    public function success($message): Session
     {
         return $this->add_flash($message, self::SUCCESS);
     }
 
 
-    public function warning($message)
+    public function warning($message): Session
     {
         return $this->add_flash($message, self::WARNING);
     }
 
 
-    public function error($message)
+    public function error($message): Session
     {
         return $this->add_flash($message, self::ERROR);
     }
 
 
-    public function add_flash($message, $type = self::defaultType)
+    public function add_flash($message, $type = self::defaultType): Session
     {
-        if (!isset($_SESSION['flash_messages']))
-            $_SESSION['flash_messages'][$type] = array();
-        $_SESSION['flash_messages'][$type][] = $message;
+        if (!isset($_SESSION[self::FLASH_MESSAGE_KEY]))
+            $_SESSION[self::FLASH_MESSAGE_KEY][$type] = array();
+        $_SESSION[self::FLASH_MESSAGE_KEY][$type][] = $message;
         return $this;
     }
 
     public function set($name, $value = null)
     {
-        return $_SESSION[$name] = $value;
+        $_SESSION[$name] = $value;
+        return $this;
     }
 
     public function get($name, $default = null)
@@ -82,9 +84,9 @@ class Session
         return $default;
     }
 
-    public function has($name)
+    public function has($name): bool
     {
-        return empty($_SESSION[$name]) ? false : true;
+        return !empty($_SESSION[$name]);
     }
 
     public function remove($name)
@@ -102,9 +104,9 @@ class Session
      * 判断是否有错误
      * @return bool
      */
-    public function hasErrors()
+    public function hasErrors(): bool
     {
-        return empty($_SESSION['flash_messages'][self::ERROR]) ? false : true;
+        return !empty($_SESSION[self::FLASH_MESSAGE_KEY][self::ERROR]);
     }
 
     /**
@@ -112,15 +114,15 @@ class Session
      * @param null $type
      * @return bool
      */
-    public function hasFlash($type = null)
+    public function hasFlash($type = null): bool
     {
         if (!is_null($type)) {
-            if (!empty($_SESSION['flash_messages'][$type]))
-                return $_SESSION['flash_messages'][$type];
+            if (!empty($_SESSION[self::FLASH_MESSAGE_KEY][$type]))
+                return true;
         } else {
             foreach ([self::ERROR, self::INFO, self::WARNING, self::SUCCESS] as $type) {
-                if (isset($_SESSION['flash_messages'][$type]) && !empty($_SESSION['flash_messages'][$type]))
-                    return $_SESSION['flash_messages'][$type];
+                if (!empty($_SESSION[self::FLASH_MESSAGE_KEY][$type]))
+                    return true;
             }
         }
         return false;
@@ -135,12 +137,12 @@ class Session
     public function getFlash($type = null)
     {
         $flash = [];
-        if ($type == NULL && isset($_SESSION['flash_messages'])) {
-            $flash = $_SESSION['flash_messages'];
-            unset($_SESSION['flash_messages']);
-        } else if (isset($_SESSION['flash_messages'][$type])) {
-            $flash = $_SESSION['flash_messages'][$type];
-            unset($_SESSION['flash_messages'][$type]);
+        if ($type == NULL && isset($_SESSION[self::FLASH_MESSAGE_KEY])) {
+            $flash = $_SESSION[self::FLASH_MESSAGE_KEY];
+            unset($_SESSION[self::FLASH_MESSAGE_KEY]);
+        } else if (isset($_SESSION[self::FLASH_MESSAGE_KEY][$type])) {
+            $flash = $_SESSION[self::FLASH_MESSAGE_KEY][$type];
+            unset($_SESSION[self::FLASH_MESSAGE_KEY][$type]);
         }
         return $flash;
     }
@@ -148,18 +150,18 @@ class Session
 
     /**
      * 清除Flash
-     * @param array $types
+     * @param array|null|string $types
      * @return $this
      */
-    public function clearFlash($types = null)
+    public function clearFlash($types = null): Session
     {
         if (is_null($types)) {
-            unset($_SESSION['flash_messages']);
+            unset($_SESSION[self::FLASH_MESSAGE_KEY]);
         } elseif (!is_array($types)) {
             $types = [$types];
         }
         foreach ($types as $type) {
-            unset($_SESSION['flash_messages'][$type]);
+            unset($_SESSION[self::FLASH_MESSAGE_KEY][$type]);
         }
         return $this;
     }

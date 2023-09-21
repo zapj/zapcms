@@ -1,5 +1,4 @@
 .idea
 var/cache/*
-storage/images/*
 var/logs/*
 var/tmp/*

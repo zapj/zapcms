@@ -23,7 +23,7 @@ $this->layout('layouts/common');
 </nav>
 
 
-<main class="container-fluid mt-65px">
+<main class="container-fluid zap-main">
 
 
 
@@ -37,7 +37,9 @@ $this->layout('layouts/common');
                 <tr>
                     <th scope="col">ID</th>
                     <th scope="col" class="w-50">标题</th>
+                    <th scope="col">点击量</th>
                     <th scope="col">发布日期</th>
+                    <th scope="col">状态</th>
                     <th scope="col" >操作</th>
                 </tr>
                 </thead>
@@ -50,9 +52,12 @@ $this->layout('layouts/common');
                         <?php echo $row['title'];?>
                         </a>
                     </td>
+
+                    <td><?php echo $row['hits']; ?></td>
                     <td><?php echo date(Z_DATE_TIME,$row['pub_time']); ?></td>
+                    <td><?php echo \zap\Node::getStatusTitle($row['status']); ?></td>
                     <td>
-                        <a href="<?php echo url_action("Zap@news/edit/{$row['id']}");?>" class="btn btn-sm btn-success"><i class="fa fa-edit"></i> 编辑</a>
+                        <a href="<?php echo url_action("Zap@news/edit/{$row['id']}",$_GET);?>" class="btn btn-sm btn-success"><i class="fa fa-edit"></i> 编辑</a>
                         <a href="javascript:void(0);" onclick="remove(<?php echo $row['id'];?>,'<?php echo $row['title'];?>');" class="btn btn-sm btn-danger"><i class="fa fa-remove"></i> 删除</a>
 
                     </td>
@@ -91,7 +96,5 @@ $this->layout('layouts/common');
 
         });
     }
-    <?php
-    \zap\AdminPage::instance()->showFlashMessages();
-    ?>
+
 </script>

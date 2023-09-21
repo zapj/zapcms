@@ -39,7 +39,7 @@ $this->layout('layouts/common');
         <main class="container-fluid zap-main">
             <div class="row">
                 <div class="col-md-9 mb-3">
-                    <div class="card  shadow-sm">
+                    <div class="card  shadow">
 
                         <div class="card-header">
                             <ul class="nav nav-tabs card-header-tabs">
@@ -80,6 +80,11 @@ $this->layout('layouts/common');
                                         <input type="text" class="form-control" name="node[hits]" id="node_hits"
                                                placeholder="文章点击量" value="<?php echo $node->hits ?? 0; ?>"/>
                                     </div>
+                                    <div class="mb-3">
+                                        <label for="node_sort_order" class="form-label">排序</label>
+                                        <input type="text" class="form-control" name="node[sort_order]" id="node_sort_order"
+                                               placeholder="排序" value="<?php echo $node->sort_order ?? 0; ?>"/>
+                                    </div>
                                 </div>
 
 
@@ -95,22 +100,51 @@ $this->layout('layouts/common');
                                 <div class="mb-3">
                                     <label for="node_description" class="form-label">SEO 简介</label>
                                     <textarea type="text" class="form-control" name="node[description]"
-                                              id="node_description"
+                                              id="node_description" rows="4"
                                               placeholder="简介"><?php echo $node->description; ?></textarea>
                                 </div>
                             </div>
                         </div>
-<!--                        <div class="card-footer text-center">-->
-<!---->
-<!--                        </div>-->
+                        <div class="card-footer">
+                            <?php if($node->add_time){ ?>
+                                <div class="mb-3">
+                                    <ul class="text-black-50 fw-lighter fs-6">
+                                        <li>发布时间: <?php echo date(Z_DATE_TIME,$node->pub_time); ?></li>
+                                        <li>更新时间: <?php echo date(Z_DATE_TIME,$node->update_time); ?></li>
+                                        <li>创建时间: <?php echo date(Z_DATE_TIME,$node->add_time); ?></li>
+                                    </ul>
+                                </div>
+                            <?php } ?>
+                        </div>
                     </div>
                 </div>
                 <div class="col-md-3 ">
                     <div class="card shadow-sm mb-3">
-                        <div class="card-header"><i class="fa fa-star"></i> 发布</div>
+                        <div class="card-header"><i class="fa fa-sliders"></i> 发布</div>
                         <div class="card-body">
-                            <p>当前状态 :
-                                <?php echo $node->getStatusTitle($node->status); ?></p>
+                            <div class="mb-3">
+                                <label for="node_status" class="form-label">状态 <i class="text-danger">*</i></label>
+                                <select class="form-select " name="node[status]" id="node_status">
+                                    <?php foreach($node->getStatus() as $id => $title){
+                                        if($id == \zap\Node::SOFT_DELETE){
+                                            continue;
+                                        }
+                                        ?>
+                                        <option value="<?php echo $id;?>" <?php echo $node->status==$id?'selected':null ;?> ><?php echo $title;?></option>
+                                    <?php } ?>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="node_pub_time" class="form-label">发布时间</label>
+                                <input type="text" class="form-control datetimepicker" name="node[pub_time]"
+                                       id="node_pub_time"
+                                       value="<?php echo $node->getPubTimeToDate(); ?>" required/>
+                            </div>
+                            <div class="mb-3">
+                                <label for="node_author_id" class="form-label">发布人</label>
+                                <input type="hidden" id="node_author_id" name="node[author_id]" value="<?php echo \zap\Auth::user('id') ?>">
+                                <input type="text" class="form-control" id="node_author_name" readonly  placeholder="发布人" value="<?php echo \zap\Auth::user('fullname') ?>">
+                            </div>
                             <?php if($node->update_time){ ?>
                                 <p class="text-black-50"><small>最后修改时间 :
                                     <?php echo date(Z_DATE_TIME,$node->update_time); ?>
@@ -130,38 +164,25 @@ $this->layout('layouts/common');
                     <div class="card shadow-sm">
                         <div class="card-header"><i class="fa-solid fa-sliders"></i> 选项</div>
                         <div class="card-body">
-                            <div class="mb-3">
-                                <label for="node_status" class="form-label">状态 <i class="text-danger">*</i></label>
-                                <select class="form-select " name="node[status]" id="node_status">
-                                    <?php foreach($node->getStatus() as $id => $title){
-                                        if($id == \zap\Node::SOFT_DELETE){
-                                            continue;
-                                        }
-                                        ?>
-                                    <option value="<?php echo $id;?>"><?php echo $title;?></option>
-                                    <?php } ?>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="node_pub_time" class="form-label">发布时间</label>
-                                <input type="text" class="form-control datetimepicker" name="node[pub_time]"
-                                       id="node_pub_time"
-                                       value="<?php echo $node->getPubTimeToDate(); ?>" required/>
-                            </div>
-                            <div class="mb-3">
-                                <label for="node_author_id" class="form-label">发布人</label>
-                                <input type="hidden" id="node_author_id" name="node[author_id]" value="<?php echo \zap\Auth::user('id') ?>">
-                                <input type="text" class="form-control" id="node_author_name" readonly  placeholder="发布人" value="<?php echo \zap\Auth::user('fullname') ?>">
-                            </div>
-                            <?php if($node->add_time){ ?>
-                            <div class="mb-3">
-                                <ul class="text-black-50 fw-lighter fs-6">
-                                    <li>发布时间: <?php echo date(Z_DATE_TIME,$node->pub_time); ?></li>
-                                    <li>更新时间: <?php echo date(Z_DATE_TIME,$node->update_time); ?></li>
-                                    <li>创建时间: <?php echo date(Z_DATE_TIME,$node->add_time); ?></li>
-                                </ul>
-                            </div>
-                            <?php } ?>
+                            <?php
+                            while($catalog = array_shift($catalogList)){
+                                ?>
+                                <div class="form-check " style="margin-left:<?php echo $catalog['level']-1; ?>rem!important;">
+                                    <input class="form-check-input" type="checkbox" name="catalog[]" <?php echo !$node_relations[$catalog['id']] ?: 'checked' ?>
+                                           value="<?php echo $catalog['id'];?>" id="catalog-<?php echo $catalog['id'];?>">
+                                    <label class="form-check-label" for="catalog-<?php echo $catalog['id'];?>">
+                                        <?php echo $catalog['title'];?>
+                                    </label>
+                                </div>
+                                <?php
+                                if(isset($catalog['children'])){
+                                    while ($children = array_pop($catalog['children'])){
+                                        array_unshift($catalogList,$children);
+                                    }
+                                }
+                            }
+                            ?>
+
 
                         </div>
 
@@ -210,7 +231,7 @@ $this->layout('layouts/common');
                                 <?php if($node->id){ ?>
                                 location.reload();
                                 <?php }else{ ?>
-                                location.href = '<?php echo url_action("Zap@News/edit/");?>' + data.id;
+                                location.href = data.redirect_to;
                                 <?php } ?>
 
                             }

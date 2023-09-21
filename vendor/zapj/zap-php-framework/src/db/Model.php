@@ -11,9 +11,11 @@ use function app;
 
 
 /**
- * @method static \zap\db\Query select($columns = '*')
+ * @method static Query select($columns = '*')
+ * @method static insert($data)
+ * @method static batchInsert($rows)
  */
-abstract class AbstractModel implements \ArrayAccess
+abstract class Model implements \ArrayAccess
 {
     protected $primaryKey = 'id';
 
@@ -77,7 +79,7 @@ abstract class AbstractModel implements \ArrayAccess
      */
     public function getTable() {
         if (empty($this->table)) {
-            $this->table = static::getDefaultTableName();
+            $this->table = static::tableName();
         }
         return $this->table;
     }
@@ -96,9 +98,9 @@ abstract class AbstractModel implements \ArrayAccess
      *
      * @param string $key
      *
-     * @return AbstractModel
+     * @return Model
      */
-    public function setPrimaryKey(string $key): AbstractModel
+    public function setPrimaryKey(string $key): Model
     {
         $this->primaryKey = $key;
         return $this;
@@ -144,7 +146,7 @@ abstract class AbstractModel implements \ArrayAccess
      *
      * @param array $attributes
      *
-     * @return AbstractModel
+     * @return Model
      */
     public function fill(array $attributes = array(), $filterKeys = []) {
         if(!empty($filterKeys)){
@@ -170,7 +172,7 @@ abstract class AbstractModel implements \ArrayAccess
     }
 
     public function insert($data) {
-        return DB::insert(static::getDefaultTableName(), $data);
+        return DB::insert(static::tableName(), $data);
     }
 
     public function batchInsert($rows) {
@@ -182,24 +184,34 @@ abstract class AbstractModel implements \ArrayAccess
     }
 
     /**
-     * @param $params
+     * @param array $params
      *
-     * @return \zap\db\Query
+     * @return Query
      */
-    public static function find($params = []) {
+    public static function find(array $params = []): Query
+    {
         $query = DB::table(static::tableName());
         $query->asObject(get_called_class());
         foreach($params as $name=>$value){
-            $query->where($name,$value);
+            if(is_int($name)){
+                $query->where(...$value);
+            }else{
+                $query->where($name,$value);
+            }
         }
         return $query;
     }
 
-    public static function createQuery($params = []) {
+    public static function createQuery($params = []): Query
+    {
         $query = DB::table(static::tableName());
         $query->asObject(get_called_class());
         foreach($params as $name=>$value){
-            $query->where($name,$value);
+            if(is_int($name)){
+                $query->where(...$value);
+            }else{
+                $query->where($name,$value);
+            }
         }
         return $query;
     }
@@ -208,7 +220,7 @@ abstract class AbstractModel implements \ArrayAccess
      *
      * @param array|int $ids
      *
-     * @return static|array|false|AbstractModel
+     * @return static|array|false|Model
      */
     public static function findById($ids,$fetchMode = null) {
         $model = new static;
@@ -306,15 +318,16 @@ abstract class AbstractModel implements \ArrayAccess
      * @param array $attributes
      * @return \static
      */
-    public static function create($attributes = [],$filterKeys = []) {
+    public static function create(array $attributes = [], $filterKeys = []): Model
+    {
         $model = new static($attributes,$filterKeys);
         $model->save();
         return $model;
     }
 
-    public static function model($attributes = [],$filterKeys = []) {
-        $model = new static($attributes,$filterKeys);
-        return $model;
+    public static function model($attributes = [],$filterKeys = []): Model
+    {
+        return new static($attributes,$filterKeys);
     }
 
     /**
@@ -323,9 +336,9 @@ abstract class AbstractModel implements \ArrayAccess
      *
      * @return static
      */
-    public static function fromArray($attributes = [],$filterKeys = []) {
-        $model = new static($attributes,$filterKeys);
-        return $model;
+    public static function fromArray($attributes = [],$filterKeys = []): Model
+    {
+        return new static($attributes,$filterKeys);
     }
 
     public static function truncate() {
