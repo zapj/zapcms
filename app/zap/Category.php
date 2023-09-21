@@ -149,4 +149,16 @@ class Category
         return DB::table($this->table)->where($this->primaryKey, $id)->fetch(FETCH_ASSOC);
     }
 
+    public function getAll($conditions){
+        $query = DB::table($this->table);
+        foreach ($conditions as $name=>$value){
+            if(is_int($name)){
+                $query->where(...$value);
+            }else{
+                $query->where($name,$value);
+            }
+        }
+        return $query->fetchAll(FETCH_ASSOC);
+    }
+
 }

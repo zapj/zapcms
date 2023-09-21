@@ -151,7 +151,7 @@ class View {
             if(is_file($tplFullPath)){
                 return $tplFullPath;
             }
-            $tplFullPath = $tplPath . '/' . $template .'.twig.php';
+            $tplFullPath = $tplPath . '/' . $template .'.twig';
             if(is_file($tplFullPath)){
                 return $tplFullPath;
             }
@@ -175,7 +175,7 @@ class View {
     }
 
     private function initViewRenderer(){
-        if(Str::endsWith($this->viewFile,'.twig.php')){
+        if(Str::endsWith($this->viewFile,'.twig')){
             $this->engine = new TwigViewRenderer($this);
         }else{
             $this->engine = new PHPRenderer($this);

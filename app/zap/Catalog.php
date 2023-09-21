@@ -46,4 +46,16 @@ class Catalog extends Category
         return parent::add($data, $pid);
     }
 
+    public function getCatalogPathById($catalogId){
+        $catalog = $this->get($catalogId);
+//        $rootId = explode(',',$catalog['path'])[0] ?? 0;
+        $ids = array_filter(explode(',',$catalog['path']));
+        if(empty($ids)){
+            return [];
+        }
+        return $this->getAll([
+            [$this->primaryKey,'IN',$ids]
+        ]);
+    }
+
 }
