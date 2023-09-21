@@ -4,7 +4,6 @@ namespace zap\content\controllers;
 
 
 use zap\Catalog;
-use zap\facades\Url;
 use zap\helpers\Pagination;
 use zap\http\Request;
 use zap\http\Response;
@@ -17,11 +16,14 @@ use zap\view\View;
 class NewsController
 {
     public function index(){
-
+        $catalog_id = intval(req()->get('catalog_id'));
+        $catalogPaths = Catalog::instance()->getCatalogPathById($catalog_id);
+        $data['catalogPaths'] = $catalogPaths;
         $data['title'] = '新闻管理';
-        $page = new Pagination(intval(Request::all('page')),10,Request::get());
-        $page->setTotal(Node::count('id',['node_type'=>1]));
-        $data['data'] = Node::findAll(['node_type'=>1],['orderBy'=>'id desc','limit'=>[$page->getLimit(),$page->getOffset()]]);
+        $page = new Pagination(intval(Request::all('page')),20,Request::get());
+        $page->setTotal((new Node())->getAllTotalRows(['catalog_id'=>$catalog_id,'node_type'=>NodeType::NEWS]));
+
+        $data['data'] = (new Node())->getAll(['catalog_id'=>$catalog_id,'node_type'=>NodeType::NEWS,'limit'=>[$page->getLimit(),$page->getOffset()]]);
         $data['page'] = $page;
         View::render('news.index',$data);
     }
@@ -29,7 +31,7 @@ class NewsController
     public function edit($id = 0){
         $id = intval($id);
         if(!$id){
-            Response::redirect(url_action("Zap@News"),"文章不存在",Session::ERROR);
+            Response::redirect(url_action("Zap@News",$_GET),"文章不存在",Session::ERROR);
         }
         $catalog_id = intval(Request::get('catalog_id'));
         if(Request::isPost()){
@@ -65,12 +67,15 @@ class NewsController
         $catalog_id = intval(Request::get('catalog_id'));
         if(Request::isPost()){
             $node = Request::post('node');
+            $catalogArray = Request::post('catalog',[]);
             $node['node_type'] = NodeType::NEWS;
             $node['add_time'] = time();
             $node['update_time'] = time();
             $node['pub_time']  = strtotime($node['pub_time']) ?: time();
             $node = Node::create($node);
-
+            foreach ($catalogArray as $catalog_id){
+                NodeRelation::create(['node_id'=>$node->id,'catalog_id'=>$catalog_id,'node_type'=>NodeType::NEWS]);
+            }
             Response::json(['code'=>0,'msg'=>'创建成功','id'=>$node->id,'redirect_to'=>url_action("Zap@News/edit/{$node->id}",$_GET)]);
 
         }

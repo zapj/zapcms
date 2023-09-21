@@ -77,7 +77,7 @@ $this->layout('layouts/common');
 <script >
 
     function remove(id,title){
-        layer.confirm("确实删除 【"+title+"】 吗？", {icon: 3, title:'提示'}, function(index){
+        layer.confirm("确认删除 【"+title+"】 吗？", {icon: 3, title:'提示'}, function(index){
             $.ajax({
                 url: '<?php echo url_action('Zap@News/remove');?>',
                 method: 'POST',
