@@ -44,7 +44,7 @@ class ModController extends AdminController
                     'error'=> "{$class}::{$action} - Method does not exist!!"
                 ]);
             }
-            call_user_func_array(array($class, $action), $params);
+            call_user_func_array(array(new $class(), $action), $params);
         }
     }
 

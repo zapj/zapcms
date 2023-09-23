@@ -114,11 +114,11 @@ class Query
     /**
      * where
      * @param string $name
-     * @param string $operator (in|not in|<>|=|!=|....)
-     * @param string|array $value
+     * @param mixed $operator (in|not in|<>|=|!=|....)
+     * @param mixed $value
      * @return Query $this
      */
-    function where(string $name, string $operator = '=', $value = null): Query
+    function where(string $name, $operator = '=', $value = null): Query
     {
         $this->_where($name,$operator,$value,'AND');
         return $this;

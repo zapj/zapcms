@@ -3,7 +3,6 @@
 namespace app\zap\controllers;
 
 use zap\AdminController;
-
 use zap\http\Response;
 use zap\Node;
 use zap\view\View;
@@ -13,7 +12,7 @@ class ZapController extends AdminController
 
     public function _invoke($controller,$params)
     {
-        View::paths(base_path("/app/zap/content/views"));
+        View::paths(base_path("/app/zap/node/views"));
         if($controller == 'index'){
             $this->$controller();
         }else{
@@ -23,7 +22,7 @@ class ZapController extends AdminController
             $controller = str_replace('-','',ucwords($controller,"-"));
             $action = str_replace('-','',ucwords($action,"-"));
 
-            $class = "\\zap\\content\\controllers\\{$controller}Controller";
+            $class = "\\zap\\node\\controllers\\{$controller}Controller";
 
             if(!class_exists($class)){
 //                trigger_error("{$class} - Class does not exist!!",E_USER_ERROR);
@@ -41,8 +40,13 @@ class ZapController extends AdminController
                 $isAjax ? Response::json($respondData) : View::render('zap.notfound',$respondData);
                 return false;
             }
-            call_user_func_array(array($class, $action), $params);
 
+            $zapController = new $class();
+            $zapController->controller = $controller;
+            $zapController->action = $action;
+            $zapController->__init();
+            $zapController->$action(...$params);
+//            call_user_func_array(array($zapController, $action), $params);
         }
     }
 

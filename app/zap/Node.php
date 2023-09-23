@@ -49,30 +49,7 @@ class Node extends Model
         ];
     }
 
-    public function getAllTotalRows($conditions)
-    {
-        return DB::table('node_relation','nr')
-            ->leftJoin(['node','n'],'nr.node_id=n.id')
-            ->select('count(n.id) as rowcount')
-            ->where('nr.catalog_id',$conditions['catalog_id'])
-            ->where('n.node_type',$conditions['node_type'])
-            ->where('n.author_id',Auth::user('id'))
-            ->fetchColumn();
-    }
 
-    public function getAll($conditions)
-    {
-
-        return DB::table('node_relation','nr')
-            ->leftJoin(['node','n'],'nr.node_id=n.id')
-            ->select('n.*')
-            ->where('nr.catalog_id',$conditions['catalog_id'])
-            ->where('n.node_type',$conditions['node_type'])
-            ->where('n.author_id',Auth::user('id'))
-            ->orderBy('id desc')
-            ->limit(...$conditions['limit'])
-            ->get(FETCH_ASSOC);
-    }
 
 
 }
