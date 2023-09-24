@@ -1,5 +1,8 @@
 <?php
+
+use zap\Catalog;
 use zap\facades\Url;
+use zap\NodeType;
 
 $this->layout('layouts/common');
 ?>
@@ -11,7 +14,7 @@ $this->layout('layouts/common');
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="<?php echo Url::action('Content') ?>">内容管理</a></li>
                 <li class="breadcrumb-item active" aria-current="page"><a
-                            href="<?php echo Url::action('Zap@News',$_GET) ?>"><?php echo $title;?>模块</a></li>
+                            href="<?php echo Url::action("Zap@{$_controller}",$_GET) ?>">新闻模块</a></li>
             </ol>
         </nav>
         <div class=" text-end" >
@@ -26,49 +29,88 @@ $this->layout('layouts/common');
 <main class="container-fluid zap-main">
 
 
+    <div class="row">
+        <div class="col-md-3">
+<!--    d-none d-lg-block d-md-none -->
+            <div class="card shadow ">
 
-    <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <table class="table table-hover">
 
-        <div class="card-header"><?php echo $title; ?></div>
+                        <tbody >
+                        <?php
 
-        <div class="table-responsive card-body">
-            <table class="table text-nowrap table-hover">
-                <thead>
-                <tr>
-                    <th scope="col">ID</th>
-                    <th scope="col" class="w-50">标题</th>
-                    <th scope="col">点击量</th>
-                    <th scope="col">发布日期</th>
-                    <th scope="col">状态</th>
-                    <th scope="col" >操作</th>
-                </tr>
-                </thead>
-                <tbody>
-                <?php foreach ($data as $row): ?>
-                <tr>
-                    <th scope="row"><?php echo $row['id'];?></th>
-                    <td>
-                        <a href="<?php echo url_action("Zap@news/edit/{$row['id']}",$_GET);?>">
-                        <?php echo $row['title'];?>
-                        </a>
-                    </td>
+                        Catalog::instance()->forEachAll(function($catalog){
+                            $nodeType = NodeType::getNodeType($catalog['node_type']);
+                            $paddingLeft = ($catalog['level'] - 1) + ($catalog['level'] - 1) * 0.5;
+                            ?>
+                            <tr>
+                                <td>
+                                    <i class="<?php echo $catalog['icon'];?>"></i>
+                                    <a href="<?php echo Url::action("{$nodeType['owner']}@{$nodeType['node_type']}",['catalog_id'=>$catalog['id']]); ?>">
+                                        <span style="padding-left: <?php echo $paddingLeft;?>rem!important;"><?php echo $catalog['title'];?></span>
+                                    </a>
+                                </td>
 
-                    <td><?php echo $row['hits']; ?></td>
-                    <td><?php echo date(Z_DATE_TIME,$row['pub_time']); ?></td>
-                    <td><?php echo \zap\Node::getStatusTitle($row['status']); ?></td>
-                    <td>
-                        <a href="<?php echo url_action("Zap@{$_controller}/edit/{$row['id']}",$_GET);?>" class="btn btn-sm btn-success"><i class="fa fa-edit"></i> 编辑</a>
-                        <a href="javascript:void(0);" onclick="remove(<?php echo $row['id'];?>,'<?php echo $row['title'];?>');" class="btn btn-sm btn-danger"><i class="fa fa-remove"></i> 删除</a>
 
-                    </td>
-                </tr>
-                <?php endforeach; ?>
+                            </tr>
 
-                </tbody>
-            </table>
-            <div>
-                <?php echo $page->render(7,'pagination  justify-content-center','page-item' ,'page-link'); ?>
+                            <?php
+                        });
+                        ?>
+
+
+                        </tbody>
+                    </table>
+                </div>
             </div>
+        </div>
+        <div class="col-md-9">
+            <div class="card shadow-sm">
+
+                <div class="card-header"><?php echo $title; ?></div>
+
+                <div class="table-responsive card-body">
+                    <table class="table text-nowrap table-hover">
+                        <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col" class="w-50">标题</th>
+                            <th scope="col">访问量</th>
+                            <th scope="col">发布日期</th>
+                            <th scope="col">状态</th>
+                            <th scope="col" >操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($data as $row): ?>
+                            <tr>
+                                <th scope="row"><?php echo $row['id'];?></th>
+                                <td>
+                                    <a href="<?php echo url_action("Zap@{$_controller}/edit/{$row['id']}",$_GET);?>">
+                                        <?php echo $row['title'];?>
+                                    </a>
+                                </td>
+
+                                <td><?php echo $row['hits']; ?></td>
+                                <td><?php echo date(Z_DATE_TIME,$row['pub_time']); ?></td>
+                                <td><?php echo \zap\Node::getStatusTitle($row['status']); ?></td>
+                                <td>
+                                    <a href="<?php echo url_action("Zap@{$_controller}/edit/{$row['id']}",$_GET);?>" class="btn btn-sm btn-success"><i class="fa fa-edit"></i> 编辑</a>
+                                    <a href="javascript:void(0);" onclick="remove(<?php echo $row['id'];?>,'<?php echo $row['title'];?>');" class="btn btn-sm btn-danger"><i class="fa fa-remove"></i> 删除</a>
+
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+
+                        </tbody>
+                    </table>
+                    <div>
+                        <?php echo $page->render(7,'pagination  justify-content-center','page-item' ,'page-link'); ?>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 

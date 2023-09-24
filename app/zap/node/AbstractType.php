@@ -5,9 +5,14 @@ namespace zap\node;
 use zap\Auth;
 use zap\Catalog;
 use zap\DB;
+use zap\db\Query;
+use zap\helpers\Pagination;
 use zap\http\Request;
+use zap\http\Response;
+use zap\Node;
 use zap\NodeRelation;
 use zap\NodeType;
+use zap\util\Arr;
 use zap\util\Str;
 use zap\view\View;
 
@@ -21,22 +26,107 @@ class AbstractType
     public $action;
 
     protected $title;
+    protected $isAjax;
 
     public function __construct()
     {
         $this->catalogId = intval(Request::get('catalog_id'));
+        $this->isAjax = Request::isAjax();
     }
 
     public function __init(){
 
     }
 
-    public function getTitle($msg): string
+    //controller actions
+    public function index(){
+        $data['catalogPaths'] = $this->getCurrentCatalogPath();
+        $data['title'] = $this->getTitle("%s管理");
+
+        $conditions = [
+            'where'=>[
+                'nr.catalog_id'=>$this->catalogId,
+                'n.node_type'=>$this->nodeType,
+                'n.author_id'=>Auth::user('id'),
+            ]
+        ];
+        $page = $this->usePageHelper($this->getTotalRows($conditions));
+        $conditions['orderBy'] = 'id desc';
+        $conditions['limit'] = [$page->getLimit(),$page->getOffset()];
+        $data['data'] = $this->getAll($conditions);
+        $this->display($data);
+    }
+
+    public function edit($id = 0){
+        $id = intval($id);
+        if(!$id){
+            $this->redirectTo("Zap@{$this->action}",$_GET,$this->getTitle("%s不存在"),FLASH_ERROR);
+        }
+        if(Request::isPost()){
+            $node = Request::post('node');
+            $catalogArray = Request::post('catalog',[]);
+            $node['update_time'] = time();
+            $node['pub_time'] = strtotime($node['pub_time']) ?: time();
+            NodeRelation::delete(['node_id'=>$id]);
+            foreach ($catalogArray as $catalog_id){
+                NodeRelation::create(['node_id'=>$id,'catalog_id'=>$catalog_id,'node_type'=>$this->nodeType]);
+            }
+            Node::updateAll($node,['id'=>$id]);
+            Response::json(['code'=>0,'msg'=>$this->getTitle("%s修改成功"),'id'=>$id]);
+            return;
+        }
+        $data['title'] = $this->getTitle("修改%s");
+        $data['node'] = Node::findById($id);
+        $catalog = Catalog::instance()->get($this->catalogId);
+        $data['node_relations'] = $this->getNodeRelationships($id);
+        $data['catalogList'] = Catalog::instance()->getTreeArray(['node_type'=>$catalog['node_type']]);
+        $this->display($data,'form');
+    }
+
+    public function add()
+    {
+        if(Request::isPost()){
+            $node = Request::post('node');
+            $catalogArray = Request::post('catalog',[]);
+            $node['node_type'] = NodeType::NEWS;
+            $node['add_time'] = time();
+            $node['update_time'] = time();
+            $node['pub_time']  = strtotime($node['pub_time']) ?: time();
+            $node = Node::create($node);
+            foreach ($catalogArray as $catalog_id){
+                NodeRelation::create(['node_id'=>$node->id,'catalog_id'=>$catalog_id,'node_type'=>NodeType::NEWS]);
+            }
+            Response::json(['code'=>0,'msg'=> $this->title . '创建成功','id'=>$node->id,'redirect_to'=>url_action("Zap@News/edit/{$node->id}",$_GET)]);
+
+        }
+        $data['title'] = $this->getTitle("添加%s");
+        $data['node'] = new Node();
+        $catalog = $this->getCatalogById($this->catalogId);
+        $data['node_relations'] = [];
+        $data['catalogList'] = Catalog::instance()->getTreeArray(['node_type'=>$catalog['node_type']]);
+        $this->display($data,'form');
+    }
+
+    function remove(){
+        $id = intval(Request::post('id'));
+        if(Request::isPost() && $id){
+            $affId = Node::delete($id);
+            if($affId){
+                add_flash($this->title . '删除成功',FLASH_SUCCESS);
+                Response::json(['code'=>0,'msg'=>$this->title . '删除成功']);
+            }else{
+                Response::json(['code'=>1,'msg'=>$this->title . '删除失败，ID不存在']);
+            }
+        }
+        Response::json(['code'=>1,'msg'=>$this->title . '删除失败，ID不存在']);
+    }
+
+    protected function getTitle($msg): string
     {
         return sprintf($msg,$this->title);
     }
 
-    public function display($data = [], $name = null){
+    protected function display($data = [], $name = null){
         $controller = strtolower(trim(preg_replace('/([A-Z])/', '-$1', $this->controller),'-'));
         if(is_null($name)){
             $action = strtolower(trim(preg_replace('/([A-Z])/', '-$1', $this->action),'-'));
@@ -47,50 +137,75 @@ class AbstractType
         $data['_controller'] = $this->controller;
         $data['_action'] = $this->action;
         $data['catalogId'] = $this->catalogId;
+        $data['modTitle'] = $this->title;
         View::render($name,$data);
     }
 
-    /**
-     * @return int
-     */
-    public function getCatalogById($id)
+    protected function getCatalogById($id)
     {
         return Catalog::instance()->get($id);
     }
 
-    public function getCurrentCatalogPath(){
+    protected function getCurrentCatalogPath(){
         return Catalog::instance()->getCatalogPathById($this->catalogId);
     }
 
-    public function getAllTotalRows($conditions)
+    protected function usePageHelper($total,$pageKeyName = 'page',$limit = 20 , $query = null): Pagination
     {
-        return DB::table('node_relation','nr')
-            ->leftJoin(['node','n'],'nr.node_id=n.id')
-            ->select('count(n.id) as rowcount')
-            ->where('nr.catalog_id',$conditions['catalog_id'])
-            ->where('n.node_type',$conditions['node_type'])
-            ->where('n.author_id',Auth::user('id'))
-            ->fetchColumn();
+        $page = new Pagination(intval(Request::get($pageKeyName)),$limit, $query ?? Request::get());
+        $page->setTotal($total);
+        View::share('page',$page);
+        return $page;
     }
 
-    public function getAll($conditions)
+    protected function getTotalRows($conditions)
     {
-
-        return DB::table('node_relation','nr')
+        $query = DB::table('node_relation','nr')
             ->leftJoin(['node','n'],'nr.node_id=n.id')
-            ->select('n.*')
-            ->where('nr.catalog_id',$conditions['catalog_id'])
-            ->where('n.node_type',$conditions['node_type'])
-            ->where('n.author_id',Auth::user('id'))
-            ->orderBy('id desc')
-            ->limit(...$conditions['limit'])
-            ->get(FETCH_ASSOC);
+            ->select('count(n.id) as rowcount');
+
+        $query->where('nr.catalog_id',$conditions['catalog_id']);
+        $query->where('n.node_type',$conditions['node_type']);
+        $query->where('n.author_id',Auth::user('id'));
+        return $query->fetchColumn();
     }
 
-    public function getNodeRelationships($node_id){
+    protected function getAll($conditions)
+    {
+
+        $query = DB::table('node_relation','nr')
+            ->leftJoin(['node','n'],'nr.node_id=n.id');
+        $query->select('n.*');
+        $this->prepareConditions($query,$conditions);
+       return $query->get(FETCH_ASSOC);
+    }
+
+    protected function getNodeRelationships($node_id){
         return NodeRelation::find(['node_id'=>$node_id])
             ->select('catalog_id,node_id')
             ->get(FETCH_KEY_PAIR);
+    }
+
+    protected function prepareConditions(Query $query,$conditions){
+        foreach (Arr::get($conditions,'where',[]) as $name=>$value){
+            if(is_int($name)){
+                $query->where(...$value);
+            }else{
+                $query->where($name,$value);
+            }
+        }
+        empty($conditions['orderBy']) or $query->orderBy($conditions['orderBy']);
+        if(!empty($conditions['limit'])){
+            if(is_int($conditions['limit'])) $conditions['limit'] = [$conditions['limit']];
+            $query->limit(...$conditions['limit']);
+        }
+    }
+
+    protected function redirectTo($action,$query = null,$message = NULL,$flashType = FLASH_INFO){
+        if($this->isAjax){
+            Response::json(['code'=> $flashType == FLASH_SUCCESS ? 0:-1 ,'msg'=>$message,'type'=>$flashType]);
+        }
+        Response::redirect(url_action($action,$query),$message,$flashType);
     }
 
 }

@@ -24,9 +24,9 @@ $this->layout('layouts/common');
 
 </nav>
 
-<main class="container-fluid mt-65px">
+<main class="container-fluid zap-main">
 
-    <div class="card shadow">
+    <div class="card shadow ">
 
         <div class="card-body">
             <table class="table table-hover">
