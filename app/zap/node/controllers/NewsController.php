@@ -14,6 +14,10 @@ class NewsController extends AbstractType
     public function __init()
     {
         $this->title = '新闻';
+        add_filter('node_get_all_conditions',function($conditions) {
+
+            return $conditions;
+        });
     }
 
 

@@ -14,7 +14,7 @@ $this->layout('layouts/common');
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="<?php echo Url::action('Content') ?>">内容管理</a></li>
                 <li class="breadcrumb-item active" aria-current="page"><a
-                            href="<?php echo Url::action("Zap@{$_controller}",$_GET) ?>">新闻模块</a></li>
+                            href="<?php echo Url::action("Zap@{$_controller}",$_GET) ?>"><?php echo $title; ?></a></li>
             </ol>
         </nav>
         <div class=" text-end" >
@@ -27,7 +27,6 @@ $this->layout('layouts/common');
 
 
 <main class="container-fluid zap-main">
-
 
     <div class="row">
         <div class="col-md-3">

@@ -1,6 +1,7 @@
 <?php
 
 
+use zap\component\Hooks;
 use zap\http\Response;
 use zap\http\Session;
 use zap\http\ZapRequest;
@@ -453,34 +454,36 @@ function response($content = null, int $statusCode = 200, ?array $headers = []):
 
 
 // hooks
-function add_filter($hookName,$callback, int $priority = 10){
-    \zap\component\Hooks::instance()->add_filter($hookName,$callback, $priority);
+function add_filter($hookName,$callback, int $priority = 10): Hooks
+{
+    return Hooks::instance()->add_filter($hookName,$callback, $priority);
 }
 
-function add_action($hookName,$callback, int $priority = 10){
-    \zap\component\Hooks::instance()->add_action($hookName,$callback, $priority);
+function add_action($hookName,$callback, int $priority = 10): Hooks
+{
+    return Hooks::instance()->add_action($hookName,$callback, $priority);
 }
 
 function apply_filters($hookName,$value,...$args){
-    \zap\component\Hooks::instance()->apply_filters($hookName,$value,...$args);
+    return Hooks::instance()->apply_filters($hookName,$value,...$args);
 }
 
 function do_action($hookName,...$args){
-    \zap\component\Hooks::instance()->do_action($hookName,...$args);
+    Hooks::instance()->do_action($hookName,...$args);
 }
 
 function remove_filter($hookName,$callback,$priority = 10){
-    \zap\component\Hooks::instance()->remove_filter($hookName,$callback,$priority);
+    Hooks::instance()->remove_filter($hookName,$callback,$priority);
 }
 
 function remove_action($hookName,$callback,$priority = 10){
-    \zap\component\Hooks::instance()->remove_action($hookName,$callback,$priority);
+    Hooks::instance()->remove_action($hookName,$callback,$priority);
 }
 
 function remove_all_filter($hookName){
-    \zap\component\Hooks::instance()->remove_all_filter($hookName);
+    Hooks::instance()->remove_all_filter($hookName);
 }
 
 function remove_all_action($hookName){
-    \zap\component\Hooks::instance()->remove_all_action($hookName);
+    Hooks::instance()->remove_all_action($hookName);
 }

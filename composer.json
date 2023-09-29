@@ -1,6 +1,6 @@
 {
   "require": {
-    "php": "7.3",
+    "php": ">=7.3",
     "zapj/zap-php-framework": "dev-main",
     "ext-pdo": "*",
     "ext-gd": "*",

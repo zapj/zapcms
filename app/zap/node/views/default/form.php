@@ -16,7 +16,7 @@ $this->layout('layouts/common');
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="<?php echo Url::action('Content') ?>">内容管理</a></li>
                     <li class="breadcrumb-item" aria-current="page"><a
-                                href="<?php echo Url::action("Zap@{$_controller}", $_GET) ?>"><?php echo $title; ?>模块</a></li>
+                                href="<?php echo Url::action("Zap@{$_controller}", $_GET) ?>"><?php echo $title; ?></a></li>
                     <li class="breadcrumb-item active" aria-current="page"><?php echo $sub_title; ?></li>
                 </ol>
             </nav>
@@ -58,7 +58,7 @@ $this->layout('layouts/common');
                                 <div class="mb-3">
                                     <label for="node_title" class="form-label">标题</label>
                                     <input type="text" class="form-control" name="node[title]" id="node_title"
-                                           placeholder="请输入标题" required value="<?php echo $node->title; ?>">
+                                           placeholder="请输入文章标题" required value="<?php echo $node->title; ?>">
                                 </div>
                                 <div class="mb-3">
                                     <label for="node_content" class="form-label">内容</label>

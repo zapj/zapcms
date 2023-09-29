@@ -6,6 +6,7 @@ use zap\Auth;
 use zap\Catalog;
 use zap\DB;
 use zap\db\Query;
+use zap\exception\ViewNotFoundException;
 use zap\helpers\Pagination;
 use zap\http\Request;
 use zap\http\Response;
@@ -50,9 +51,11 @@ class AbstractType
                 'n.author_id'=>Auth::user('id'),
             ]
         ];
+        $conditions = apply_filters('node_total_conditions',$conditions);
         $page = $this->usePageHelper($this->getTotalRows($conditions));
         $conditions['orderBy'] = 'id desc';
         $conditions['limit'] = [$page->getLimit(),$page->getOffset()];
+        $conditions = apply_filters('node_get_all_conditions',$conditions);
         $data['data'] = $this->getAll($conditions);
         $this->display($data);
     }
@@ -75,7 +78,8 @@ class AbstractType
             Response::json(['code'=>0,'msg'=>$this->getTitle("%s修改成功"),'id'=>$id]);
             return;
         }
-        $data['title'] = $this->getTitle("修改%s");
+        $data['title'] = $this->title;
+        $data['sub_title'] = $this->getTitle("修改%s");
         $data['node'] = Node::findById($id);
         $catalog = Catalog::instance()->get($this->catalogId);
         $data['node_relations'] = $this->getNodeRelationships($id);
@@ -88,18 +92,20 @@ class AbstractType
         if(Request::isPost()){
             $node = Request::post('node');
             $catalogArray = Request::post('catalog',[]);
-            $node['node_type'] = NodeType::NEWS;
+            $node['node_type'] = $this->nodeType;
             $node['add_time'] = time();
             $node['update_time'] = time();
             $node['pub_time']  = strtotime($node['pub_time']) ?: time();
-            $node = Node::create($node);
+            $node = apply_filters('node_add',$node);
+            $nodeModel = Node::create($node);
             foreach ($catalogArray as $catalog_id){
-                NodeRelation::create(['node_id'=>$node->id,'catalog_id'=>$catalog_id,'node_type'=>NodeType::NEWS]);
+                NodeRelation::create(['node_id'=>$nodeModel->id,'catalog_id'=>$catalog_id,'node_type'=>$this->nodeType]);
             }
-            Response::json(['code'=>0,'msg'=> $this->title . '创建成功','id'=>$node->id,'redirect_to'=>url_action("Zap@News/edit/{$node->id}",$_GET)]);
+            Response::json(['code'=>0,'msg'=> $this->title . '创建成功','id'=>$nodeModel->id,'redirect_to'=>url_action("Zap@{$this->controller}/edit/{$nodeModel->id}",$_GET)]);
 
         }
-        $data['title'] = $this->getTitle("添加%s");
+        $data['title'] = $this->title;
+        $data['sub_title'] = $this->getTitle("添加%s");
         $data['node'] = new Node();
         $catalog = $this->getCatalogById($this->catalogId);
         $data['node_relations'] = [];
@@ -128,17 +134,22 @@ class AbstractType
 
     protected function display($data = [], $name = null){
         $controller = strtolower(trim(preg_replace('/([A-Z])/', '-$1', $this->controller),'-'));
-        if(is_null($name)){
-            $action = strtolower(trim(preg_replace('/([A-Z])/', '-$1', $this->action),'-'));
-            $name = "{$controller}.{$action}";
-        }else{
-            $name = "{$controller}.{$name}";
-        }
+        $action = strtolower(trim(preg_replace('/([A-Z])/', '-$1', $this->action),'-'));
+//        if(is_null($name)){
+//            $name = "{$controller}.{$action}";
+//        }else{
+//            $name = "{$controller}.{$name}";
+//        }
         $data['_controller'] = $this->controller;
         $data['_action'] = $this->action;
         $data['catalogId'] = $this->catalogId;
         $data['modTitle'] = $this->title;
-        View::render($name,$data);
+        try{
+            View::render("{$controller}.". ($name ?? $action),$data);
+        }catch (ViewNotFoundException $e){
+            View::render("default.". ($name ?? $action),$data);
+        }
+
     }
 
     protected function getCatalogById($id)
@@ -152,10 +163,10 @@ class AbstractType
 
     protected function usePageHelper($total,$pageKeyName = 'page',$limit = 20 , $query = null): Pagination
     {
-        $page = new Pagination(intval(Request::get($pageKeyName)),$limit, $query ?? Request::get());
-        $page->setTotal($total);
-        View::share('page',$page);
-        return $page;
+        $this->pageHelper = new Pagination(intval(Request::get($pageKeyName)),$limit, $query ?? Request::get());
+        $this->pageHelper->setTotal($total);
+        View::share('page',$this->pageHelper);
+        return $this->pageHelper;
     }
 
     protected function getTotalRows($conditions)
@@ -164,9 +175,7 @@ class AbstractType
             ->leftJoin(['node','n'],'nr.node_id=n.id')
             ->select('count(n.id) as rowcount');
 
-        $query->where('nr.catalog_id',$conditions['catalog_id']);
-        $query->where('n.node_type',$conditions['node_type']);
-        $query->where('n.author_id',Auth::user('id'));
+        $this->prepareConditions($query,$conditions);
         return $query->fetchColumn();
     }
 
