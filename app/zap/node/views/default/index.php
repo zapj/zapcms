@@ -30,40 +30,7 @@ $this->layout('layouts/common');
 
 
 <div class="row">
-    <div class="col-md-3">
-        <div class="card shadow d-none d-lg-block d-md-none">
-
-            <div class="card-body p-0">
-                <table class="table table-hover">
-
-                    <tbody >
-                    <?php
-
-                    Catalog::instance()->forEachAll(function($catalog){
-                        $nodeType = NodeType::getNodeType($catalog['node_type']);
-                        $paddingLeft = ($catalog['level'] - 1) + ($catalog['level'] - 1) * 0.5;
-                        ?>
-                        <tr>
-                            <td>
-                                <i class="<?php echo $catalog['icon'];?>"></i>
-                                <a href="<?php echo Url::action("{$nodeType['owner']}@{$nodeType['node_type']}",['catalog_id'=>$catalog['id']]); ?>">
-                                    <span style="padding-left: <?php echo $paddingLeft;?>rem!important;"><?php echo $catalog['title'];?></span>
-                                </a>
-                            </td>
-
-
-                        </tr>
-
-                        <?php
-                    });
-                    ?>
-
-
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+    <?php include('sidebar.php'); ?>
     <div class="col-md-9">
         <div class="card shadow-sm">
 
@@ -86,7 +53,7 @@ $this->layout('layouts/common');
                         <tr>
                             <th scope="row"><?php echo $row['id'];?></th>
                             <td>
-                                <a href="<?php echo url_action("Zap@{$_controller}/edit/{$row['id']}",$_GET);?>">
+                                <a href="<?php echo url_action("Node@{$_controller}/edit/{$row['id']}",$_GET);?>">
                                     <?php echo $row['title'];?>
                                 </a>
                             </td>
@@ -95,7 +62,7 @@ $this->layout('layouts/common');
                             <td><?php echo date(Z_DATE_TIME,$row['pub_time']); ?></td>
                             <td><?php echo \zap\Node::getStatusTitle($row['status']); ?></td>
                             <td>
-                                <a href="<?php echo url_action("Zap@{$_controller}/edit/{$row['id']}",$_GET);?>" class="btn btn-sm btn-success"><i class="fa fa-edit"></i> 编辑</a>
+                                <a href="<?php echo url_action("Node@{$_controller}/edit/{$row['id']}",$_GET);?>" class="btn btn-sm btn-success"><i class="fa fa-edit"></i> 编辑</a>
                                 <a href="javascript:void(0);" onclick="remove(<?php echo $row['id'];?>,'<?php echo $row['title'];?>');" class="btn btn-sm btn-danger"><i class="fa fa-remove"></i> 删除</a>
 
                             </td>

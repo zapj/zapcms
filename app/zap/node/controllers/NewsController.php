@@ -3,10 +3,10 @@
 namespace zap\node\controllers;
 
 
-use zap\node\AbstractType;
+use zap\node\AbstractNodeType;
 use zap\NodeType;
 
-class NewsController extends AbstractType
+class News1Controller extends AbstractNodeType
 {
 
     protected $nodeType = NodeType::NEWS;

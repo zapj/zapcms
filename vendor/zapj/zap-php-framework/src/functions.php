@@ -38,8 +38,14 @@ const FETCH_GROUP = 65536;
 const FETCH_UNIQUE = 196608;
 const FETCH_KEY_PAIR = 12;
 
-function app(): \zap\App
+function app($name = null,$value = null)
 {
+    if(!is_null($name) && is_null($value)){
+        return \zap\App::instance()->get($name);
+    }else if(!is_null($name) && !is_null($value)){
+        \zap\App::instance()->set($name,$value);
+        return true;
+    }
     return \zap\App::instance();
 }
 

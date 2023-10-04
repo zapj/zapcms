@@ -29,41 +29,7 @@ $this->layout('layouts/common');
 <main class="container-fluid zap-main">
 
     <div class="row">
-        <div class="col-md-3">
-<!--    d-none d-lg-block d-md-none -->
-            <div class="card shadow ">
-
-                <div class="card-body p-0">
-                    <table class="table table-hover">
-
-                        <tbody >
-                        <?php
-
-                        Catalog::instance()->forEachAll(function($catalog){
-                            $nodeType = NodeType::getNodeType($catalog['node_type']);
-                            $paddingLeft = ($catalog['level'] - 1) + ($catalog['level'] - 1) * 0.5;
-                            ?>
-                            <tr>
-                                <td>
-                                    <i class="<?php echo $catalog['icon'];?>"></i>
-                                    <a href="<?php echo Url::action("{$nodeType['owner']}@{$nodeType['node_type']}",['catalog_id'=>$catalog['id']]); ?>">
-                                        <span style="padding-left: <?php echo $paddingLeft;?>rem!important;"><?php echo $catalog['title'];?></span>
-                                    </a>
-                                </td>
-
-
-                            </tr>
-
-                            <?php
-                        });
-                        ?>
-
-
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+        <?php include('default/sidebar.php'); ?>
         <div class="col-md-9">
             <div class="card shadow-sm">
 

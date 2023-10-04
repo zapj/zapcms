@@ -48,11 +48,11 @@ $this->layout('layouts/common');
                 <tr>
                     <td>
                         <i class="<?php echo $catalog['icon'];?>"></i>
-                      <a href="<?php echo Url::action("{$nodeType['owner']}@{$nodeType['node_type']}",['catalog_id'=>$catalog['id']]); ?>">
+                      <a href="<?php echo Url::action("Node@{$nodeType['name']}",['catalog_id'=>$catalog['id']]); ?>">
                           <span style="padding-left: <?php echo $paddingLeft;?>rem!important;"><?php echo $catalog['title'];?></span>
                       </a>
                     </td>
-                    <td><?php echo NodeType::getNodeTypeName($catalog['node_type']);?> </td>
+                    <td><?php echo NodeType::getNodeTypeTitle($catalog['node_type']);?> </td>
                     <td><?php echo $catalog['sort_order'];?> </td>
 
                 </tr>

@@ -8,10 +8,10 @@ use zap\http\Request;
 use zap\http\Response;
 use zap\http\Session;
 use zap\Node;
-use zap\node\AbstractType;
+use zap\node\AbstractNodeType;
 use zap\NodeRelation;
 
-class PageController extends AbstractType
+class PageController extends AbstractNodeType
 {
     public function __init()
     {

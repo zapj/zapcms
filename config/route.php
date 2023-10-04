@@ -2,18 +2,16 @@
 use zap\http\Route;
 use zap\view\View;
 
-Route::prefix("/z-admin/",function (){
-
-    config_set('config.theme',false);
-    View::paths(base_path('/app/zap/views'));
-},[
+Route::prefix("/z-admin/",\zap\Bootstrap::class,[
     "namespace"=>'\app\zap\controllers'
 ]);
+
 Route::get("/",function (){
     View::render('index');
 });
-Route::get("/hello",function (){
-   echo "hello";
+Route::get("/hello(/{name:\d+}(/{age:\d+})?)?",function ($name){
+    print_r(func_get_args());
+   echo "hello",$name;
 });
 
 Route::any("/json",function (){

@@ -3,10 +3,10 @@
 namespace zap\node\controllers;
 
 
-use zap\node\AbstractType;
+use zap\node\AbstractNodeType;
 use zap\NodeType;
 
-class ProductController extends AbstractType
+class ProductController extends AbstractNodeType
 {
 
     protected $nodeType = NodeType::PRODUCT;

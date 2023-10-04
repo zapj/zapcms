@@ -17,9 +17,11 @@ use zap\util\Arr;
 use zap\util\Str;
 use zap\view\View;
 
-class AbstractType
+class AbstractNodeType
 {
     protected $nodeType = NodeType::NEWS;
+
+
 
     protected $catalogId;
 
@@ -27,6 +29,16 @@ class AbstractType
     public $action;
 
     protected $title;
+
+    public function isAjax(): bool
+    {
+        return $this->isAjax;
+    }
+
+    public function setIsAjax(bool $isAjax): void
+    {
+        $this->isAjax = $isAjax;
+    }
     protected $isAjax;
 
     public function __construct()
@@ -63,7 +75,7 @@ class AbstractType
     public function edit($id = 0){
         $id = intval($id);
         if(!$id){
-            $this->redirectTo("Zap@{$this->action}",$_GET,$this->getTitle("%s不存在"),FLASH_ERROR);
+            $this->redirectTo("Node@{$this->action}",$_GET,$this->getTitle("%s不存在"),FLASH_ERROR);
         }
         if(Request::isPost()){
             $node = Request::post('node');
@@ -127,10 +139,7 @@ class AbstractType
         Response::json(['code'=>1,'msg'=>$this->title . '删除失败，ID不存在']);
     }
 
-    protected function getTitle($msg): string
-    {
-        return sprintf($msg,$this->title);
-    }
+
 
     protected function display($data = [], $name = null){
         $controller = strtolower(trim(preg_replace('/([A-Z])/', '-$1', $this->controller),'-'));
@@ -215,6 +224,37 @@ class AbstractType
             Response::json(['code'=> $flashType == FLASH_SUCCESS ? 0:-1 ,'msg'=>$message,'type'=>$flashType]);
         }
         Response::redirect(url_action($action,$query),$message,$flashType);
+    }
+
+
+    public function getNodeType(): int
+    {
+        return $this->nodeType;
+    }
+
+    public function setNodeType(int $nodeType): void
+    {
+        $this->nodeType = $nodeType;
+    }
+
+    public function getCatalogId(): int
+    {
+        return $this->catalogId;
+    }
+
+    public function setCatalogId(int $catalogId): void
+    {
+        $this->catalogId = $catalogId;
+    }
+
+    public function getTitle($msg = null): string
+    {
+        return $msg ? sprintf($msg,$this->title) : $this->title;
+    }
+
+    public function setTitle($title)
+    {
+        $this->title = $title;
     }
 
 }

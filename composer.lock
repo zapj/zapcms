@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "db76aa045efc4c551d3a7f2730890578",
+    "content-hash": "898d9935b7f8f7373ce3ea9806c64cd2",
     "packages": [
         {
             "name": "monolog/monolog",
@@ -164,12 +164,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/zapj/zap-php-framework.git",
-                "reference": "6b08110cdf71bac1f8c1f0f9108349b62e9a92e4"
+                "reference": "a1f1453839e898185e63bd3cfc3c037f1d83bb6f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/6b08110cdf71bac1f8c1f0f9108349b62e9a92e4",
-                "reference": "6b08110cdf71bac1f8c1f0f9108349b62e9a92e4",
+                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/a1f1453839e898185e63bd3cfc3c037f1d83bb6f",
+                "reference": "a1f1453839e898185e63bd3cfc3c037f1d83bb6f",
                 "shasum": ""
             },
             "require": {
@@ -207,7 +207,7 @@
                 "issues": "https://github.com/zapj/zap-php-framework/issues",
                 "source": "https://github.com/zapj/zap-php-framework/tree/main"
             },
-            "time": "2023-09-26T13:56:28+00:00"
+            "time": "2023-10-02T15:54:44+00:00"
         }
     ],
     "packages-dev": [],
@@ -219,7 +219,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">7.3",
+        "php": ">=7.3",
         "ext-pdo": "*",
         "ext-gd": "*"
     },

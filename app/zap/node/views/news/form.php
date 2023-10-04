@@ -16,7 +16,7 @@ $this->layout('layouts/common');
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="<?php echo Url::action('Content') ?>">内容管理</a></li>
                     <li class="breadcrumb-item" aria-current="page"><a
-                                href="<?php echo Url::action('Zap@news', $_GET) ?>">新闻模块</a></li>
+                                href="<?php echo Url::action("Node@{$_controller}", $_GET) ?>">新闻模块</a></li>
                     <li class="breadcrumb-item active" aria-current="page"><?php echo $title; ?></li>
                 </ol>
             </nav>

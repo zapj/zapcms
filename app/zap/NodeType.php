@@ -3,6 +3,7 @@
 namespace zap;
 
 use zap\DB;
+use zap\node\AbstractNodeType;
 
 /**
  * 内容类型
@@ -29,6 +30,9 @@ class NodeType
                 ->get(FETCH_ASSOC);
             foreach ($resultSet as $row){
                 static::$nodeTypeNames[$row['id']] = $row['title'];
+                static::$nodeTypeNames[$row['name']] = $row['title'];
+                static::$nodeTypeNames[$row['name'].'_ID'] = $row['id'];
+                static::$nodeTypeNames[$row['name'].'_ClassName'] = $row['node_type'];
                 static::$nodeTypes[$row['id']] = $row;
             }
         }
@@ -44,17 +48,29 @@ class NodeType
         return self::$nodeTypes[$id];
     }
 
-    /**
-     * 获取ContentType 名称
-     * @param $id
-     * @return mixed
-     */
-    public static function getNodeTypeName($id)
+
+    public static function getNodeTypeTitle($id)
     {
         if(is_null(static::$nodeTypes)){
             static::getNodeTypes();
         }
         return self::$nodeTypeNames[$id];
+    }
+
+    public static function getNodeTypeClass($name)
+    {
+        if(is_null(static::$nodeTypes)){
+            static::getNodeTypes();
+        }
+        return self::$nodeTypeNames[$name.'_ClassName'] ?? AbstractNodeType::class;
+    }
+
+    public static function getNodeTypeID($name)
+    {
+        if(is_null(static::$nodeTypes)){
+            static::getNodeTypes();
+        }
+        return self::$nodeTypeNames[$name.'_ID'];
     }
 
 
