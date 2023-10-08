@@ -165,12 +165,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/zapj/zap-php-framework.git",
-                "reference": "a1f1453839e898185e63bd3cfc3c037f1d83bb6f"
+                "reference": "beca391590a14a17fafa337d9670707f9dadb992"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/a1f1453839e898185e63bd3cfc3c037f1d83bb6f",
-                "reference": "a1f1453839e898185e63bd3cfc3c037f1d83bb6f",
+                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/beca391590a14a17fafa337d9670707f9dadb992",
+                "reference": "beca391590a14a17fafa337d9670707f9dadb992",
                 "shasum": ""
             },
             "require": {
@@ -183,7 +183,7 @@
                 "ext-simplexml": "*",
                 "php": ">=7.1.0"
             },
-            "time": "2023-10-02T15:54:44+00:00",
+            "time": "2023-10-08T09:49:05+00:00",
             "default-branch": true,
             "type": "library",
             "installation-source": "dist",

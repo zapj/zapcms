@@ -30,6 +30,7 @@ class Auth
             if(Request::isAjax()){
                 Response::json(['code'=>-1,'msg'=>'未登录或已超时，请重新登录']);
             }
+//            $prevUrl = Request::prevUrl();
             Response::redirect($url,$message,$type);
         }
     }

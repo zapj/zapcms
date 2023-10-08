@@ -23,19 +23,15 @@ class PageController extends AbstractNodeType
 
     public function index()
     {
+        $node = $this->getNodeByCatalogId($this->catalogId);
+        $this->title = $node['title'];
+        if($node){
+            parent::edit($node['id']);
+        }else{
+            parent::add();
+        }
 
-//        add_action('test',[$this,'add1']);
-//        $a = 1;
-//        do_action('test',[&$a]);
-
-//        echo $a;
-//        NodeRelation::findByCategoryId($this->catalogId);
-        parent::index();
     }
 
-    function add1($val){
-        $val[0] = 32;
 
-//        print_r();
-    }
 }

@@ -1,9 +1,15 @@
 # zap-php-framework
 
-## require
+## PHP Min
 
-> PHP 7.2
+> PHP 7.4
 
+
+## Installing Zap-PHP-Framework via Composer
+
+```
+composer require zapj/zap-php-framework
+```
 
 
 

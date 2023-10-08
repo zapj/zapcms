@@ -1,5 +1,4 @@
 <?php
-
 use zap\facades\Url;
 use zap\Catalog;
 use zap\NodeType;
@@ -13,7 +12,7 @@ $this->layout('layouts/common');
         <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);"
              aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item active"><a href="<?php echo Url::action('Content') ?>">内容管理</a></li>
+                <li class="breadcrumb-item active"><a href="<?php echo Url::action('Node') ?>">内容管理</a></li>
 
             </ol>
         </nav>
@@ -38,7 +37,7 @@ $this->layout('layouts/common');
 
             </tr>
             </thead>
-            <tbody class="table-group-divider">
+            <tbody>
             <?php
 
             Catalog::instance()->forEachAll(function($catalog){
@@ -52,7 +51,7 @@ $this->layout('layouts/common');
                           <span style="padding-left: <?php echo $paddingLeft;?>rem!important;"><?php echo $catalog['title'];?></span>
                       </a>
                     </td>
-                    <td><?php echo NodeType::getNodeTypeTitle($catalog['node_type']);?> </td>
+                    <td><?php echo NodeType::getTitle($catalog['node_type']);?> </td>
                     <td><?php echo $catalog['sort_order'];?> </td>
 
                 </tr>

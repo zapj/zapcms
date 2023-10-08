@@ -18,7 +18,7 @@ $this->layout('layouts/common');
     </div>
 
 </nav>
-<main class="container mt-65px">
+<main class="container zap-main">
 
 
     <div class="my-3 bg-body rounded shadow">
@@ -85,7 +85,7 @@ $this->layout('layouts/common');
                         </select>
 
                         </td>
-                    <td><?php echo \zap\NodeType::getNodeTypeTitle($admin_menu['node_type']); ?></td>
+                    <td><?php echo \zap\NodeType::getTitle($admin_menu['node_type']); ?></td>
                     <td><?php echo $admin_menu['seo_url']; ?></td>
                     <td>
                         <button type="button" class="btn btn-info btn-sm">设置</button>

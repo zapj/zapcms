@@ -5,7 +5,7 @@ namespace app\zap\controllers;
 use zap\AdminController;
 use zap\view\View;
 
-class Development extends AdminController
+class DevelopmentController extends AdminController
 {
     public function index()
     {

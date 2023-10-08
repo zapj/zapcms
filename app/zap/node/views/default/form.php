@@ -14,9 +14,9 @@ $this->layout('layouts/common');
             <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);"
                  aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="<?php echo Url::action('Content') ?>">内容管理</a></li>
+                    <li class="breadcrumb-item"><a href="<?php echo Url::action('Node') ?>">内容管理</a></li>
                     <li class="breadcrumb-item" aria-current="page"><a
-                                href="<?php echo Url::action("Zap@{$_controller}", $_GET) ?>"><?php echo $title; ?></a></li>
+                                href="<?php echo Url::action("Node@{$_controller}", $_GET) ?>"><?php echo $title; ?></a></li>
                     <li class="breadcrumb-item active" aria-current="page"><?php echo $sub_title; ?></li>
                 </ol>
             </nav>
@@ -153,7 +153,7 @@ $this->layout('layouts/common');
                             <?php } ?>
                         </div>
                         <div class="card-footer">
-                            <a class="btn btn-dark" href="<?php echo url_action('Zap@news', $_GET); ?>"><i
+                            <a class="btn btn-dark" href="<?php echo url_action("Node@{$_controller}", $_GET); ?>"><i
                                         class="fa fa-cancel"></i> 取消</a>
                             <button type="button" class="btn btn-success" onclick="save();"><i class="fa fa-save"></i>
                                 保存

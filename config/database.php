@@ -3,26 +3,30 @@
 
 return [
 
-    'default' => 'mysql',
-
+    'default' => 'default',
 
 
     'connections' => [
 
-        'mysql' => [
+        'default' => [
             'driver' => 'mysql',
+//            'dsn' => "mysql:host=127.0.0.1;dbname=world",
             'host' => '127.0.0.1',
             'port' => 3306,
-            'database' => 'zap_cms',
+            'dbname' => 'zap_cms',
             'username' => 'root',
             'password' => 'root',
 //            'unix_socket' => '/tmp/mysql.sock',
             'charset' => 'utf8',
-            'collation' => 'utf8_unicode_ci',
+            'collate' => 'utf8_unicode_ci',
             'prefix' => 'zap_',
             'options' => [],
         ],
-
+//        'sqlite'=>[
+//            'driver' => 'sqlite',
+//            'prefix' => 'zap_',
+//            'dsn'=> sprintf('sqlite:%s', resource_path('zapcms.db'))
+//        ]
     ],
 
 

@@ -23,12 +23,12 @@ $this->layout('layouts/common');
             </tr>
             <tr>
                 <th >MySQL 版本</th>
-                <td>v<?php echo \zap\DB::scalar("SELECT VERSION()"); ?></td>
+                <td>v<?php echo \zap\DB::value("SELECT VERSION()"); ?></td>
                 <td>OpenSSL</td>
                 <td><?php echo constant("OPENSSL_VERSION_TEXT") ?? '不支持'; ?></td>
             </tr>
             <tr >
-                <th >PHP GD</th>
+                <th >PHP 扩展</th>
                 <td colspan="3" >
                     <div class="overflow-y-auto" style="height: 200px">
                     <?php $gdInfo = gd_info(); ?>

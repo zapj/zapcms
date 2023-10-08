@@ -5,6 +5,7 @@ namespace app\zap\controllers;
 use zap\AdminController;
 use zap\http\Response;
 use zap\Node;
+use zap\node\AbstractNodeType;
 use zap\NodeType;
 use zap\view\View;
 
@@ -24,16 +25,10 @@ class NodeController extends AdminController
             $controller = str_replace('-','',ucwords($controller,"-"));
             $action = str_replace('-','',ucwords($action,"-"));
 
-//            $class = "\\zap\\node\\controllers\\{$controller}Controller";
-            $class = NodeType::getNodeTypeClass($controller);
+            $class = "\\zap\\node\\controllers\\{$controller}Controller";
 
             if(!class_exists($class)){
-//                trigger_error("{$class} - Class does not exist!!",E_USER_ERROR);
-                $respondData = ['controller'=>$controller,'method'=>$action];
-                $respondData['error'] = "{$class} - Class does not exist!!";
-                $respondData['code'] = -1;
-                $isAjax ? Response::json($respondData) : View::render('node.notfound',$respondData);
-                return false;
+                $class = AbstractNodeType::class;
             }
             if(!method_exists($class,$action)){
 //                trigger_error("{$class}::{$action} - Method does not exist!!",E_USER_ERROR);
@@ -48,9 +43,9 @@ class NodeController extends AdminController
             $zapController->controller = $controller;
             $zapController->action = $action;
 
-            $nodeTypeId =  NodeType::getNodeTypeID($controller);
+            $nodeTypeId =  NodeType::getID($controller);
             $zapController->setNodeType($nodeTypeId);
-            $zapController->setTitle(NodeType::getNodeTypeTitle($controller));
+            $zapController->setTitle(NodeType::getTitle($controller));
             $zapController->setCatalogId(req()->get('catalog_id'));
             $zapController->__init();
             $zapController->$action(...$params);

@@ -24,7 +24,7 @@ $this->layout('layouts/common');
 <form id="zapForm">
 
 <!--    <input type="hidden" name="option_autoload[website]" value="1" />-->
-    <main class="container mt-65px">
+    <main class="container zap-main">
 
         <div class="card shadow">
             <div class="card-header">

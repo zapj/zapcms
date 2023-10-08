@@ -5,23 +5,58 @@ namespace zap\db;
 use PDO;
 use PDOException;
 use zap\exception\NotSupportedException;
+use zap\util\Arr;
 use zap\util\Random;
 
 
 class ZPDO extends PDO
 {
-    protected $tablePrefix = 'z_';
+    protected $tablePrefix;
 
     protected $driver;
 
     public $rowCount = 0;
 
-    public function __construct($dsn, $username = null, $password = null,
-        $options = null
-    ) {
+    public function __construct($config) {
+        $this->tablePrefix = $config['prefix'] ?? '';
+        $this->driver = $config['driver'] ?? 'mysql';
+        $dsn = $config['dsn'] ?? $this->buildDSN($config);
+        $username = $config['username'] ?? null;
+        $password = $config['password'] ?? null;
+        $options  = array(
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
+            PDO::ATTR_EMULATE_PREPARES   => FALSE,
+        );
+
+        if($this->driver == 'mysql'){
+            $db_charset = $config['charset'] ?? 'utf8';
+            $db_collate = $config['collate'] ?? null;
+            $options[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES {$db_charset} " . (is_null($db_collate) ?: " COLLATE $db_collate");
+        }
+        $options += Arr::get($config,'options',[]);
         parent::__construct($dsn, $username, $password, $options);
-        $this->driver = $this->getAttribute(PDO::ATTR_DRIVER_NAME);
+
         $this->setAttribute(PDO::ATTR_STATEMENT_CLASS,[Statement::class]);
+    }
+
+    private function buildDSN(&$config): string
+    {
+        $dsnElements = [];
+        switch ($this->driver){
+            case 'mysql':
+                $dsnElements = Arr::find($config,['host','port','dbname','unix_socket','charset']);
+                break;
+            case 'pgsql':
+                $dsnElements = Arr::find($config,['host','port','dbname','user','password','sslmode']);
+                unset($config['username'],$config['password']);
+                break;
+            case 'sqlite':
+                trigger_error('Please directly set the DSN parameters',E_USER_ERROR);
+            default:
+                trigger_error("{$this->driver} driver not supported",E_USER_ERROR);
+        }
+        return $this->driver . ':' . http_build_query($dsnElements,'',';');
     }
 
     public function setTablePrefix($prefix){
@@ -30,16 +65,10 @@ class ZPDO extends PDO
 
     public function prepareSQL($sql){
         if($this->tablePrefix){
-            return preg_replace_callback(
-                '/(\\{(%?[\w\-\. ]+%?)\\}|\\[([\w\-\. ]+)\\])/',
+            return preg_replace_callback('/\{([\w\-\. ]+)\}/',
                 function ($matches) {
-                    if (isset($matches[3])) {
-                        return $this->quoteColumn($matches[3]);
-                    } else {
-                        return $this->quoteTable($matches[2]);
-                    }
-                }, $sql
-            );
+                    return $this->quoteTable($matches[1]);
+                }, $sql);
         }
         return $sql;
     }
@@ -49,7 +78,7 @@ class ZPDO extends PDO
         if (is_array($colAlias) && count($colAlias) == 2) {
             return $this->quoteColumn($colAlias[0]) . '.' . $this->quoteColumn($colAlias[1]);
         }
-        switch ($this->getAttribute(PDO::ATTR_DRIVER_NAME)) {
+        switch ($this->driver) {
             case 'mysql':
             case 'mariadb':
                 return "`$columnName`";
@@ -64,7 +93,7 @@ class ZPDO extends PDO
 
     public function quoteTable($table) {
         $table = $this->tablePrefix . $table;
-        switch ($this->getAttribute(PDO::ATTR_DRIVER_NAME)) {
+        switch ($this->driver) {
             case 'mysql':
             case 'mariadb':
                 return '`' . $table . '`';
@@ -120,10 +149,15 @@ class ZPDO extends PDO
         return [join(',',$params),$values];
     }
 
-    public function statement($statement, $params = []) {
+    /**
+     * @param $statement
+     * @param array $params
+     * @return false|\PDOStatement
+     */
+    public function statement($statement, array $params = []) {
         $stm = $this->prepare($this->prepareSQL($statement));
         $stm->execute($params);
-        $this->rowCount = $statement->rowCount();
+        $this->rowCount = $stm->rowCount();
         return $stm;
     }
 
@@ -145,7 +179,7 @@ class ZPDO extends PDO
      * @param array $data 插入的数据
      * @return int Return Last id
      */
-    public function insert($table, $data) {
+    public function insert(string $table, array $data) {
         $params = array();
         $names = array();
         $placeholders = array();
@@ -212,7 +246,7 @@ class ZPDO extends PDO
             }
             $sql .= ' ON CONFLICT ('.$primaryKeys.') DO UPDATE SET '.join(',',$dupSet);
         }else{
-            throw new NotSupportedException('This method only supports mysql');
+            throw new NotSupportedException('This method only supports mysql/pssql');
         }
         $statement = $this->prepare($sql);
         $statement->execute($params);
@@ -226,10 +260,10 @@ class ZPDO extends PDO
      * @param array $data 插入的数据
      * @return int Return Last id
      */
-    public function replace($table, $data) {
-        $params = array();
-        $names = array();
-        $placeholders = array();
+    public function replace(string $table, array $data) {
+        $params = [];
+        $names = [];
+        $placeholders = [];
         foreach ($data as $name => $value) {
             $names[] = $this->quoteColumn($name);
             if ($value instanceof Expr) {
@@ -252,12 +286,12 @@ class ZPDO extends PDO
     /**
      * Db update
      * @param string $table 表名
-     * @param $data 修改的数据
-     * @param string $conditions 条件
+     * @param array $data 修改的数据
+     * @param string|array $conditions 条件
      * @param array $params 参数
      * @return int
      */
-    public function update($table, $data, $conditions = '', $params = array()) {
+    public function update(string $table, array $data, $conditions = '', array $params = array()) {
         $placeholders = array();
         $input_params = array();
         foreach ($data as $name => $value) {
@@ -282,11 +316,11 @@ class ZPDO extends PDO
     /**
      * db delete
      * @param string $table 表名
-     * @param string $conditions 条件
+     * @param string|array $conditions 条件
      * @param array $params 参数
      * @return int
      */
-    public function delete($table, $conditions = '', $params = array()) {
+    public function delete(string $table, $conditions = '', $params = array()) {
         $sql = 'DELETE FROM ' . $this->quoteTable($table);
         $input_params = array();
         if (($where = $this->prepareConditions($conditions, $params, $input_params)) != '') {
@@ -301,11 +335,11 @@ class ZPDO extends PDO
     /**
      * db count
      * @param string $table 表名
-     * @param string $conditions 条件
+     * @param string|array $conditions 条件
      * @param array $params 参数
      * @return mixed|int 返回行数
      */
-    public function count($table, $conditions = '', $params = array()) {
+    public function count(string $table, $conditions = '', array $params = array()) {
         $sql = 'SELECT COUNT(*) as rowcount FROM ' . $this->quoteTable($table);
         $input_params = array();
         if (($where = $this->prepareConditions($conditions, $params, $input_params)) != '') {
@@ -313,7 +347,7 @@ class ZPDO extends PDO
         }
         $statement = $this->prepare($sql);
         $statement->execute($input_params);
-        return $statement->fetchColumn(0);
+        return $statement->fetchColumn();
     }
 
     /**
@@ -325,7 +359,7 @@ class ZPDO extends PDO
      * @param array $params 参数
      * @return array
      */
-    public function keyPair($table, $columns, $conditions = '', $params = array()) {
+    public function keyPair(string $table, $columns, $conditions = '', $params = array()) {
         if (is_array($columns)) {
             $columns = join(',', array_map(function ($value) {
                 return $this->quoteColumn($value);
@@ -379,7 +413,8 @@ class ZPDO extends PDO
         return $this->rowCount;
     }
 
-    public function toSnakeCase($name){
+    public function toSnakeCase($name): string
+    {
         $name = preg_replace('/([A-Z])/', '_$1', $name);
         return strtolower(trim($name,'_'));
     }

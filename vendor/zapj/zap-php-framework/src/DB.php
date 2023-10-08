@@ -12,22 +12,22 @@ use zap\util\Arr;
 
 /**
  * @method static upsert($table, $data, $duplicate = null )
- * @method static insert($table, $data)
+ * @method static int insert(string $table,array $data)
  * @method static replace($table, $data)
  * @method static update($table, $data, $conditions = '', $params = array())
  * @method static delete($table, $conditions = '', $params = array())
- * @method static count($table, $conditions = '', $params = array())
+ * @method static int count($table, $conditions = '', $params = array())
  * @method static keyPair($table, $columns, $conditions = '', $params = array())
- * @method static rowCount()
- * @method static toSnakeCase($name)
- * @method static prepareSQL($sql)
+ * @method static int rowCount()
+ * @method static string toSnakeCase($name)
+ * @method static string prepareSQL($sql)
  * @method static quoteColumn($columnName)
  * @method static quoteTable($table)
  * @method static setFetchMode($mode)
  * @method static setAutoCommit($value)
  * @method static getAutoCommit()
  * @method static buildParams($array,$name)
- * @method static statement($statement, $params = [])
+ * @method static \PDOStatement statement($statement, $params = [])
  * @method static renameTable($oldName, $newName)
  * @method static dropTable($table)
  * @method static truncateTable($table)
@@ -63,37 +63,12 @@ class DB
             return static::$conn_pool[$default_name];
         }
 
-        $opt  = array(
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
-            PDO::ATTR_EMULATE_PREPARES   => FALSE,
-        );
         $config = config("database.connections.{$default_name}");
         if(empty($config)){
             throw new Exception("could not find database config : {$default_name},Please check config/database.php");
         }
-        $db_driver = Arr::get($config,'driver','mysql');
-        $db_host = Arr::get($config,'host','localhost');
-        $db_name = Arr::get($config,'database');
-        $db_user = Arr::get($config,'username');
-        $db_passwd = Arr::get($config,'password');
-        $db_charset = Arr::get($config,'charset','utf8');
-        $db_collation = Arr::get($config,'collation','');
-        $db_prefix = Arr::get($config,'prefix');
-        $db_port = Arr::get($config,'port',3306);
-        $unix_socket = Arr::get($config,'unix_socket');
-        if($unix_socket){
-            $dsn = sprintf('%s:unix_socket=%s;dbname=%s;;charset=%s',$db_driver,$unix_socket,$db_name,$db_charset);
-        }else{
-            $dsn = sprintf('%s:host=%s;dbname=%s;port=%d;charset=%s',$db_driver,$db_host,$db_name,$db_port,$db_charset);
-        }
 
-        static::$conn_pool[$default_name] = new ZPDO($dsn, $db_user, $db_passwd, $opt);
-        static::$conn_pool[$default_name]->setTablePrefix($db_prefix);
-        if($db_driver == 'mysql'){
-            $db_collation = empty($db_collation) ? '' : " collate {$db_collation} ";
-            static::$conn_pool[$default_name]->exec("set names {$db_charset} {$db_collation}");
-        }
+        static::$conn_pool[$default_name] = new ZPDO($config);
         return static::$conn_pool[$default_name];
     }
 
@@ -144,7 +119,7 @@ class DB
      * @return false|int
      * @throws Exception
      */
-    public static function exec($statement)
+    public static function exec(string $statement)
     {
         $pdo = static::connect(static::$default_name);
         return $pdo->exec($pdo->prepareSQL($statement));
@@ -165,13 +140,13 @@ class DB
     }
 
     /**
-     * scalar
+     * value
      * @param string $statement
      * @param array $params
      * @return mixed
      * @throws Exception
      */
-    public static function scalar(string $statement, array $params = []){
+    public static function value(string $statement, array $params = []){
         $stm = static::prepare($statement);
         $stm->execute($params);
         return $stm->fetchColumn();
@@ -184,25 +159,25 @@ class DB
      * @return array|false
      * @throws Exception
      */
-    public static function getAll(string $statement, array $params = [])
+    public static function getAll(string $statement, array $params = [],$fetchMode = null)
     {
         $stm = static::prepare($statement);
         $stm->execute($params);
-        return $stm->fetchAll();
+        return $stm->fetchAll($fetchMode);
     }
 
     /**
-     * getOne
+     * getRow
      * @param string $statement
      * @param array $params
      * @return mixed
      * @throws Exception
      */
-    public static function getOne(string $statement, array $params = [])
+    public static function getRow(string $statement, array $params = [],$fetchMode = null)
     {
         $stm = static::prepare($statement);
         $stm->execute($params);
-        return $stm->fetch();
+        return $stm->fetch($fetchMode);
     }
 
     /**

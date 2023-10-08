@@ -10,7 +10,6 @@ use zap\node\AbstractNodeType;
  */
 class NodeType
 {
-    protected static $nodeTypeNames;
     protected static $nodeTypes;
 
 
@@ -29,11 +28,8 @@ class NodeType
                 ->orderBy('sort_order ASC')
                 ->get(FETCH_ASSOC);
             foreach ($resultSet as $row){
-                static::$nodeTypeNames[$row['id']] = $row['title'];
-                static::$nodeTypeNames[$row['name']] = $row['title'];
-                static::$nodeTypeNames[$row['name'].'_ID'] = $row['id'];
-                static::$nodeTypeNames[$row['name'].'_ClassName'] = $row['node_type'];
                 static::$nodeTypes[$row['id']] = $row;
+                static::$nodeTypes[$row['name']] = $row;
             }
         }
         return static::$nodeTypes;
@@ -49,28 +45,28 @@ class NodeType
     }
 
 
-    public static function getNodeTypeTitle($id)
+    public static function getTitle($name)
     {
         if(is_null(static::$nodeTypes)){
             static::getNodeTypes();
         }
-        return self::$nodeTypeNames[$id];
+        return self::$nodeTypes[$name]['title'] ?? '';
     }
 
-    public static function getNodeTypeClass($name)
+    public static function getClass($name)
     {
         if(is_null(static::$nodeTypes)){
             static::getNodeTypes();
         }
-        return self::$nodeTypeNames[$name.'_ClassName'] ?? AbstractNodeType::class;
+        return self::$nodeTypes[$name]['node_type'] ?? AbstractNodeType::class;
     }
 
-    public static function getNodeTypeID($name)
+    public static function getID($name)
     {
         if(is_null(static::$nodeTypes)){
             static::getNodeTypes();
         }
-        return self::$nodeTypeNames[$name.'_ID'];
+        return self::$nodeTypes[$name]['id'];
     }
 
 

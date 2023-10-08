@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '57f729d7a6dc91d00674661fa025b0a221be5429',
+        'reference' => '8182cb274037475838b3e3f7cc11bb145b358b7b',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '57f729d7a6dc91d00674661fa025b0a221be5429',
+            'reference' => '8182cb274037475838b3e3f7cc11bb145b358b7b',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -46,7 +46,7 @@
         'zapj/zap-php-framework' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'a1f1453839e898185e63bd3cfc3c037f1d83bb6f',
+            'reference' => 'beca391590a14a17fafa337d9670707f9dadb992',
             'type' => 'library',
             'install_path' => __DIR__ . '/../zapj/zap-php-framework',
             'aliases' => array(

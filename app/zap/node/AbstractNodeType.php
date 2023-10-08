@@ -204,6 +204,11 @@ class AbstractNodeType
             ->get(FETCH_KEY_PAIR);
     }
 
+    protected function getNodeByCatalogId($catalog_id){
+        return NodeRelation::createQuery()->leftJoin('node','node.id=node_relation.node_id')->where('node_relation.catalog_id',$catalog_id)
+            ->fetch(FETCH_ASSOC);
+    }
+
     protected function prepareConditions(Query $query,$conditions){
         foreach (Arr::get($conditions,'where',[]) as $name=>$value){
             if(is_int($name)){

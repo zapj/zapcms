@@ -20,7 +20,7 @@ $this->layout('layouts/common');
 
 </nav>
 
-<main class="container mt-65px">
+<main class="container zap-main">
 
 
     <div class="card shadow">

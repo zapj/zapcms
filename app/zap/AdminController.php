@@ -4,6 +4,7 @@ namespace zap;
 
 use zap\http\Controller;
 use zap\view\View;
+use app\zap\helpers\EnvCheck;
 
 class AdminController extends Controller
 {
