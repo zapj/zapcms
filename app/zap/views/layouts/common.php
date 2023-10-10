@@ -27,7 +27,7 @@
         <div id="zContent">
         <?php echo $this->block('content');?>
         </div>
-        <footer class="my-5 pt-5 text-body-secondary text-center text-small ">
+        <footer class="pt-5 pb-2 text-body-secondary text-center text-small ">
             <p class="mb-1">© 2023 ZAP.CN</p>
 <!--            <ul class="list-inline">-->
 <!--                <li class="list-inline-item"><a href="#">Privacy</a></li>-->
