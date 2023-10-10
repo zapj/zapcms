@@ -1,5 +1,6 @@
 <?php
 //\zap\Asset::library('ace');
+\zap\Asset::library('codemirror');
 //register_scripts(base_url('/assets/admin/js/util.js'),ASSETS_BODY);
 //register_scripts(base_url('/assets/admin/js/main.js'),ASSETS_BODY);
 $this->layout('layouts/common');
@@ -22,7 +23,7 @@ $this->layout('layouts/common');
 <main class="container-fluid zap-main">
     <div class="row shadow rounded">
         <div class="col-3 pe-0">
-            <ul class="overflow-y-auto cd-accordion cd-accordion--animated margin-top-lg margin-bottom-lg" id="fileTreeView"  style="height: calc(100vh - 270px);">
+            <ul class="overflow-y-auto cd-accordion cd-accordion--animated margin-top-lg margin-bottom-lg" id="fileTreeView"  style="height: calc(100vh - 160px);">
 <!--                <li class="cd-accordion__item cd-accordion__item--has-children">-->
 <!--                    <input class="cd-accordion__input" type="checkbox" name ="group-1" id="group-1">-->
 <!--                    <label class="cd-accordion__label cd-accordion__label--icon-folder" for="group-1"><span>Group 1</span></label>-->
@@ -50,23 +51,6 @@ $this->layout('layouts/common');
 <!--                            </ul>-->
 <!--                        </li>-->
 <!---->
-<!--                        <li class="cd-accordion__item cd-accordion__item--has-children">-->
-<!--                            <input class="cd-accordion__input" type="checkbox" name ="sub-group-2" id="sub-group-2">-->
-<!--                            <label class="cd-accordion__label cd-accordion__label--icon-folder" for="sub-group-2"><span>Sub Group 2</span></label>-->
-<!---->
-<!--                            <ul class="cd-accordion__sub cd-accordion__sub--l2">-->
-<!--                                <li class="cd-accordion__item cd-accordion__item--has-children">-->
-<!--                                    <input class="cd-accordion__input" type="checkbox" name ="sub-group-level-3" id="sub-group-level-3">-->
-<!--                                    <label class="cd-accordion__label cd-accordion__label--icon-folder" for="sub-group-level-3"><span>Sub Group Level 3</span></label>-->
-<!---->
-<!--                                    <ul class="cd-accordion__sub cd-accordion__sub--l3">-->
-<!--                                        <li class="cd-accordion__item"><a class="cd-accordion__label cd-accordion__label--icon-img" href="#0"><span>Image</span></a></li>-->
-<!--                                        <li class="cd-accordion__item"><a class="cd-accordion__label cd-accordion__label--icon-img" href="#0"><span>Image</span></a></li>-->
-<!--                                    </ul>-->
-<!--                                </li>-->
-<!--                                <li class="cd-accordion__item"><a class="cd-accordion__label cd-accordion__label--icon-img" href="#0"><span>Image</span></a></li>-->
-<!--                            </ul>-->
-<!--                        </li>-->
 <!--                        <li class="cd-accordion__item"><a class="cd-accordion__label cd-accordion__label--icon-img" href="#0"><span>Image</span></a></li>-->
 <!--                        <li class="cd-accordion__item"><a class="cd-accordion__label cd-accordion__label--icon-img" href="#0"><span>Image</span></a></li>-->
 <!--                    </ul>-->
@@ -76,55 +60,120 @@ $this->layout('layouts/common');
             </ul>
         </div>
         <div class="col-9 ps-0">
-            <div id="editor" class="z-2" style="width: 100%;height: calc(100vh - 270px);">function foo(items) {
+            <ul class="nav nav-tabs" id="fileToolbarTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane"
+                            type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Home <i class="ps-2 fa fa-close" onclick="alert('close');"></i></button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Profile</button>
+                </li>
+
+
+            </ul>
+            <div class="tab-content" id="fileContentTabs">
+                <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
+                    <textarea id="editor" class="z-2" >function foo(items) {
     var x = "All this is syntax highlighted";
     return x;
-}</div>
+}</textarea>
+
+
+                </div>
+                <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">...</div>
+                <div class="tab-pane fade" id="contact-tab-pane" role="tabpanel" aria-labelledby="contact-tab" tabindex="0">...</div>
+                <div class="tab-pane fade" id="disabled-tab-pane" role="tabpanel" aria-labelledby="disabled-tab" tabindex="0">...</div>
+            </div>
+
         </div>
     </div>
 
 </main>
 <script>
 
+
+    var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+        lineNumbers: true,
+        // mode:'javascript'
+    });
+    CodeMirror.autoLoadMode(editor,'javascript');
+    editor.setOption('mode','javascript');
+    editor.setSize(100,'calc(100vh - 200px)');
+
+    const fileTreeView = $('#fileTreeView');
+    const editorInstances = [];
     $(function(){
-        // var editor = ace.edit("editor");
-        // editor.setTheme("ace/theme/monokai");
-        // editor.session.setMode("ace/mode/javascript");
-        getDir('/');
-        const fileTreeView = $('#fileTreeView');
+        getDir('/',fileTreeView);
         fileTreeView.on('click','li',function(e){
             e.preventDefault();
-            console.log(this)
+            e.stopPropagation();
+            if($(this).hasClass('zap-open')){
+                //close
+
+            }else{
+                getDir($(this).data('path'),this)
+            }
+            $(this).toggleClass('zap-open');
 
         });
-        // fileTreeView.on('click','a',function(event){
-        //     console.log(event.target)
-        // });
+
     })
 
-    function getDir(path){
+    function getDir(path,pEl){
+        if(!path){
+            path = '/';
+        }
+        $(pEl).find('i:first').attr('class','fa-solid fa-spinner fa-spin pe-1');
         $.ajax({
             url:'<?php echo url_action('Development@getDir'); ?>?path='+path,
             success:function(resp){
-                const fileTreeView = $('#fileTreeView');
-                for (const f in resp.data) {
-                    fi = resp.data[f];
-                    icon = '<i class="fa fa-folder"></i>';
-                    hasSubmenu =  '';
+                // const fileTreeView = $('#fileTreeView');
+                $pEl = pEl;
+                if(resp.type === 'list'){
+                    renderFileList(resp.data,$pEl);
+                }else if(resp.type === 'content'){
+                    editor.setOption('value',resp.content);
+                    openFile('','');
+                }
 
-                    if(fi.type === 'dir'){
-                        linkTag = `<label class="cd-accordion__label " for="${fi.filename}" > <i class="fa fa-angle-right"></i> ${icon}<span>${fi.filename}</span></label>`;
-                        hasSubmenu =  'cd-accordion__item--has-children';
-                    }else{
-                        icon = '<i class="fa fa-image"></i>';
-                        linkTag = `<a href="#0" class="cd-accordion__label" >${icon}<span>${fi.filename}</span></a>`;
-                    }
-                    fileTreeView.append(`<li class="cd-accordion__item ${hasSubmenu}" data-filename="${fi.filename}" data-path="${resp.path}" data-type="${fi.type}">
-                    <input class="cd-accordion__input" type="checkbox" name ="${fi.filename}" id="${fi.filename}">
+            }
+        }).done(function(){
+            $(pEl).find('i:first').attr('class','fa-solid fa-angle-right pe-1');
+        });
+    }
+
+    function renderFileList(data,pEl){
+        // console.log($(pEl).get(0).tagName ,'render')
+        if($(pEl).get(0).tagName === 'LI'){
+            $(pEl).find('ul').remove();
+
+            pEl = $('<ul/>').addClass('cd-accordion__sub cd-accordion__sub--l1').appendTo($(pEl).get(0));
+            // sub_ul.addClass('cd-accordion__sub cd-accordion__sub--l1');
+            pEl.empty()
+        }
+
+        for (const f in data) {
+            fi = data[f];
+            icon = fi.icon;
+            hasSubmenu =  '';
+
+            if(fi.type === 'dir'){
+                linkTag = `<label class="cd-accordion__label" for="${fi.filename}" > <i class="fa fa-angle-right pe-1"></i><i class="${icon} pe-1"></i><span>${fi.filename}</span></label>`;
+                hasSubmenu =  'cd-accordion__item--has-children zap-tree-has-children';
+            }else{
+                linkTag = `<label href="#0" class="cd-accordion__label" ><i class="${icon} pe-1"></i><span>${fi.filename}</span></label>`;
+            }
+            pEl.append(`<li class="cd-accordion__item ${hasSubmenu}" data-filename="${fi.filename}" data-path="${fi.path}" data-type="${fi.type}">
                     ${linkTag}
                 </li>`);
-                }
-            }
-        });
+        }
+
+    }
+
+    function openFile(filename,content){
+        $('#fileToolbarTabs').append(`<li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane"
+                            type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Home <i class="ps-2 fa fa-close" onclick="alert('close');"></i></button>
+                </li>`);
     }
 </script>

@@ -16,10 +16,11 @@ class DevelopmentController extends AdminController
     }
 
     public function getDir(){
-        $path = req()->get('path','/');
+        $path = '/' . trim(req()->get('path','/'),'/');
         $realPath = realpath(app()->basePath($path) );
-//        readdir($path);
-//        $path = app()->basePath();
+        if(is_file($realPath) && is_readable($realPath)){
+            response(['code'=>0,'msg'=>'','path'=>$path , 'type'=>'content' , 'content'=>file_get_contents($realPath)])->withJson();
+        }
         $data = [];
         $fsIter = new FilesystemIterator($realPath,FilesystemIterator::KEY_AS_PATHNAME|FilesystemIterator::CURRENT_AS_FILEINFO|FilesystemIterator::SKIP_DOTS);
         while($fsIter->valid()){
@@ -27,8 +28,9 @@ class DevelopmentController extends AdminController
                 'filename'=>$fsIter->getFilename(),
                 'type'=>$fsIter->getType(),
                 'ext'=>$fsIter->getExtension(),
-                'path'=> "{$path}/{$fsIter->getFilename()}",
-                'perms'=> substr(sprintf('%o', $fsIter->getPerms()), -4)
+                'path'=> $path !== '/'  ? "{$path}/{$fsIter->getFilename()}" : '/'  . $fsIter->getFilename() ,
+                'perms'=> substr(sprintf('%o', $fsIter->getPerms()), -4),
+                'icon'=> ($fsIter->getType() === 'dir') ? 'fa fa-folder' : $this->getFileIcon($fsIter->getExtension())
             ];
             $fsIter->next();
         }
@@ -44,7 +46,24 @@ class DevelopmentController extends AdminController
 //                'type'=>$file->getType()
 //            ];
 //        }
-        response(['code'=>0,'msg'=>'','path'=>$path,'data'=>$data])->withJson();
+        response(['code'=>0,'msg'=>'','path'=>$path,'type'=>'list','data'=>$data])->withJson();
+    }
+
+    private function getFileIcon($ext): string
+    {
+        switch ($ext){
+            case 'html':
+            case 'htm':
+                return 'fa-brands fa-html5';
+            case 'css':
+                return 'fa-brands fa-css3-alt';
+            case 'js':
+                return 'fa-brands fa-js';
+            case 'php':
+                return 'fa-brands fa-php';
+            default:
+                return 'fa-solid fa-file-code';
+        }
     }
 
 }

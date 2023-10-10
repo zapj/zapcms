@@ -236,3 +236,31 @@ function ZapFaIcons(target,callback){
 
 }
 
+
+
+const loadScript = (fileUrl, async = true, type = "text/javascript") => {
+    return new Promise((resolve, reject) => {
+        try {
+            const scriptEle = document.createElement("script");
+            scriptEle.type = type;
+            scriptEle.async = async;
+            scriptEle.src =fileUrl;
+
+            scriptEle.addEventListener("load", (ev) => {
+                resolve({ status: true });
+            });
+
+            scriptEle.addEventListener("error", (ev) => {
+                reject({
+                    status: false,
+                    message: `Failed to load the script ${fileUrl}`
+                });
+            });
+
+            document.head.appendChild(scriptEle);
+        } catch (error) {
+            reject(error);
+        }
+    });
+};
+
