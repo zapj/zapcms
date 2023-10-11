@@ -2,7 +2,7 @@
 use zap\Asset;
 use zap\facades\Url;
 Asset::library('jqueryvalidation');
-Asset::library('ace');
+Asset::library('codemirror');
 
 $this->layout('layouts/common');
 ?>
@@ -130,8 +130,21 @@ $this->layout('layouts/common');
     </main>
 </form>
 <script>
+    var editor = CodeMirror.fromTextArea(document.getElementById("website.head_script"), {
+        lineNumbers: true,
+        height: "200px",
+    });
+    var editor1 = CodeMirror.fromTextArea(document.getElementById("website.foot_script"), {
+        lineNumbers: true,
+        height: "200px",
+    });
+
+    CodeMirror.autoLoadMode(editor,'javascript');
+    editor.setOption('mode','javascript');
     $(function(){
         $('#zapForm').validate({ignore:''});
+        editor.refresh()
+        editor1.refresh()
     })
 
     function save(){

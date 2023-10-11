@@ -61,6 +61,14 @@ class NodeType
         return self::$nodeTypes[$name]['node_type'] ?? AbstractNodeType::class;
     }
 
+    public static function getName($name)
+    {
+        if(is_null(static::$nodeTypes)){
+            static::getNodeTypes();
+        }
+        return self::$nodeTypes[$name]['name'];
+    }
+
     public static function getID($name)
     {
         if(is_null(static::$nodeTypes)){

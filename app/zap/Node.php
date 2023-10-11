@@ -27,7 +27,7 @@ class Node extends Model
         return date(Z_DATE_TIME);
     }
 
-    public function getStatusTitle($status): string
+    public static function getStatusTitle($status): string
     {
         switch ($status){
             case self::PUBLISHED:

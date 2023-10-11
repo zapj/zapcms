@@ -12,21 +12,20 @@ use zap\view\View;
 class NodeController extends AdminController
 {
 
-    public function _invoke($controller,$params)
+    public function _invoke($method,$params)
     {
         View::paths(base_path("/app/zap/node/views"));
-        if(in_array($controller , ['index','types'])){
-            $this->$controller();
+        if($method == 'index'){$method = 'default';}
+        if(in_array($method , ['types'])){
+            $this->$method();
         }else{
 
             $isAjax = \zap\http\Request::isAjax();
-//            $controller = array_shift($params) ?? 'Index';
             $action = array_shift($params) ?? 'index';
-            $controller = str_replace('-','',ucwords($controller,"-"));
+            $controller = str_replace('-','',ucwords($method,"-"));
             $action = str_replace('-','',ucwords($action,"-"));
 
             $class = "\\zap\\node\\controllers\\{$controller}Controller";
-
             if(!class_exists($class)){
                 $class = AbstractNodeType::class;
             }
@@ -44,9 +43,9 @@ class NodeController extends AdminController
             $zapController->action = $action;
 
             $nodeTypeId =  NodeType::getID($controller);
-            $zapController->setNodeType($nodeTypeId);
+            is_null($nodeTypeId) or $zapController->setNodeType($nodeTypeId);
             $zapController->setTitle(NodeType::getTitle($controller));
-            $zapController->setCatalogId(req()->get('catalog_id'));
+            $zapController->setCatalogId(req()->get('catalog_id',0));
             $zapController->__init();
             $zapController->$action(...$params);
 

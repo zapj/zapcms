@@ -14,7 +14,7 @@ return [
             'host' => '127.0.0.1',
             'port' => 3306,
             'dbname' => 'zap_cms',
-            'username' => 'root',
+            'user' => 'root',
             'password' => 'root',
 //            'unix_socket' => '/tmp/mysql.sock',
             'charset' => 'utf8',

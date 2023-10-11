@@ -11,26 +11,35 @@ use zap\db\ZPDO;
 use zap\util\Arr;
 
 /**
- * @method static upsert($table, $data, $duplicate = null )
+ * @method static int upsert($table, $data, $duplicate = null )
  * @method static int insert(string $table,array $data)
- * @method static replace($table, $data)
- * @method static update($table, $data, $conditions = '', $params = array())
- * @method static delete($table, $conditions = '', $params = array())
+ * @method static int replace($table, $data)
+ * @method static int update($table, $data, $conditions = '', $params = array())
+ * @method static int delete($table, $conditions = '', $params = array())
  * @method static int count($table, $conditions = '', $params = array())
- * @method static keyPair($table, $columns, $conditions = '', $params = array())
+ * @method static array keyPair($table, $columns, $conditions = '', $params = array())
  * @method static int rowCount()
+ * @method static mixed value(string $statement, array $params = [])
  * @method static string toSnakeCase($name)
  * @method static string prepareSQL($sql)
- * @method static quoteColumn($columnName)
- * @method static quoteTable($table)
- * @method static setFetchMode($mode)
- * @method static setAutoCommit($value)
- * @method static getAutoCommit()
+ * @method static string quoteColumn($columnName)
+ * @method static string quoteTable($table)
+ * @method static mixed|array|string|integer quote($value,$type = null)
+ * @method static false|\PDOStatement prepare($query, $options = [])
+ * @method static array|false select($query, $params = [], ...$fetch_mode_args)
+ * @method static false|\PDOStatement query($query, $params = [], ...$fetch_mode_args)
+ * @method static bool setFetchMode($mode)
+ * @method static bool setAutoCommit($value)
+ * @method static bool getAutoCommit()
  * @method static buildParams($array,$name)
+ * @method static Query table(string $table,$alias = null)
  * @method static \PDOStatement statement($statement, $params = [])
- * @method static renameTable($oldName, $newName)
- * @method static dropTable($table)
- * @method static truncateTable($table)
+ * @method static false|int renameTable($oldName, $newName)
+ * @method static false|int dropTable($table)
+ * @method static false|int truncateTable($table)
+ * @method static int rawExec($statement)
+ * @method static mixed getAll(string $statement, array $params = [],$fetchMode = null)
+ * @method static mixed get(string $statement, array $params = [],$fetchMode = null)
  */
 class DB
 {
@@ -83,102 +92,6 @@ class DB
         return static::connect($default_name);
     }
 
-    /**
-     * Quote
-     * @param mixed $value
-     * @return array|false|false[]|string|string[]
-     * @throws Exception
-     */
-    public static function quote($value)
-    {
-        $pdo = static::connect(static::$default_name);
-        if(is_array($value)){
-            return array_map(function($value) use ($pdo){
-                return $pdo->quote($value);
-                },$value);
-        }
-        return $pdo->quote($value);
-    }
-
-    /**
-     * 预处理SQL
-     * @param string $statement
-     * @param array $options
-     * @return false|\PDOStatement
-     * @throws Exception
-     */
-    public static function prepare(string $statement, array $options = [])
-    {
-        $pdo = static::connect(static::$default_name);
-        return $pdo->prepare($pdo->prepareSQL($statement),$options);
-    }
-
-    /**
-     * 执行SQL
-     * @param string $statement
-     * @return false|int
-     * @throws Exception
-     */
-    public static function exec(string $statement)
-    {
-        $pdo = static::connect(static::$default_name);
-        return $pdo->exec($pdo->prepareSQL($statement));
-    }
-
-    /**
-     * query
-     * @param string $statement
-     * @param array $params
-     * @return false|\PDOStatement
-     * @throws Exception
-     */
-    public static function query(string $statement, array $params = [])
-    {
-        $stm = static::prepare($statement);
-        $stm->execute($params);
-        return $stm;
-    }
-
-    /**
-     * value
-     * @param string $statement
-     * @param array $params
-     * @return mixed
-     * @throws Exception
-     */
-    public static function value(string $statement, array $params = []){
-        $stm = static::prepare($statement);
-        $stm->execute($params);
-        return $stm->fetchColumn();
-    }
-
-    /**
-     * getAll
-     * @param string $statement
-     * @param array $params
-     * @return array|false
-     * @throws Exception
-     */
-    public static function getAll(string $statement, array $params = [],$fetchMode = null)
-    {
-        $stm = static::prepare($statement);
-        $stm->execute($params);
-        return $stm->fetchAll($fetchMode);
-    }
-
-    /**
-     * getRow
-     * @param string $statement
-     * @param array $params
-     * @return mixed
-     * @throws Exception
-     */
-    public static function getRow(string $statement, array $params = [],$fetchMode = null)
-    {
-        $stm = static::prepare($statement);
-        $stm->execute($params);
-        return $stm->fetch($fetchMode);
-    }
 
     /**
      * @throws Exception
@@ -188,18 +101,6 @@ class DB
         return call_user_func_array([static::connect(static::$default_name),$name],$arguments);
     }
 
-    /**
-     * table model
-     * @param string $table
-     * @param string|null $alias
-     * @return Query
-     * @throws Exception
-     */
-    public static function table(string $table, string $alias = null): Query
-    {
-        $query = new Query(static::connect(static::$default_name));
-        return $query->from($table,$alias);
-    }
 
     /**
      * 开启事务
@@ -210,11 +111,12 @@ class DB
      */
     public static function transaction(\Closure $callback, string $connection = null): bool
     {
+        if(!is_callable($callback)){
+            return false;
+        }
         try{
             static::connect($connection)->beginTransaction();
-            if(is_callable($callback)){
-                $callback();
-            }
+            $callback();
             return static::connect($connection)->commit();
         }catch (PDOException $exception){
             static::connect($connection)->rollBack();
@@ -236,36 +138,5 @@ class DB
     {
         return Expr::make($value);
     }
-
-    public static function beginTransaction($connection = null): bool
-    {
-        $pdo = static::connect($connection);
-        return $pdo->beginTransaction();
-    }
-
-    /**
-     * 提交事务
-     * @param string|null $connection DB连接名称
-     * @return bool
-     * @throws \Exception
-     */
-    public static function commit(string $connection = null): bool
-    {
-        $pdo = static::connect($connection);
-        return $pdo->commit();
-    }
-
-    /**
-     * 事务回滚
-     * @param string|null $connection
-     * @return bool
-     * @throws Exception
-     */
-    public static function rollback(string $connection = null): bool
-    {
-        $pdo = static::connect($connection);
-        return $pdo->rollBack();
-    }
-
 
 }

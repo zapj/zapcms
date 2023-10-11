@@ -4,6 +4,7 @@ namespace zap\db;
 
 use PDO;
 use PDOException;
+use PDOStatement;
 use zap\exception\NotSupportedException;
 use zap\util\Arr;
 use zap\util\Random;
@@ -21,14 +22,13 @@ class ZPDO extends PDO
         $this->tablePrefix = $config['prefix'] ?? '';
         $this->driver = $config['driver'] ?? 'mysql';
         $dsn = $config['dsn'] ?? $this->buildDSN($config);
-        $username = $config['username'] ?? null;
+        $username = $config['user'] ?? null;
         $password = $config['password'] ?? null;
         $options  = array(
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
             PDO::ATTR_EMULATE_PREPARES   => FALSE,
         );
-
         if($this->driver == 'mysql'){
             $db_charset = $config['charset'] ?? 'utf8';
             $db_collate = $config['collate'] ?? null;
@@ -36,7 +36,6 @@ class ZPDO extends PDO
         }
         $options += Arr::get($config,'options',[]);
         parent::__construct($dsn, $username, $password, $options);
-
         $this->setAttribute(PDO::ATTR_STATEMENT_CLASS,[Statement::class]);
     }
 
@@ -45,11 +44,12 @@ class ZPDO extends PDO
         $dsnElements = [];
         switch ($this->driver){
             case 'mysql':
+            case 'mariadb':
                 $dsnElements = Arr::find($config,['host','port','dbname','unix_socket','charset']);
                 break;
             case 'pgsql':
                 $dsnElements = Arr::find($config,['host','port','dbname','user','password','sslmode']);
-                unset($config['username'],$config['password']);
+                unset($config['user'],$config['password']);
                 break;
             case 'sqlite':
                 trigger_error('Please directly set the DSN parameters',E_USER_ERROR);
@@ -58,6 +58,86 @@ class ZPDO extends PDO
         }
         return $this->driver . ':' . http_build_query($dsnElements,'',';');
     }
+
+    public function prepare($query, $options = [])
+    {
+        return parent::prepare($this->prepareSQL($query), $options);
+    }
+
+    public function exec($statement)
+    {
+        return parent::exec($this->prepareSQL($statement));
+    }
+
+    public function query($query, $params = [], ...$fetch_mode_args)
+    {
+        $stm = parent::query($this->prepareSQL($query), ...$fetch_mode_args);
+        $stm->execute($params);
+        $this->rowCount = $stm->rowCount();
+        return $stm;
+    }
+
+    public function select($query, $params = [], ...$fetch_mode_args)
+    {
+        $stm = parent::query($this->prepareSQL($query), ...$fetch_mode_args);
+        $stm->execute($params);
+        $this->rowCount = $stm->rowCount();
+        return $stm->fetchAll();
+    }
+
+    /**
+     * getAll
+     * @param string $statement
+     * @param array $params
+     * @param null $fetchMode
+     * @return array|false
+     */
+    public function getAll(string $statement, array $params = [],$fetchMode = null)
+    {
+        $stm = $this->prepare($statement);
+        $stm->execute($params);
+        return $stm->fetchAll($fetchMode);
+    }
+
+    /**
+     * get
+     * @param string $statement
+     * @param array $params
+     * @param null $fetchMode
+     * @return mixed
+     */
+    public function get(string $statement, array $params = [],$fetchMode = null)
+    {
+        $stm = $this->prepare($statement);
+        $stm->execute($params);
+        return $stm->fetch($fetchMode);
+    }
+
+
+    /**
+     * table Query ActiveRecord
+     * @param string $table
+     * @param string|null $alias
+     * @return Query
+     */
+    public function table(string $table, string $alias = null): Query
+    {
+        $query = new Query($this);
+        return $query->from($table,$alias);
+    }
+
+    public function rawExec($statement)
+    {
+        return parent::exec($statement);
+    }
+
+
+    public function value(string $statement, array $params = []){
+        $stm = $this->prepare($statement);
+        $stm->execute($params);
+        return $stm->fetchColumn();
+    }
+
 
     public function setTablePrefix($prefix){
         $this->tablePrefix = $prefix;
@@ -73,7 +153,8 @@ class ZPDO extends PDO
         return $sql;
     }
 
-    public function quoteColumn($columnName) {
+    public function quoteColumn($columnName): string
+    {
         $colAlias = explode('.', $columnName);
         if (is_array($colAlias) && count($colAlias) == 2) {
             return $this->quoteColumn($colAlias[0]) . '.' . $this->quoteColumn($colAlias[1]);
@@ -91,7 +172,8 @@ class ZPDO extends PDO
         }
     }
 
-    public function quoteTable($table) {
+    public function quoteTable($table): string
+    {
         $table = $this->tablePrefix . $table;
         switch ($this->driver) {
             case 'mysql':
@@ -99,7 +181,7 @@ class ZPDO extends PDO
                 return '`' . $table . '`';
             case 'mssql':
                 return "[$table]";
-            case 'pssql':
+            case 'pgsql':
                 return '"' . $table . '"';
             default:
                 return $table;
@@ -127,19 +209,22 @@ class ZPDO extends PDO
         return $key_names;
     }
 
-    public function setFetchMode($mode){
-        $this->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE , $mode);
+    public function setFetchMode($mode): bool
+    {
+        return $this->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE , $mode);
     }
 
-    public function setAutoCommit($value) {
-        $this->setAttribute(PDO::ATTR_AUTOCOMMIT, $value);
+    public function setAutoCommit($value): bool
+    {
+        return $this->setAttribute(PDO::ATTR_AUTOCOMMIT, $value);
     }
 
     public function getAutoCommit() {
         return $this->getAttribute(PDO::ATTR_AUTOCOMMIT);
     }
 
-    public function buildParams($array,$name){
+    public function buildParams($array,$name): array
+    {
         $params = [];
         $values = [];
         for($i = 0;$i<count($array);$i++){
@@ -177,7 +262,7 @@ class ZPDO extends PDO
      * Db insert
      * @param string $table 表名
      * @param array $data 插入的数据
-     * @return int Return Last id
+     * @return false|string LastID
      */
     public function insert(string $table, array $data) {
         $params = array();
@@ -237,7 +322,7 @@ class ZPDO extends PDO
 
         if(!empty($duplicate) && $this->driver == 'mysql'){
             $sql .= ' ON DUPLICATE KEY UPDATE '.join(',',$dupSet);
-        }else if(!empty($duplicate) && $this->driver == 'pssql'){
+        }else if(!empty($duplicate) && $this->driver == 'pgsql'){
             if(is_null($primaryKeys)){
                 reset($data);
                 $primaryKeys = key($data);
@@ -258,7 +343,7 @@ class ZPDO extends PDO
      * Db replace
      * @param string $table 表名
      * @param array $data 插入的数据
-     * @return int Return Last id
+     * @return int LastID
      */
     public function replace(string $table, array $data) {
         $params = [];
@@ -417,6 +502,16 @@ class ZPDO extends PDO
     {
         $name = preg_replace('/([A-Z])/', '_$1', $name);
         return strtolower(trim($name,'_'));
+    }
+
+    public function quote($value, $type = PDO::PARAM_STR)
+    {
+        if(is_array($value)){
+            return array_map(function($value) {
+                return $this->quote($value);
+            },$value);
+        }
+        return parent::quote($value, $type);
     }
 
 

@@ -310,7 +310,7 @@ class Router
         }
 
         if((is_null($ret) || $ret) && isset($options['namespace'])) {
-            $class = $options['dispatcher'] ?? Dispatcher::class;
+            $class = $options['dispatcher'] = $options['dispatcher'] ?? Dispatcher::class;
             $ret = $this->callMiddleware($class,$options);
         }
 

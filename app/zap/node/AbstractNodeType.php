@@ -113,7 +113,7 @@ class AbstractNodeType
             foreach ($catalogArray as $catalog_id){
                 NodeRelation::create(['node_id'=>$nodeModel->id,'catalog_id'=>$catalog_id,'node_type'=>$this->nodeType]);
             }
-            Response::json(['code'=>0,'msg'=> $this->title . '创建成功','id'=>$nodeModel->id,'redirect_to'=>url_action("Zap@{$this->controller}/edit/{$nodeModel->id}",$_GET)]);
+            Response::json(['code'=>0,'msg'=> $this->title . '创建成功','id'=>$nodeModel->id,'redirect_to'=>url_action("Node@{$this->controller}/edit/{$nodeModel->id}",$_GET)]);
 
         }
         $data['title'] = $this->title;
@@ -180,9 +180,13 @@ class AbstractNodeType
 
     protected function getTotalRows($conditions)
     {
-        $query = DB::table('node_relation','nr')
-            ->leftJoin(['node','n'],'nr.node_id=n.id')
-            ->select('count(n.id) as rowcount');
+        if($this->catalogId){
+            $query = DB::table('node_relation','nr')
+                ->leftJoin(['node','n'],'nr.node_id=n.id')
+                ->select('count(n.id) as rowcount');
+        }else{
+            $query = DB::table('node','n');
+        }
 
         $this->prepareConditions($query,$conditions);
         return $query->fetchColumn();
@@ -190,9 +194,12 @@ class AbstractNodeType
 
     protected function getAll($conditions)
     {
-
-        $query = DB::table('node_relation','nr')
-            ->leftJoin(['node','n'],'nr.node_id=n.id');
+        if($this->catalogId){
+            $query = DB::table('node_relation','nr')
+                ->leftJoin(['node','n'],'nr.node_id=n.id');
+        }else{
+            $query = DB::table('node','n');
+        }
         $query->select('n.*');
         $this->prepareConditions($query,$conditions);
        return $query->get(FETCH_ASSOC);

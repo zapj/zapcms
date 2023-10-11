@@ -40,7 +40,7 @@ $this->layout('layouts/common');
                 <table class="table text-nowrap table-hover">
                     <thead>
                     <tr>
-                        <th scope="col">ID</th>
+                        <?php echo $catalogId ?'':'<th scope="col">类型</th>'  ?>
                         <th scope="col" class="w-50">标题</th>
                         <th scope="col">访问量</th>
                         <th scope="col">发布日期</th>
@@ -49,20 +49,29 @@ $this->layout('layouts/common');
                     </tr>
                     </thead>
                     <tbody>
-                    <?php foreach ($data as $row): ?>
+                    <?php foreach ($data as $row):
+                        $class = NodeType::getName($row['node_type']);
+                        ?>
+
                         <tr>
-                            <th scope="row"><?php echo $row['id'];?></th>
+                            <?php
+                            if($catalogId==0) {
+                                $type = NodeType::getTitle($row['node_type']);
+
+                                echo "<th scope=\"col\">{$type}</th>";
+                                }
+                                ?>
                             <td>
-                                <a href="<?php echo url_action("Node@{$_controller}/edit/{$row['id']}",$_GET);?>">
+                                <a href="<?php echo url_action("Node@{$class}/edit/{$row['id']}",$_GET);?>" class="link-underline link-underline-opacity-0">
                                     <?php echo $row['title'];?>
-                                </a>
+                                </a><small class="text-black-50"><?php echo 'ID:',$row['id'];?></small>
                             </td>
 
                             <td><?php echo $row['hits']; ?></td>
                             <td><?php echo date(Z_DATE_TIME,$row['pub_time']); ?></td>
                             <td><?php echo \zap\Node::getStatusTitle($row['status']); ?></td>
                             <td>
-                                <a href="<?php echo url_action("Node@{$_controller}/edit/{$row['id']}",$_GET);?>" class="btn btn-sm btn-success"><i class="fa fa-edit"></i> 编辑</a>
+                                <a href="<?php echo url_action("Node@{$class}/edit/{$row['id']}",$_GET);?>" class="btn btn-sm btn-success"><i class="fa fa-edit"></i> 编辑</a>
                                 <a href="javascript:void(0);" onclick="remove(<?php echo $row['id'];?>,'<?php echo $row['title'];?>');" class="btn btn-sm btn-danger"><i class="fa fa-remove"></i> 删除</a>
 
                             </td>

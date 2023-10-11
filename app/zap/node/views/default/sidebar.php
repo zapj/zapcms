@@ -11,11 +11,11 @@
                 use zap\facades\Url;
                 use zap\NodeType;
 
-                Catalog::instance()->forEachAll(function($catalog){
+                Catalog::instance()->forEachAll(function($catalog) use ($catalogId){
                     $nodeType = NodeType::getNodeType($catalog['node_type']);
                     $paddingLeft = ($catalog['level'] - 1) + ($catalog['level'] - 1) * 0.5;
                     ?>
-                    <tr>
+                    <tr class="<?php echo $catalogId == $catalog['id'] ? ' table-success':''; ?>">
                         <td>
                             <i class="<?php echo $catalog['icon'];?>"></i>
                             <a href="<?php echo Url::action("Node@{$nodeType['name']}",['catalog_id'=>$catalog['id']]); ?>">

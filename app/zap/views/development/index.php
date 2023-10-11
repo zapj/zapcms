@@ -1,6 +1,6 @@
 <?php
-//\zap\Asset::library('ace');
-\zap\Asset::library('codemirror');
+\zap\Asset::library('ace');
+//\zap\Asset::library('codemirror');
 //register_scripts(base_url('/assets/admin/js/util.js'),ASSETS_BODY);
 //register_scripts(base_url('/assets/admin/js/main.js'),ASSETS_BODY);
 $this->layout('layouts/common');
@@ -73,10 +73,7 @@ $this->layout('layouts/common');
             </ul>
             <div class="tab-content" id="fileContentTabs">
                 <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
-                    <textarea id="editor" class="z-2" >function foo(items) {
-    var x = "All this is syntax highlighted";
-    return x;
-}</textarea>
+                    <div id="editor" class="z-2" style="height: calc(100vh - 200px)">12313123</div>
 
 
                 </div>
@@ -92,17 +89,20 @@ $this->layout('layouts/common');
 <script>
 
 
-    var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
-        lineNumbers: true,
-        // mode:'javascript'
-    });
-    CodeMirror.autoLoadMode(editor,'javascript');
-    editor.setOption('mode','javascript');
-    editor.setSize(100,'calc(100vh - 200px)');
+    // var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+    //     lineNumbers: true,
+    //     // mode:'javascript'
+    // });
+    // CodeMirror.autoLoadMode(editor,'javascript');
+    // editor.setOption('mode','javascript');
+    // editor.setSize(100,'calc(100vh - 200px)');
 
     const fileTreeView = $('#fileTreeView');
     const editorInstances = [];
     $(function(){
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.session.setMode("ace/mode/javascript");
         getDir('/',fileTreeView);
         fileTreeView.on('click','li',function(e){
             e.preventDefault();

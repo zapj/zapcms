@@ -11,7 +11,8 @@ trait SingletonTrait {
     /**
      * @return static
      */
-    public static function instance() {
+    public static function instance()
+    {
         if (!self::$instance) {
             self::$instance = new self();
             self::$instance->init();
@@ -19,10 +20,6 @@ trait SingletonTrait {
 
         return self::$instance;
     }
-
-    protected function __clone() { }
-    protected function __sleep() { }
-    protected function __wakeup() { }
 
     protected function init(){
 
