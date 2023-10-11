@@ -19,7 +19,7 @@ class DevelopmentController extends AdminController
         $path = '/' . trim(req()->get('path','/'),'/');
         $realPath = realpath(app()->basePath($path) );
         if(is_file($realPath) && is_readable($realPath)){
-            response(['code'=>0,'msg'=>'','path'=>$path , 'type'=>'content' , 'content'=>file_get_contents($realPath)])->withJson();
+            response(['code'=>0,'msg'=>'','path'=>$path , 'type'=>'content' ,'filename'=>basename($realPath) , 'content'=>file_get_contents($realPath)])->withJson();
         }
         $data = [];
         $fsIter = new FilesystemIterator($realPath,FilesystemIterator::KEY_AS_PATHNAME|FilesystemIterator::CURRENT_AS_FILEINFO|FilesystemIterator::SKIP_DOTS);
