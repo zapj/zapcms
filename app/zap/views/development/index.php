@@ -43,7 +43,7 @@ $this->layout('layouts/common');
     const editorInstances = {};
     $(function(){
 
-        getDir('/',fileTreeView);
+        getDir('<?php echo $path;?>',fileTreeView);
 
         fileTreeView.on('click','li',function(e){
             e.preventDefault();

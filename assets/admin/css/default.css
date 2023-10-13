@@ -146,10 +146,7 @@ a {
 }
 
 .cd-accordion__sub--l1 .cd-accordion__label {
-    background: #313439;
-    --color-shadow: lightness(hsl(218, 7%, 32%), 0.85);
-    box-shadow: inset 0 -1px lightness(hsl(218,7%,32%),0.85);
-    padding-left: calc(1.25em + 16px);
+    /*padding-left: calc(1.25em + 16px);*/
 }
 
 .cd-accordion__sub--l1 .cd-accordion__label:hover {

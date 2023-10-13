@@ -13,6 +13,7 @@
     <script src="<?php echo base_url();?>/assets/admin/js/admin.js"></script>
     <script>
         window.ZAP_BASE_URL = '<?php echo \zap\facades\Url::home(); ?>';
+        window.ZAP_ = '<?php echo \zap\facades\Url::home(); ?>';
     </script>
     <?php
     print_styles();
@@ -30,11 +31,11 @@
         </div>
         <footer class="pt-5 pb-2 text-body-secondary text-center text-small ">
             <p class="mb-1">© 2023 ZAP.CN</p>
-<!--            <ul class="list-inline">-->
-<!--                <li class="list-inline-item"><a href="#">Privacy</a></li>-->
-<!--                <li class="list-inline-item"><a href="#">Terms</a></li>-->
-<!--                <li class="list-inline-item"><a href="#">Support</a></li>-->
-<!--            </ul>-->
+            <ul class="list-inline">
+                <li class="list-inline-item"><a href="#">Privacy</a></li>
+                <li class="list-inline-item"><a href="#">Terms</a></li>
+                <li class="list-inline-item"><a href="#">Support</a></li>
+            </ul>
         </footer>
         <div class="toast-container p-3 top-0 start-50 translate-middle-x" id="topCenterToast" data-original-class="toast-container p-3"></div>
         <div class="toast-container p-3 top-0 end-0" id="topRightToast" data-original-class="toast-container p-3"></div>

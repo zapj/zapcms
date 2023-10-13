@@ -19,9 +19,7 @@ use zap\view\View;
 
 class AbstractNodeType
 {
-    protected $nodeType = NodeType::NEWS;
-
-
+    protected $nodeType;
 
     protected $catalogId;
 
@@ -29,6 +27,18 @@ class AbstractNodeType
     public $action;
 
     protected $title;
+
+    protected $isAjax;
+
+    public function __construct()
+    {
+        $this->catalogId = intval(Request::get('cid'));
+        $this->isAjax = Request::isAjax();
+    }
+
+    public function __init(){
+
+    }
 
     public function isAjax(): bool
     {
@@ -39,17 +49,6 @@ class AbstractNodeType
     {
         $this->isAjax = $isAjax;
     }
-    protected $isAjax;
-
-    public function __construct()
-    {
-        $this->catalogId = intval(Request::get('catalog_id'));
-        $this->isAjax = Request::isAjax();
-    }
-
-    public function __init(){
-
-    }
 
     //controller actions
     public function index(){
@@ -58,11 +57,11 @@ class AbstractNodeType
 
         $conditions = [
             'where'=>[
-                'nr.catalog_id'=>$this->catalogId,
                 'n.node_type'=>$this->nodeType,
                 'n.author_id'=>Auth::user('id'),
             ]
         ];
+        $this->catalogId && $conditions['where']['nr.catalog_id']= $this->catalogId;
         $conditions = apply_filters('node_total_conditions',$conditions);
         $page = $this->usePageHelper($this->getTotalRows($conditions));
         $conditions['orderBy'] = 'id desc';
@@ -93,9 +92,8 @@ class AbstractNodeType
         $data['title'] = $this->title;
         $data['sub_title'] = $this->getTitle("修改%s");
         $data['node'] = Node::findById($id);
-        $catalog = Catalog::instance()->get($this->catalogId);
         $data['node_relations'] = $this->getNodeRelationships($id);
-        $data['catalogList'] = Catalog::instance()->getTreeArray(['node_type'=>$catalog['node_type']]);
+        $data['catalogList'] = Catalog::instance()->getTreeArray(['node_type'=>$data['node']['node_type']]);
         $this->display($data,'form');
     }
 
@@ -119,9 +117,8 @@ class AbstractNodeType
         $data['title'] = $this->title;
         $data['sub_title'] = $this->getTitle("添加%s");
         $data['node'] = new Node();
-        $catalog = $this->getCatalogById($this->catalogId);
         $data['node_relations'] = [];
-        $data['catalogList'] = Catalog::instance()->getTreeArray(['node_type'=>$catalog['node_type']]);
+        $data['catalogList'] = Catalog::instance()->getTreeArray(['node_type'=>$this->nodeType]);
         $this->display($data,'form');
     }
 
@@ -144,11 +141,6 @@ class AbstractNodeType
     protected function display($data = [], $name = null){
         $controller = strtolower(trim(preg_replace('/([A-Z])/', '-$1', $this->controller),'-'));
         $action = strtolower(trim(preg_replace('/([A-Z])/', '-$1', $this->action),'-'));
-//        if(is_null($name)){
-//            $name = "{$controller}.{$action}";
-//        }else{
-//            $name = "{$controller}.{$name}";
-//        }
         $data['_controller'] = $this->controller;
         $data['_action'] = $this->action;
         $data['catalogId'] = $this->catalogId;
@@ -186,6 +178,7 @@ class AbstractNodeType
                 ->select('count(n.id) as rowcount');
         }else{
             $query = DB::table('node','n');
+
         }
 
         $this->prepareConditions($query,$conditions);

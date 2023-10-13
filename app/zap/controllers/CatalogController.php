@@ -7,6 +7,7 @@ use zap\Catalog;
 use zap\DB;
 use zap\http\Request;
 use zap\http\Response;
+use zap\util\Str;
 use zap\view\View;
 
 /*
@@ -33,13 +34,20 @@ class CatalogController extends AdminController
 
     public function saveCatalog(){
         $catalog = Request::post('catalog',[]);
-        $menu = new Catalog();
-        foreach ($catalog as $row){
-//            if(!isset($row['pid'])){
-//                $row['pid'] = 0;
-//            }
-            $menu->add($row,$row['pid']);
+        $catalogId = intval(Request::post('catalog_id',0));
+
+        foreach (range(0,4) as $position){
+            $catalog['show_position'][$position] = isset($catalog['show_position'][$position]) ? 1 :  0;
         }
+        $catalog['seo_name'] = Str::slug(empty($catalog['seo_name']) ? $catalog['title'] : $catalog['seo_name']);
+        $catalog['show_position'] = join('', $catalog['show_position']);
+        $menu = new Catalog();
+        if($catalogId){
+            $menu->update($catalog,$catalogId);
+        }else{
+            $menu->add($catalog,$catalog['pid']);
+        }
+
         Response::json(['code'=>0,'msg'=>'保存成功']);
     }
 
@@ -57,12 +65,12 @@ class CatalogController extends AdminController
     {
 
         $data['pid'] = intval(Request::get('pid',0));
+        $data['cid'] = intval(Request::get('cid',0));
         if($data['pid']){
             $data['parent'] = Catalog::instance()->get($data['pid']);
         }
-//        $data['catalog'] = Catalog::instance()->getTreeArray();
-//        print_r($data['parent']);
-//        echo ltrim($data['parent']['path'],'0,');
+
+        $data['catalog'] = $data['cid'] == 0 ? [] : Catalog::instance()->get($data['cid']);
 
         View::render('catalog.form',$data);
     }

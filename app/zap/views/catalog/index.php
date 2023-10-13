@@ -1,7 +1,7 @@
 <?php
 use zap\facades\Url;
 
-$this->layout('layouts/common');
+IS_AJAX !== true && $this->layout('layouts/common');
 ?>
 
 <nav class="navbar bg-body-tertiary position-fixed w-100 shadow z-3 ">
@@ -13,7 +13,7 @@ $this->layout('layouts/common');
             </ol>
         </nav>
         <div class=" text-end" >
-            <button type="button" class="btn btn-sm btn-success" onclick="add(0)"><i class="fa fa-plus"></i> 添加</button>
+            <button type="button" class="btn btn-sm btn-success" onclick="addOrEdit(0)"><i class="fa fa-plus"></i> 添加</button>
         </div>
     </div>
 
@@ -42,9 +42,9 @@ $this->layout('layouts/common');
                     </th>
                     <th scope="col" style="width: 50px">排序</th>
                     <th scope="col" class="w-100">栏目名称</th>
-                    <th scope="col">显示位置</th>
-                    <th scope="col">内容模型</th>
                     <th scope="col">SEO 名称</th>
+                    <th scope="col">内容模型</th>
+
                     <th scope="col">操作</th>
 
 
@@ -77,26 +77,12 @@ $this->layout('layouts/common');
                                    class="d-inline form-control form-control-sm w-auto"/>
                         </div>
                     </td>
-                    <td>
-                        <select name="catalog[<?php echo $admin_menu['id']; ?>][show_position]" class="form-select form-select-sm w-auto">
-                            <?php foreach (\zap\Catalog::getPositions() as $id => $title): ?>
-                                <option value="<?php echo $id;?>" <?php echo $admin_menu['show_position']==$id?'selected':''; ?> ><?php echo $title;?></option>
-                            <?php endforeach; ?>
-                        </select>
-
-                        </td>
+                    <td><?php echo $admin_menu['seo_name']; ?></td>
                     <td><?php echo \zap\NodeType::getTitle($admin_menu['node_type']); ?></td>
-                    <td><?php echo $admin_menu['seo_url']; ?></td>
-                    <td>
-                        <button type="button" class="btn btn-info btn-sm">设置</button>
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">更多</button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="javascript:void(0)" onclick="add(<?php echo $admin_menu['id'];?>)">添加子类</a></li>
 
-<!--                                <li><hr class="dropdown-divider"></li>-->
-                            </ul>
-                        </div>
+                    <td>
+                        <button type="button" class="btn btn-info btn-sm" onclick="addOrEdit(<?php echo $admin_menu['id']; ?>)">设置</button>
+
                     </td>
 
                 </tr>
@@ -134,10 +120,9 @@ $this->layout('layouts/common');
             success:function (data){
                 ZapToast.alert(data.msg,{
                     bgColor:data.code===0?bgSuccess:bgDanger,
-                    position:Toast_Pos_Center,
-                    delay: 2000,
-                    callback:function(){ location.reload();}
+                    position:Toast_Pos_Center
                 });
+                Zap.reload();
             }
         })
     }
@@ -154,29 +139,30 @@ $this->layout('layouts/common');
             data:checkedCatalog,
             success:function (data){
                 ZapToast.alert(data.msg,{bgColor:data.code===0?bgSuccess:bgDanger,position:Toast_Pos_Center});
+                Zap.reload();
             }
         })
     }
 
-    function add(pid){
+    function addOrEdit(cid){
         m = ZapModal.create({
             id:'addCatalog',
-            title:'添加栏目',
+            title: (cid ? '修改' : '添加') + '栏目',
             content:ZapModal.loadding(),
             backdrop:false,
-            url:'<?php echo Url::action("Catalog@form");?>?modalId=addCatalog&pid='+pid,
-            buttons:[{close:true,title:"关闭"},{title:"保存",class:'btn-success',callback:function(){alert(123);}}],
+            url:'<?php echo Url::action("Catalog@form");?>?modalId=addCatalog&pid=0&cid='+cid,
+            buttons:[{close:true,title:"关闭"},{title:"保存",class:'btn-success'}],
             btn2:function (){
                 $.ajax({
                     url:'<?php echo Url::action("Catalog@saveCatalog");?>',
                     method:'post',
                     data:$('#addCatalog form').serialize(),
                     success:function (data){
-                        ZapToast.alert(data.msg,{bgColor:data.code===0?bgSuccess:bgDanger,position:Toast_Pos_Center,delay:2000,callback:function(){
-                            location.reload();
-                            }
-                        });
+                        ZapToast.alert(data.msg,{bgColor:data.code===0?bgSuccess:bgDanger,position:Toast_Pos_Center});
+                        Zap.reload();
                     }
+                }).always(function(){
+                    m.hide();
                 })
             }
         },true)

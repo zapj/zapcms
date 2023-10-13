@@ -1,6 +1,6 @@
 <?php
 
-namespace app\zap\helpers;
+namespace zap\helpers;
 
 use ArrayIterator;
 use FilesystemIterator;

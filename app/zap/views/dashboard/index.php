@@ -1,4 +1,7 @@
 <?php
+
+use zap\NodeType;
+
 $this->layout('layouts/common');
 ?>
 
@@ -7,7 +10,26 @@ $this->layout('layouts/common');
 
 
 <main class="container">
+    <div class="row mt-3">
+        <?php foreach($node_types_count as $type=>$count){
+            $name = NodeType::getName($type)
+            ?>
 
+
+        <div class="col">
+            <div class="card">
+                <div class="card-body text-center">
+                    <a  href="<?php echo url_action("Node@{$name}"); ?>">
+                    <strong class="text-success fw-bold fs-2"><?php echo $count ?></strong></a>
+                    <br/>
+                    <i class="fa fa-cogs"></i>
+                    <?php echo NodeType::getTitle($type); ?>
+                </div>
+            </div>
+        </div>
+        <?php } ?>
+
+    </div>
 
 
     <div class="my-3 p-3 bg-body rounded shadow-sm">
@@ -16,47 +38,41 @@ $this->layout('layouts/common');
             <table class="table table-bordered text-nowrap">
             <tbody>
             <tr>
-                <th >ZapCMS 版本</th>
+                <td >ZapCMS 版本</td>
                 <td>v<?php echo \zap\Version::ZAPCMS_VERSION; ?></td>
                 <td>PHP 版本</td>
                 <td><?php echo PHP_VERSION , '(' , php_sapi_name() , ')'; ?></td>
             </tr>
             <tr>
-                <th >MySQL 版本</th>
-                <td>v<?php echo \zap\DB::value("SELECT VERSION()"); ?></td>
+                <?php $driver = \zap\DB::getPDO()->getAttribute(PDO::ATTR_DRIVER_NAME) ;?>
+                <td ><?php echo $driver;?> 版本</td>
+                <td>v<?php
+                    if($driver == 'mysql'){
+                    echo \zap\DB::value("SELECT VERSION()");
+                    }else if($driver == 'sqlite'){
+                        echo join(',',\SQLite3::version());
+                    } ?></td>
                 <td>OpenSSL</td>
                 <td><?php echo constant("OPENSSL_VERSION_TEXT") ?? '不支持'; ?></td>
             </tr>
             <tr >
-                <th >PHP 扩展</th>
-                <td colspan="3" >
-                    <div class="overflow-y-auto" style="height: 200px">
-                    <?php $gdInfo = gd_info(); ?>
-                    <table class="table">
-                        <tbody>
-                       <?php foreach ($gdInfo as $name=>$value){ ?>
-                        <tr>
-                            <td ><?php echo $name ?></td>
-                            <td ><?php if(is_string($gdInfo[$name])){
-                                echo $gdInfo[$name];
-                                }else{
-                                echo $gdInfo[$name] ? 'yes' : 'no';
-
-                                }?></td>
-
-                        </tr>
-                        <?php } ?>
-                        </tbody>
-                    </table>
-                    </div>
+                <td >PHP GD</td>
+                <td  >
+                    <?php  $gdInfo = gd_info(); echo current($gdInfo);
+                    ?>
+                </td>
+                <td >PDO 驱动</td>
+                <td  >
+                    <?php   echo join('/',PDO::getAvailableDrivers());
+                    ?>
                 </td>
             </tr>
             <tr>
-                <th >Web Server</th>
+                <td >Web Server</td>
                 <td colspan="3"><?php echo \zap\http\Request::server('SERVER_SOFTWARE'); ?></td>
             </tr>
             <tr>
-                <th >操作系统</th>
+                <td >操作系统</td>
                 <td colspan="3"><?php echo php_uname(); ?></td>
             </tr>
 

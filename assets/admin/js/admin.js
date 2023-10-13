@@ -23,7 +23,7 @@ const Toast_Pos_Center = 'centerToast';
 const ZapToast = {
     alert:function(msg,params){
         const defaultParams = {
-            delay:5000,
+            delay:2000,
             bgColor:bgSuccess,
             position:Toast_Pos_TopCenter,
             callback:function(){}
@@ -194,8 +194,161 @@ var Zap = {
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
         const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
     },
+    AjaxPost:function(settings){
+        settings['method'] = 'post';
+        return $.ajax(settings);
+    }
 
+}
 
+function ZapDialog(settings){
+    const defaultSettings = {
+        id:null,
+        title:null,
+        closeBtn: true,
+        header:true,
+        footer:true,
+        content:'',
+        loading:true,
+        replace:false,
+        backdrop:true,
+        dialogClass:'',
+        modalClass:'',
+        headerClass:'',
+        contentClass:'',
+        bodyClass:'',
+        footerClass:'',
+        url:null,
+        buttons:[],
+        events:{}
+    };
+    this.settings = Object.assign(defaultSettings,settings);
+    if(this.settings.id === null) this.settings.id = Zap.RandID();
+    this.modalBody = function(body){
+        if(this.settings.url !== null && this.settings.loading === true && body === ''){
+            body = `<div class="spinner-border text-success" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>`;
+        }
+        return `<div class="modal-body ${this.settings.bodyClass}">${body}</div>`;
+    }
+    this.modalFooter = function(){
+        if(this.settings.buttons.length === 0) return '';
+        let buttons = [];
+        for (let btnIndex in this.settings.buttons){
+            btn = this.settings.buttons[btnIndex];
+            btn.class = btn.class || ' class="btn btn-success btn-sm" ';
+            btn.title = btn.title || '默认按钮';
+            btn.close = btn.close === undefined ? ' data-bs-dismiss="modal" ' :'';
+            buttons.push(`<button type="button" data-index="${btnIndex}" class="${btn.class}" ${btn.close}>${btn.title}</button>`)
+        }
+        let buttonStr = buttons.join();
+        return `<div class="modal-footer ${this.settings.footerClass}">${buttonStr}</div>`;
+    }
+
+    this.modalHeader = function(value){
+        if(this.settings.title === null) return false;
+        let closeBtn = `<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>`;
+        if(this.settings.closeBtn === false){
+            closeBtn = '';
+        }else if(this.settings.closeBtn !== true){
+            closeBtn = this.settings.closeBtn;
+        }
+        return `<div class="modal-header"><h5 class="modal-title">${value}</h5>${closeBtn}</div>`;
+    }
+    this.render = function(){
+
+        const header = this.modalHeader(this.settings.title)
+        const body = this.modalBody(this.settings.content)
+        const footer = this.modalFooter()
+        const backdrop = this.settings.backdrop === true ? `data-bs-backdrop="static" data-bs-keyboard="false"`:'';
+        return `<div class="modal fade ${this.settings.modalClass}" tabindex="-1" id="${this.settings.id}" ${backdrop} aria-hidden="true">    
+                  <div class="modal-dialog ${this.settings.dialogClass}">
+                    <div class="modal-content ${this.settings.contentClass}">
+                      ${header}
+                      ${body}
+                      ${footer}
+                    </div>
+                  </div>
+                </div>`;
+    }
+    this.create=function(){
+        q = document.querySelector('#'+this.settings.id);
+        if(this.settings.replace === true && q !==null){
+            q.remove();
+        }else if(this.settings.replace === false && q !==null){
+            return;
+        }
+        let modalNode = Zap.createElement(this.render());
+        document.body.appendChild(modalNode);
+        this.modal = new bootstrap.Modal(modalNode)
+        for (const eventKey in this.settings.events) {
+            modalNode.addEventListener(eventKey,this.settings.events[eventKey]);
+        }
+    }
+    this.setContent = function (content){
+        document.querySelector('#'+this.settings.id+' .modal-body').innerHTML = content;
+    }
+}
+
+ZapDialog.prototype.show = function(){
+    if(this.modal === undefined){
+        this.create();
+    }
+    this.modal.show();
+}
+ZapDialog.prototype.hide = function(){
+    this.modal.hide();
+}
+
+ZapDialog.prototype.dispose = function(){
+    this.modal.dispose();
+}
+
+Zap.createModal = function(settings){
+    return new ZapDialog(settings)
+}
+
+Zap.startLoading = function(){
+
+}
+
+Zap.reload=function(settings){
+    const defaultSettings = {id:'#zContent',url:null,data:null,callback:function(){}}
+    if(settings === undefined){
+        settings = {}
+    }
+    settings = Object.assign(defaultSettings,settings);
+    if(settings.url === null){
+        settings.url = location.href;
+    }
+    $(settings.id).load(settings.url,settings.data,settings.callback);
+}
+
+Zap.createElement = function(str){
+    let child = document.createElement('div');
+    child.innerHTML = str;
+    return child.firstChild;
+}
+
+Zap.RandString = function(len){
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const charLength = chars.length;
+    let result = '';
+    for (let i = 0; i < len; i++ ) {
+        result += chars.charAt(Math.floor(Math.random() * charLength));
+    }
+    return result;
+}
+
+Zap.RandID = function(){
+    const chars = 'abcdefghijklmnopqrstuvwxyz';
+    const charLength = chars.length;
+    let result = 'ZAP';
+    for (let i = 0; i < 5; i++ ) {
+        result += chars.charAt(Math.floor(Math.random() * charLength));
+    }
+    return result + ((new Date()).getTime());
 }
 
 function ZapFaIcons(target,callback){

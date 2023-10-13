@@ -41,10 +41,10 @@ class NodeController extends AdminController
             $zapController = new $class();
             $zapController->controller = $controller;
             $zapController->action = $action;
-
             $nodeTypeId =  NodeType::getID($controller);
             is_null($nodeTypeId) or $zapController->setNodeType($nodeTypeId);
             $zapController->setTitle(NodeType::getTitle($controller));
+            $zapController->setNodeType(NodeType::getID($controller) ?? 0);
             $zapController->setCatalogId(req()->get('catalog_id',0));
             $zapController->__init();
             $zapController->$action(...$params);

@@ -3,61 +3,61 @@ use zap\Catalog;
 use zap\NodeType;
 ?>
 <form>
-<table class="table text-nowrap">
-    <thead>
-    <tr class="table-success">
-
-        <th scope="col" style="width: 50px">排序</th>
-        <th scope="col">栏目名称</th>
-        <th scope="col">内容模型</th>
-        <th scope="col">上级栏目</th>
-        <th scope="col">显示位置</th>
-    </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-                <input name="catalog[0][sort_order]" value="0" class="form-control form-control-sm" size="1" />
-            </td>
-            <td>
-                <div >
-                    <input name="catalog[0][title]" value="" class="form-control form-control-sm w-auto"/>
-                </div>
-            </td>
-
-            <td>
-                    <select name="catalog[0][node_type]" class="form-select form-select-sm w-auto">
-                        <?php foreach (NodeType::getNodeTypes() as $row): ?>
-                        <option value="<?php echo $row['id'];?>"><?php echo $row['title'];?></option>
-                        <?php endforeach; ?>
-                    </select>
-            </td>
-            <td>
-            <select name="catalog[0][pid]" class="form-select form-select-sm w-auto">
-                <option value="0"> - 无 -</option>
-                <?php
-                Catalog::instance()->forEachAll(function($row){
-                    ?>
-                    <option value="<?php echo $row['id'];?>"><?php echo  str_repeat("&nbsp;&nbsp;",$row['level']-1) ?><?php echo $row['title'];?></option>
-                <?php
-                });
+    <input type="hidden" name="catalog_id" value="<?php echo $catalog['id'] ?? 0; ?>" />
+    <div class="mb-3">
+        <label for="catalog_title" class="form-label">栏目名称</label>
+        <input type="text" class="form-control" id="catalog_title" name="catalog[title]" value="<?php echo $catalog['title'];?>" placeholder="">
+    </div>
+    <div class="mb-3">
+        <label for="catalog_seo_name" class="form-label">SEO 名称</label>
+        <input type="text" class="form-control" id="catalog_seo_name" name="catalog[seo_name]" value="<?php echo $catalog['seo_name'];?>" placeholder="">
+    </div>
+    <div class="mb-3">
+        <label for="catalog_node_type" class="form-label">内容模型</label>
+        <select class="form-select" id="catalog_node_type" name="catalog[node_type]" >
+            <?php foreach (NodeType::getNodeTypes() as $key => $row):
+                if(!is_numeric($key)) continue;
                 ?>
+                <option value="<?php echo $row['id'];?>"  <?php echo $row['id'] == $catalog['node_type'] ?'selected':null;  ?> ><?php echo $row['title'];?></option>
+            <?php endforeach; ?>
+        </select>
+
+    </div>
+    <div class="mb-3">
+        <label for="catalog_pid" class="form-label">上级栏目</label>
+        <select class="form-select" id="catalog_pid" name="catalog[pid]" >
+            <option value="0"> - 无 -</option>
+            <?php
+            Catalog::instance()->forEachAll(function($row) use ($catalog){
+                ?>
+                <option value="<?php echo $row['id'];?>" <?php echo $catalog['pid'] == $row['id'] ? 'selected':''; ?>
+                    <?php echo \zap\util\Str::startsWith($row['path'],$catalog['path']) ? 'disabled':null;  ?>
+                >
+                    <?php echo  str_repeat("&nbsp;&nbsp;",$row['level']-1) ?><?php echo $row['title'];?>
+                </option>
+                <?php
+            });
+            ?>
+        </select>
+
+    </div>
+    <div class="mb-3">
+        <label for="catalog_show_position" class="form-label">显示位置</label><br/>
+            <?php foreach (Catalog::getPositions() as $id => $title): ?>
+                <div class="form-check form-check-inline"><?php echo $catalog['show_position'][$id];?>
+                    <input class="form-check-input" type="checkbox" name="catalog[show_position][<?php echo $id; ?>]"  <?php echo intval($catalog['show_position'][$id]) ? 'checked':'' ;?>
+                           id="catalog_show_position<?php echo $id;?>" value="<?php echo $id;?>">
+                    <label class="form-check-label" for="catalog_show_position<?php echo $id;?>"><?php echo $title;?></label>
+                </div>
+            <?php endforeach; ?>
 
 
-            </select>
-            </td>
-            <td>
-                    <select name="catalog[0][show_position]" class="form-select form-select-sm w-auto">
-                        <?php foreach (Catalog::getPositions() as $id => $title): ?>
-                            <option value="<?php echo $id;?>"><?php echo $title;?></option>
-                        <?php endforeach; ?>
-                    </select>
-            </td>
+    </div>
+    <div class="mb-3">
+        <label for="catalog_sort_order" class="form-label">排序</label>
+        <input type="text" class="form-control" id="catalog_sort_order" name="catalog[sort_order]" placeholder="排序" value="<?php echo $catalog['sort_order'] ?? 0;?>">
+    </div>
 
-        </tr>
-    </tbody>
-
-</table>
 </form>
 <script>
     var CATALOG_PID = <?php echo isset($parent['id']) ? $parent['id'] : 0;?>;

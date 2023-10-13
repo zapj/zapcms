@@ -12,7 +12,8 @@ class DevelopmentController extends AdminController
 {
     public function index()
     {
-        View::render('development.index');
+        $path = '/' . trim(req()->get('path','/'),'/');
+        View::render('development.index',['path'=>$path]);
     }
 
     public function getDir(){

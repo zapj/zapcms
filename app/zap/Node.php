@@ -50,6 +50,14 @@ class Node extends Model
     }
 
 
+    public function getAllTypesCount(){
+        return static::createQuery()
+            ->select('node_type,count(*)')
+            ->groupBy('node_type')
+            ->get(FETCH_KEY_PAIR);
+    }
+
+
 
 
 }

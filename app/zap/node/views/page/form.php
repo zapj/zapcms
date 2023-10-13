@@ -38,9 +38,9 @@ $this->layout('layouts/common');
         <input type="hidden" value="<?php echo $node->id; ?>" name="node_id">
         <main class="container-fluid zap-main">
             <div class="row">
+                <?php include('../default/sidebar.php'); ?>
                 <div class="col-md-9 mb-3">
                     <div class="card  shadow">
-
                         <div class="card-header">
                             <ul class="nav nav-tabs card-header-tabs">
                                 <li class="nav-item">
@@ -118,7 +118,7 @@ $this->layout('layouts/common');
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 ">
+                <div class="col-md-3 d-none">
                     <div class="card shadow-sm mb-3">
                         <div class="card-header"><i class="fa fa-sliders"></i> 发布</div>
                         <div class="card-body">

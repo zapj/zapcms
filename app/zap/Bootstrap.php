@@ -2,6 +2,7 @@
 namespace zap;
 
 use zap\http\Middleware;
+use zap\http\Request;
 use zap\view\View;
 
 class Bootstrap implements Middleware
@@ -16,6 +17,8 @@ class Bootstrap implements Middleware
     {
         define('IN_ZAP_ADMIN',true);
         config_set('config.theme',false);
-        View::paths(base_path('/app/zap/views'));
+        define('IS_AJAX',Request::isAjax());
+        View::paths(realpath(__DIR__ . '/views'));
+//        View::paths(base_path(__DIR__ . '/views'));
     }
 }

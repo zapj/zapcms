@@ -1,7 +1,7 @@
 <?php
 
 
-namespace app\zap\helpers;
+namespace zap\helpers;
 
 
 /**

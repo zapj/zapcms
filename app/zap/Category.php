@@ -75,14 +75,27 @@ class Category
         }
         //修改父类 需要更新
         if($data[$this->parentColumn] != $category[$this->parentColumn]){
-            $parent = $this->get($data[$this->parentColumn]);
-            $data[$this->pathColumn] = "{$parent[$this->pathColumn]},{$id}";
 
+
+            if($data[$this->parentColumn] == 0){
+                $data[$this->pathColumn] = "{$id},";
+            }else{
+                $parent = $this->get($data[$this->parentColumn]);
+                $data[$this->pathColumn] = "{$parent[$this->pathColumn]}{$id},";
+            }
             //更新下级所有菜单 path
             $pathPrefix = $category[$this->pathColumn];
-            DB::table($this->table)->where($this->pathColumn,'LIKE',"{$pathPrefix},%")
-                ->set($this->pathColumn,DB::raw("REPLACE({$this->pathColumn},'{$pathPrefix}','{$data[$this->pathColumn]}')"))
-                ->update();
+            $childrenCategories = DB::table($this->table)->where($this->pathColumn,'LIKE',"{$pathPrefix}%")
+                ->get(FETCH_ASSOC);
+            foreach ($childrenCategories as $row){
+                $path = str_replace($pathPrefix,$data[$this->pathColumn],$row[$this->pathColumn]);
+                DB::table($this->table)->where($this->primaryKey,$row[$this->primaryKey])
+                    ->set($this->pathColumn,$path)
+                    ->set($this->levelColumn,intval(substr_count($path,',')) ?: 1)
+                    ->update();
+                //->set($this->pathColumn,DB::raw("REPLACE({$this->pathColumn},'{$pathPrefix}','{$data[$this->pathColumn]}')"))
+            }
+
         }
         DB::update($this->table,$data,['id'=>$id]);
     }
