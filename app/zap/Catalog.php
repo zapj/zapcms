@@ -9,22 +9,19 @@ class Catalog extends Category
 
     use SingletonTrait;
 
-    const POSITION_NONE = "0,0,0,0,0";
-    const POSITION_TOP = 0;
-    const POSITION_LEFT = 1;
-    const POSITION_RIGHT = 2;
-    const POSITION_BOTTOM = 3;
-    const POSITION_CENTER = 4;
+    const POSITION_TOP = 1;
+    const POSITION_LEFT = 2;
+    const POSITION_RIGHT = 3;
+    const POSITION_BOTTOM = 4;
 
 
-    const POSITION_ALL = "1,1,1,1,1";
+    const POSITION_ALL = "1,2,3,4";
 
     protected static array $POSITION_LIST  = [
-        0 => '顶部导航',
-        1 => '左侧导航',
-        2 => '右侧导航',
-        3 => '底部导航',
-        4 => '中间导航',
+        1 => '顶部导航',
+        2 => '左侧导航',
+        3 => '右侧导航',
+        4 => '底部导航',
     ];
     public static function getPositions(): array
     {

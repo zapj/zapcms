@@ -2,7 +2,7 @@
 use zap\facades\Url;
 use zap\AdminMenu;
 ?>
-<nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-success" aria-label="Main navigation">
+<nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-primary" aria-label="Main navigation">
     <div class="container-fluid">
         <a class="navbar-brand" href="<?php echo Url::home();?>">
             <img class="" src="<?php echo base_url();?>/assets/admin/img/zap_logo_green_rgb.svg" alt="ZAP" width="120" >
@@ -70,7 +70,7 @@ use zap\AdminMenu;
 <!--                </li>-->
             </ul>
 
-
+            <hr class="d-block d-sm-none text-white"/>
             <ul class="navbar-nav d-flex mb-2 mb-lg-0">
 
                 <li class="nav-item">

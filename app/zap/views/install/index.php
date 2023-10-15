@@ -60,7 +60,7 @@ $this->layout('install/layout');
                         </p>
                     </div>
                     <div class="card-footer text-center">
-                        <a href="<?php echo url_action('Install@database') ?>" class="btn btn-primary">同意 继续安装</a>
+                        <a href="<?php echo url_action('Install@check') ?>" class="btn btn-success">同意 继续安装</a>
                     </div>
                 </div>
             </div>

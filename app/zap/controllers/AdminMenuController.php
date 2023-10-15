@@ -35,6 +35,7 @@ class AdminMenuController extends AdminController
             $data = Request::post('zap_data',[]);
             $menu_id = intval(Request::post('menu_id'));
             $data['icon'] = $data['icon'] ?? 'fa fa-circle-notch';
+            $data['show_position'] = join(',', $data['show_position']);
             if($menu_id){
                 AdminMenu::instance()->update($data,$menu_id);
             }else{

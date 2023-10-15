@@ -301,13 +301,11 @@ function sanitize($title): string
     $title = preg_replace('/[^%a-z0-9 _-]/', '', $title);
     $title = preg_replace('/\s+/', '-', $title);
     $title = preg_replace('|-+|', '-', $title);
-    $title = trim($title, '-');
-
-    return $title;
+    return trim($title, '-');
 }
 
 
-function url_to($url, $params = null, $queryString = true) {
+function url_to($url, $params = [], $queryString = true) {
     return \zap\facades\Url::to($url,$params,$queryString);
 }
 

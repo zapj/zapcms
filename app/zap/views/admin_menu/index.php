@@ -1,7 +1,7 @@
 <?php
 use zap\facades\Url;
 
-$this->layout('layouts/common');
+!IS_AJAX && $this->layout('layouts/common');
 ?>
 
 <nav class="navbar bg-body-tertiary position-fixed w-100 shadow z-3 ">
@@ -44,7 +44,6 @@ $this->layout('layouts/common');
                     <th scope="col" style="width: 50px">排序</th>
                     <th scope="col" class="w-100">菜单名称</th>
                     <th scope="col">链接</th>
-                    <th scope="col">显示位置</th>
                     <th scope="col">操作</th>
 
 
@@ -76,30 +75,15 @@ $this->layout('layouts/common');
                             <input name="admin_menu[<?php echo $admin_menu['id']; ?>][title]"
                                    value="<?php echo $admin_menu['title']; ?>"
                                    class="d-inline form-control form-control-sm w-auto"/>
-
+                            <small class="text-black-50">ID:<?php echo $admin_menu['id'];?></small>
                         </div>
                     </td>
                     <td><?php echo $admin_menu['link_to']; ?></td>
-                    <td>
-                        <select name="admin_menu[<?php echo $admin_menu['id']; ?>][show_position]" class="form-select form-select-sm w-auto">
-                            <?php foreach (\zap\AdminMenu::getPositions() as $id => $title): ?>
-                                <option value="<?php echo $id;?>" <?php echo $admin_menu['show_position']==$id?'selected':''; ?> ><?php echo $title;?></option>
-                            <?php endforeach; ?>
-                        </select>
-
-                        </td>
 
 
                     <td>
                         <button type="button" class="btn btn-outline-success btn-sm" onclick="addOrEdit(<?php echo $admin_menu['pid'],',',$admin_menu['id'];?>)">设置</button>
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">更多</button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="javascript:void(0)" onclick="addOrEdit(<?php echo $admin_menu['id'];?>)">添加子类</a></li>
-
-<!--                                <li><hr class="dropdown-divider"></li>-->
-                            </ul>
-                        </div>
+                      
                     </td>
 
                 </tr>
@@ -158,6 +142,7 @@ $this->layout('layouts/common');
             method:'post',
             data:checkedCatalog,
             success:function (data){
+                Zap.reload()
                 ZapToast.alert(data.msg,{bgColor:data.code===0?bgSuccess:bgDanger,position:Toast_Pos_Center});
             }
         })
@@ -181,8 +166,9 @@ $this->layout('layouts/common');
                     method:'post',
                     data:$('#adminMenu form').serialize(),
                     success:function (data){
+                        m.hide();
                         ZapToast.alert(data.msg,{bgColor:data.code===0?bgSuccess:bgDanger,position:Toast_Pos_Center,delay:1500,callback:function(){
-                            location.reload();
+                            Zap.reload()
                             }
                         });
                     }

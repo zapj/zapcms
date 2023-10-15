@@ -43,9 +43,11 @@ use zap\NodeType;
     </div>
     <div class="mb-3">
         <label for="catalog_show_position" class="form-label">显示位置</label><br/>
-            <?php foreach (Catalog::getPositions() as $id => $title): ?>
-                <div class="form-check form-check-inline"><?php echo $catalog['show_position'][$id];?>
-                    <input class="form-check-input" type="checkbox" name="catalog[show_position][<?php echo $id; ?>]"  <?php echo intval($catalog['show_position'][$id]) ? 'checked':'' ;?>
+            <?php
+            $positions = explode(',',$catalog['show_position'] );
+            foreach (Catalog::getPositions() as $id => $title): ?>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" name="catalog[show_position][<?php echo $id; ?>]"  <?php echo in_array($id,$positions) ? 'checked':'' ;?>
                            id="catalog_show_position<?php echo $id;?>" value="<?php echo $id;?>">
                     <label class="form-check-label" for="catalog_show_position<?php echo $id;?>"><?php echo $title;?></label>
                 </div>

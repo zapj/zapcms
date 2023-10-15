@@ -36,11 +36,8 @@ class CatalogController extends AdminController
         $catalog = Request::post('catalog',[]);
         $catalogId = intval(Request::post('catalog_id',0));
 
-        foreach (range(0,4) as $position){
-            $catalog['show_position'][$position] = isset($catalog['show_position'][$position]) ? 1 :  0;
-        }
         $catalog['seo_name'] = Str::slug(empty($catalog['seo_name']) ? $catalog['title'] : $catalog['seo_name']);
-        $catalog['show_position'] = join('', $catalog['show_position']);
+        $catalog['show_position'] = join(',', $catalog['show_position']);
         $menu = new Catalog();
         if($catalogId){
             $menu->update($catalog,$catalogId);

@@ -81,7 +81,7 @@ IS_AJAX !== true && $this->layout('layouts/common');
                     <td><?php echo \zap\NodeType::getTitle($admin_menu['node_type']); ?></td>
 
                     <td>
-                        <button type="button" class="btn btn-info btn-sm" onclick="addOrEdit(<?php echo $admin_menu['id']; ?>)">设置</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="addOrEdit(<?php echo $admin_menu['id']; ?>)">设置</button>
 
                     </td>
 

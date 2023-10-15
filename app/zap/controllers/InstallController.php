@@ -13,9 +13,19 @@ class InstallController extends Controller
         View::render("install.index",$data);
     }
 
+    function check(){
+        $data = [];
+        View::render("install.check",$data);
+    }
+
     function database(){
         $data = [];
         View::render("install.database",$data);
+    }
+
+    function done(){
+        $data = [];
+        View::render("install.done",$data);
     }
 
 }
