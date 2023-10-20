@@ -36,7 +36,7 @@ $this->layout('layouts/common');
 
             <div class="card-header"><?php echo $title; ?></div>
 
-            <div class="table-responsive card-body">
+            <div class="table-responsive card-body ps-0 pe-0">
                 <table class="table text-nowrap table-hover">
                     <thead>
                     <tr>
@@ -50,7 +50,7 @@ $this->layout('layouts/common');
                     </thead>
                     <tbody>
                     <?php foreach ($data as $row):
-                        $class = NodeType::getName($row['node_type']);
+                        $class = $row['node_type'];
                         ?>
 
                         <tr>
@@ -71,8 +71,8 @@ $this->layout('layouts/common');
                             <td><?php echo date(Z_DATE_TIME,$row['pub_time']); ?></td>
                             <td><?php echo \zap\Node::getStatusTitle($row['status']); ?></td>
                             <td>
-                                <a href="<?php echo url_action("Node@{$class}/edit/{$row['id']}",$_GET);?>" class="btn btn-sm btn-success"><i class="fa fa-edit"></i> 编辑</a>
-                                <a href="javascript:void(0);" onclick="remove(<?php echo $row['id'];?>,'<?php echo $row['title'];?>');" class="btn btn-sm btn-danger"><i class="fa fa-remove"></i> 删除</a>
+                                <a href="<?php echo url_action("Node@{$class}/edit/{$row['id']}",$_GET);?>" class="btn btn-sm btn-outline-success"><i class="fa fa-edit"></i> 编辑</a>
+                                <a href="javascript:void(0);" onclick="remove(<?php echo $row['id'];?>,'<?php echo $row['title'];?>');" class="btn btn-sm btn-outline-danger"><i class="fa fa-remove"></i> 删除</a>
 
                             </td>
                         </tr>

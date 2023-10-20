@@ -85,7 +85,7 @@ class Dispatcher implements Middleware
         if ($controller != null && preg_match('/^[a-z]+[-_0-9a-z]+$/i', $controller)) {
             $this->controller = $controller;
             if ($method != null && preg_match('/^[a-z][a-z0-9-_]+$/i', $method)) {
-                $this->method = str_replace('-','',$method);
+                $this->method = Router::convertToName($method);
             } elseif ($method != null) {
                 array_unshift($segments, $method);
             }
@@ -93,13 +93,10 @@ class Dispatcher implements Middleware
             array_unshift($segments, $controller);
         }
 
-        $this->hasParams = (count($segments) == 0) ? false : true;
+        $this->hasParams = !((count($segments) == 0));
 
         $this->router->params = $segments;
-        $this->controllerClass = $namespace.'\\'.str_replace(
-                ' ', '',
-                ucwords(str_replace(['-', '_'], ' ', $this->controller))
-            ) . 'Controller';
+        $this->controllerClass = $namespace.'\\'. Router::convertToName($this->controller) . 'Controller';
     }
 
 

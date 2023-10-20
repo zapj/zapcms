@@ -11,9 +11,10 @@ class Node extends Model
     protected $primaryKey = 'id';
 
 
-    const PUBLISHED = 1; //已发布
-    const DRAFT = 2; //草稿
-    const SOFT_DELETE = 3; //软删除
+    const STATUS_PUBLISH = 'publish'; //已发布
+    const STATUS_DRAFT = 'draft'; //草稿
+    const STATUS_SOFT_DELETE = 'soft_delete'; //软删除
+    const STATUS_TRASH = 'trash'; //软删除
 
     public static function tableName(): string
     {
@@ -30,29 +31,31 @@ class Node extends Model
     public static function getStatusTitle($status): string
     {
         switch ($status){
-            case self::PUBLISHED:
+            case self::STATUS_PUBLISH:
                 return '已发布';
-            case self::DRAFT:
+            case self::STATUS_DRAFT:
                 return '草稿';
-            case self::SOFT_DELETE:
+            case self::STATUS_SOFT_DELETE:
                 return '软删除';
             default:
                 return '无';
         }
     }
 
-    public function getStatus(){
+    public function getStatus(): array
+    {
         return [
-            self::PUBLISHED => '已发布',
-            self::DRAFT => '草稿',
-            self::SOFT_DELETE => '已删除'
+            self::STATUS_PUBLISH => '已发布',
+            self::STATUS_DRAFT => '草稿',
+            self::STATUS_SOFT_DELETE => '已删除',
+            self::STATUS_TRASH => '回收站'
         ];
     }
 
 
     public function getAllTypesCount(){
         return static::createQuery()
-            ->select('node_type,count(*)')
+            ->select('node_type,count(id)')
             ->groupBy('node_type')
             ->get(FETCH_KEY_PAIR);
     }

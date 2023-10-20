@@ -12,14 +12,13 @@ $this->layout('layouts/common');
 <main class="container">
     <div class="row mt-3">
         <?php foreach($node_types_count as $type=>$count){
-            $name = NodeType::getName($type)
             ?>
 
 
         <div class="col">
             <div class="card">
                 <div class="card-body text-center">
-                    <a  href="<?php echo url_action("Node@{$name}"); ?>">
+                    <a  href="<?php echo url_action("Node@{$type}"); ?>">
                     <strong class="text-success fw-bold fs-2"><?php echo $count ?></strong></a>
                     <br/>
                     <i class="fa fa-cogs"></i>

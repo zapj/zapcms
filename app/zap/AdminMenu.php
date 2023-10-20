@@ -33,11 +33,17 @@ class AdminMenu extends Category
         parent::__construct('admin_menu');
     }
 
-    public function add($data, $pid)
+    public function add($data)
     {
         $data['updated_at'] = time();
         $data['created_at'] = time();
-        return parent::add($data, $pid);
+        return parent::add($data);
+    }
+
+    public function update($data, $id)
+    {
+        $data['updated_at'] = time();
+        return parent::update($data, $id);
     }
 
 

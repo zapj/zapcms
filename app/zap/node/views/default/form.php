@@ -126,7 +126,7 @@ $this->layout('layouts/common');
                                 <label for="node_status" class="form-label">状态 <i class="text-danger">*</i></label>
                                 <select class="form-select " name="node[status]" id="node_status">
                                     <?php foreach($node->getStatus() as $id => $title){
-                                        if($id == \zap\Node::SOFT_DELETE){
+                                        if($id == \zap\Node::STATUS_SOFT_DELETE or $id == \zap\Node::STATUS_TRASH){
                                             continue;
                                         }
                                         ?>
@@ -143,7 +143,7 @@ $this->layout('layouts/common');
                             <div class="mb-3">
                                 <label for="node_author_id" class="form-label">发布人</label>
                                 <input type="hidden" id="node_author_id" name="node[author_id]" value="<?php echo \zap\Auth::user('id') ?>">
-                                <input type="text" class="form-control" id="node_author_name" readonly  placeholder="发布人" value="<?php echo \zap\Auth::user('fullname') ?>">
+                                <input type="text" class="form-control-plaintext" id="node_author_name" readonly  placeholder="发布人" value="<?php echo \zap\Auth::user('full_name') ?>">
                             </div>
                             <?php if($node->update_time){ ?>
                                 <p class="text-black-50"><small>最后修改时间 :

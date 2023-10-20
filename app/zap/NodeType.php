@@ -2,7 +2,7 @@
 
 namespace zap;
 
-use zap\DB;
+
 use zap\node\AbstractNodeType;
 
 /**
@@ -10,71 +10,45 @@ use zap\node\AbstractNodeType;
  */
 class NodeType
 {
-    protected static $nodeTypes;
+    protected static ?array $nodeTypes = null;
 
-
-    const NEWS = 1;
-    const PRODUCT = 2;
-    const PAGE = 3;
-    const FAQ = 4;
-    const LINK_URL = 5;
-    const COMMENTS = 6;
-
-
-    public static function getNodeTypes()
+    public static function getNodeTypes(): array
     {
         if(is_null(static::$nodeTypes)){
             $resultSet = DB::table('node_types')->where('status',1)
-                ->orderBy('sort_order ASC')
+                ->orderBy('sort_order DESC')
                 ->get(FETCH_ASSOC);
             foreach ($resultSet as $row){
-                static::$nodeTypes[$row['id']] = $row;
-                static::$nodeTypes[$row['name']] = $row;
+                static::$nodeTypes[$row['type_name']] = $row;
             }
         }
         return static::$nodeTypes;
     }
 
 
-    public static function getNodeType($id)
+    public static function getNodeType($type_name,$key = null)
     {
         if(is_null(static::$nodeTypes)){
             static::getNodeTypes();
         }
-        return self::$nodeTypes[$id];
+        return is_null($key) ? self::$nodeTypes[$type_name] : self::$nodeTypes[$type_name][$key];
     }
 
 
-    public static function getTitle($name)
+    public static function getTitle($type_name)
     {
-        if(is_null(static::$nodeTypes)){
-            static::getNodeTypes();
-        }
-        return self::$nodeTypes[$name]['title'] ?? '';
+       return static::getNodeType($type_name,'title');
     }
 
-    public static function getClass($name)
+    public static function getClass($type_name)
     {
-        if(is_null(static::$nodeTypes)){
-            static::getNodeTypes();
-        }
-        return self::$nodeTypes[$name]['node_type'] ?? AbstractNodeType::class;
+        $node_type = static::getNodeType($type_name,'node_type');
+        return $node_type ?? AbstractNodeType::class;
     }
 
-    public static function getName($name)
+    public static function getID($type_name)
     {
-        if(is_null(static::$nodeTypes)){
-            static::getNodeTypes();
-        }
-        return self::$nodeTypes[$name]['name'];
-    }
-
-    public static function getID($name)
-    {
-        if(is_null(static::$nodeTypes)){
-            static::getNodeTypes();
-        }
-        return self::$nodeTypes[$name]['id'];
+        return static::getNodeType($type_name,'type_id');
     }
 
 

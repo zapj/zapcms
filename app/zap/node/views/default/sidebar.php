@@ -17,7 +17,7 @@
                     <tr class="<?php echo $catalogId == $catalog['id'] ? ' table-success':''; ?>">
                         <td>
                             <i class="<?php echo $catalog['icon'];?>"></i>
-                            <a href="<?php echo Url::action("Node@{$nodeType['name']}",['cid'=>$catalog['id']]); ?>">
+                            <a href="<?php echo Url::action("Node@{$nodeType['type_name']}",['cid'=>$catalog['id']]); ?>">
                                 <span style="padding-left: <?php echo $paddingLeft;?>rem!important;"><?php echo $catalog['title'];?></span>
                             </a>
                         </td>

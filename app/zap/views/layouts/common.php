@@ -38,7 +38,7 @@
                 <li class="list-inline-item"><a href="#">Support</a></li>
             </ul>
         </footer>
-        <div class="toast-container p-3 top-0 start-50 translate-middle-x" id="topCenterToast" data-original-class="toast-container p-3"></div>
+        <div class="toast-container p-3 start-50 translate-middle-x" style="top: 100px;" id="topCenterToast" data-original-class="toast-container p-3"></div>
         <div class="toast-container p-3 top-0 end-0" id="topRightToast" data-original-class="toast-container p-3"></div>
         <div class="toast-container p-3 top-50 start-50 translate-middle" id="centerToast" data-original-class="toast-container p-3"></div>
         <script src="<?php echo base_url();?>/assets/admin/js/bootstrap.bundle.min.js" ></script>

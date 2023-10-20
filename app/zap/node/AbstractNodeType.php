@@ -10,6 +10,7 @@ use zap\exception\ViewNotFoundException;
 use zap\helpers\Pagination;
 use zap\http\Request;
 use zap\http\Response;
+use zap\http\Router;
 use zap\Node;
 use zap\NodeRelation;
 use zap\NodeType;
@@ -81,9 +82,10 @@ class AbstractNodeType
             $catalogArray = Request::post('catalog',[]);
             $node['update_time'] = time();
             $node['pub_time'] = strtotime($node['pub_time']) ?: time();
+//            $node['slug'] = Str::slug($node['title']);
             NodeRelation::delete(['node_id'=>$id]);
             foreach ($catalogArray as $catalog_id){
-                NodeRelation::create(['node_id'=>$id,'catalog_id'=>$catalog_id,'node_type'=>$this->nodeType]);
+                NodeRelation::create(['node_id'=>$id,'catalog_id'=>$catalog_id]);
             }
             Node::updateAll($node,['id'=>$id]);
             Response::json(['code'=>0,'msg'=>$this->getTitle("%s修改成功"),'id'=>$id]);
@@ -104,12 +106,13 @@ class AbstractNodeType
             $catalogArray = Request::post('catalog',[]);
             $node['node_type'] = $this->nodeType;
             $node['add_time'] = time();
+            $node['slug'] = Str::slug($node['title']);
             $node['update_time'] = time();
             $node['pub_time']  = strtotime($node['pub_time']) ?: time();
             $node = apply_filters('node_add',$node);
             $nodeModel = Node::create($node);
             foreach ($catalogArray as $catalog_id){
-                NodeRelation::create(['node_id'=>$nodeModel->id,'catalog_id'=>$catalog_id,'node_type'=>$this->nodeType]);
+                NodeRelation::create(['node_id'=>$nodeModel->id,'catalog_id'=>$catalog_id]);
             }
             Response::json(['code'=>0,'msg'=> $this->title . '创建成功','id'=>$nodeModel->id,'redirect_to'=>url_action("Node@{$this->controller}/edit/{$nodeModel->id}",$_GET)]);
 
@@ -139,8 +142,9 @@ class AbstractNodeType
 
 
     protected function display($data = [], $name = null){
-        $controller = strtolower(trim(preg_replace('/([A-Z])/', '-$1', $this->controller),'-'));
-        $action = strtolower(trim(preg_replace('/([A-Z])/', '-$1', $this->action),'-'));
+
+        $controller = Router::convertToUrlName($this->controller);
+        $action = Router::convertToUrlName($this->action);
         $data['_controller'] = $this->controller;
         $data['_action'] = $this->action;
         $data['catalogId'] = $this->catalogId;
@@ -164,7 +168,7 @@ class AbstractNodeType
 
     protected function usePageHelper($total,$pageKeyName = 'page',$limit = 20 , $query = null): Pagination
     {
-        $this->pageHelper = new Pagination(intval(Request::get($pageKeyName)),$limit, $query ?? Request::get());
+        $this->pageHelper = new Pagination(intval(Request::get($pageKeyName,1)),$limit, $query ?? Request::get());
         $this->pageHelper->setTotal($total);
         View::share('page',$this->pageHelper);
         return $this->pageHelper;
@@ -205,7 +209,9 @@ class AbstractNodeType
     }
 
     protected function getNodeByCatalogId($catalog_id){
-        return NodeRelation::createQuery()->leftJoin('node','node.id=node_relation.node_id')->where('node_relation.catalog_id',$catalog_id)
+        return NodeRelation::createQuery()
+            ->leftJoin('node','node.id=node_relation.node_id')
+            ->where('node_relation.catalog_id',$catalog_id)
             ->fetch(FETCH_ASSOC);
     }
 
@@ -237,7 +243,7 @@ class AbstractNodeType
         return $this->nodeType;
     }
 
-    public function setNodeType(int $nodeType): void
+    public function setNodeType(string $nodeType): void
     {
         $this->nodeType = $nodeType;
     }

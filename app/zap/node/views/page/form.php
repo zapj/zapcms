@@ -7,7 +7,7 @@ Asset::library('summernote');
 //Asset::library('trumbowyg');
 Asset::library('datetimepicker');
 Asset::library('jqueryvalidation');
-$this->layout('layouts/common');
+$this->extend('layouts/common');
 ?>
     <nav class="navbar bg-body-tertiary position-fixed w-100 shadow z-3 zap-top-bar">
         <div class="container-fluid">
@@ -21,14 +21,7 @@ $this->layout('layouts/common');
                 </ol>
             </nav>
             <div class=" text-end">
-<!--                <a class="btn btn-dark btn-sm" href="--><?php //echo url_action('Zap@news', $_GET); ?><!--"><i-->
-<!--                            class="fa fa-cancel"></i>-->
-<!--                    取消</a>-->
-<!--                <button type="button" class="btn btn-success btn-sm" onclick="save();">-->
-<!--                    <i class="fa fa-save"></i> 保存-->
-<!--                </button>-->
-                <!--                <a class="btn btn-primary btn-sm" href="-->
-                <?php //echo url_action('Zap@news'); ?><!--">返回</a>-->
+                <button type="button" class="btn btn-success btn-sm" onclick="save();"><i class="fa fa-save"></i> 保存</button>
             </div>
         </div>
 
@@ -36,9 +29,16 @@ $this->layout('layouts/common');
 
     <form id="zapForm">
         <input type="hidden" value="<?php echo $node->id; ?>" name="node_id">
+        <input type="hidden" name="node[pub_time]" value="<?php echo $node->getPubTimeToDate(); ?>" />
+        <input name="node[status]" id="node_status" type="hidden" value="<?php echo $node->status ?: \zap\Node::STATUS_PUBLISH;?>" />
+        <input type="hidden" id="node_author_id" name="node[author_id]" value="<?php echo \zap\Auth::user('id') ?>">
+        <input type="hidden" name="catalog[]" value="<?php echo $catalogId;?>"  />
         <main class="container-fluid zap-main">
             <div class="row">
-                <?php include('../default/sidebar.php'); ?>
+                <?php
+                $this->include('default/sidebar','leftmenu');
+                echo $this->block('leftmenu');
+                ?>
                 <div class="col-md-9 mb-3">
                     <div class="card  shadow">
                         <div class="card-header">
@@ -118,89 +118,14 @@ $this->layout('layouts/common');
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 d-none">
-                    <div class="card shadow-sm mb-3">
-                        <div class="card-header"><i class="fa fa-sliders"></i> 发布</div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label for="node_status" class="form-label">状态 <i class="text-danger">*</i></label>
-                                <select class="form-select " name="node[status]" id="node_status">
-                                    <?php foreach($node->getStatus() as $id => $title){
-                                        if($id == \zap\Node::SOFT_DELETE){
-                                            continue;
-                                        }
-                                        ?>
-                                        <option value="<?php echo $id;?>" <?php echo $node->status==$id?'selected':null ;?> ><?php echo $title;?></option>
-                                    <?php } ?>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="node_pub_time" class="form-label">发布时间</label>
-                                <input type="text" class="form-control datetimepicker" name="node[pub_time]"
-                                       id="node_pub_time"
-                                       value="<?php echo $node->getPubTimeToDate(); ?>" required/>
-                            </div>
-                            <div class="mb-3">
-                                <label for="node_author_id" class="form-label">发布人</label>
-                                <input type="hidden" id="node_author_id" name="node[author_id]" value="<?php echo \zap\Auth::user('id') ?>">
-                                <input type="text" class="form-control" id="node_author_name" readonly  placeholder="发布人" value="<?php echo \zap\Auth::user('fullname') ?>">
-                            </div>
-                            <?php if($node->update_time){ ?>
-                                <p class="text-black-50"><small>最后修改时间 :
-                                    <?php echo date(Z_DATE_TIME,$node->update_time); ?>
-                                    </small>
-                                </p>
-                            <?php } ?>
-                        </div>
-                        <div class="card-footer">
-                            <a class="btn btn-dark" href="<?php echo url_action("Node@{$_controller}", $_GET); ?>"><i
-                                        class="fa fa-cancel"></i> 取消</a>
-                            <button type="button" class="btn btn-success" onclick="save();"><i class="fa fa-save"></i>
-                                保存
-                            </button>
-                        </div>
-                    </div>
 
-                    <div class="card shadow-sm">
-                        <div class="card-header"><i class="fa-solid fa-sliders"></i> 选项</div>
-                        <div class="card-body">
-                            <?php
-                            while($catalog = array_shift($catalogList)){
-                                ?>
-                                <div class="form-check " style="margin-left:<?php echo $catalog['level']-1; ?>rem!important;">
-                                    <input class="form-check-input" type="checkbox" name="catalog[]" <?php echo !$node_relations[$catalog['id']] ?: 'checked' ?>
-                                           value="<?php echo $catalog['id'];?>" id="catalog-<?php echo $catalog['id'];?>">
-                                    <label class="form-check-label" for="catalog-<?php echo $catalog['id'];?>">
-                                        <?php echo $catalog['title'];?>
-                                    </label>
-                                </div>
-                                <?php
-                                if(isset($catalog['children'])){
-                                    while ($children = array_pop($catalog['children'])){
-                                        array_unshift($catalogList,$children);
-                                    }
-                                }
-                            }
-                            ?>
-
-
-                        </div>
-
-
-
-                    </div>
-
-                </div>
             </div>
         </main>
     </form>
     <script>
         $(document).ready(function () {
 
-            $.datetimepicker.setLocale('zh');
-            $('.datetimepicker').datetimepicker({
-                format: 'Y-m-d H:i:s'
-            });
+
             //验证
             $('#zapForm').validate({
                 ignore: '',

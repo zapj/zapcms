@@ -23,7 +23,7 @@ const Toast_Pos_Center = 'centerToast';
 const ZapToast = {
     alert:function(msg,params){
         const defaultParams = {
-            delay:2000,
+            delay:1000,
             bgColor:bgSuccess,
             position:Toast_Pos_TopCenter,
             callback:function(){}
@@ -32,13 +32,12 @@ const ZapToast = {
             params = {}
         }
         params = Object.assign(defaultParams,params);
-        const toastTpl = '<div class="toast align-items-center ' + params.bgColor + '" '+
-            'data-bs-config=\'{"delay":'+params.delay+'}\'>' +
-            '<div class="d-flex">' +
-            '<div class="toast-body">' + msg + '</div>' +
-            '<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>' +
-            '</div>' +
-            '</div>';
+        const toastTpl = `<div class="toast align-items-center ${params.bgColor}" data-bs-config='{"delay":${params.delay}}'>
+            <div class="d-flex">
+            <div class="toast-body">${msg}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>`;
         const toastContainer = document.getElementById(params.position);
         toastContainer.innerHTML = toastTpl;
 
@@ -58,9 +57,9 @@ const ZapModal = {
         if(color === undefined){
             color = 'text-success';
         }
-        return '<div class="spinner-border '+color+'" role="status">\n' +
-            '  <span class="visually-hidden">Loading...</span>\n' +
-            '</div>';
+        return `<div class="spinner-border ${color}" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>`;
     },
     show:function(params){
         const defaultParams = {
@@ -111,9 +110,7 @@ const ZapModal = {
                 '        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>\n' +
                 '      </div>\n';
         }
-        modalTpl += '<div class="modal-body '+params.body_class+'">\n' +
-                    params.content +
-            '      </div>\n' ;
+        modalTpl += `<div class="modal-body ${params.body_class}">${params.content}</div>` ;
         if(params.buttons !== null){
             modalTpl += '<div class="modal-footer">\n' ;
             for (const button in params.buttons) {

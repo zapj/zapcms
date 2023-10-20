@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ZAP</title>
-    <link href="<?php echo base_url();?>/assets/bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="<?php echo base_url();?>/assets/admin/css/bootstrap.css" rel="stylesheet">
 <!--    <link href="--><?php //echo base_url();?><!--/assets/admin/css/default.css" rel="stylesheet">-->
     <script src="<?php echo base_url();?>/assets/jquery/jquery-3.6.4.min.js"></script>
     <style>
@@ -61,7 +61,11 @@
 
     </form>
 </main>
+
+
 <div class="toast-container p-3 top-0 start-50 translate-middle-x" id="topCenterToast" data-original-class="toast-container p-3"></div>
+<div class="toast-container p-3 top-0 end-0" id="topRightToast" data-original-class="toast-container p-3"></div>
+<div class="toast-container p-3 top-50 start-50 translate-middle" id="centerToast" data-original-class="toast-container p-3"></div>
 
 <script>
     function loginSystem(){
@@ -74,7 +78,7 @@
                 if(data.code === 0){
                     ZapToast.alert(data.msg,{
                         bgColor:bgSuccess,
-                        delay:1500,
+                        delay:1000,
                         callback:function(){
                             location.href=data.redirect_to;
                         }
@@ -92,6 +96,11 @@
     }
 
 </script>
-<script src="<?php echo base_url();?>/assets/bootstrap/5.3.1/js/bootstrap.bundle.min.js" ></script>
+<script src="<?php echo base_url();?>/assets/admin/js/bootstrap.bundle.min.js" ></script>
 <script src="<?php echo base_url();?>/assets/admin/js/admin.js"></script></body>
+<script>
+    <?php
+    \zap\AdminPage::instance()->showFlashMessages();
+    ?>
+</script>
 </html>

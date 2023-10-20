@@ -287,7 +287,10 @@ class ZPDO extends PDO
         return $this->lastInsertId();
     }
 
-    public function upsert($table, $data, $duplicate = null ,$primaryKeys = null ) {
+    /**
+     * @throws NotSupportedException
+     */
+    public function upsert($table, $data, $duplicate = null , $primaryKeys = null ) {
         $params = array();
         $names = array();
         $placeholders = array();
@@ -376,7 +379,8 @@ class ZPDO extends PDO
      * @param array $params 参数
      * @return int
      */
-    public function update(string $table, array $data, $conditions = '', array $params = array()) {
+    public function update(string $table, array $data, $conditions = '', array $params = array()): int
+    {
         $placeholders = array();
         $input_params = array();
         foreach ($data as $name => $value) {
@@ -405,7 +409,8 @@ class ZPDO extends PDO
      * @param array $params 参数
      * @return int
      */
-    public function delete(string $table, $conditions = '', $params = array()) {
+    public function delete(string $table, $conditions = '', array $params = array()): int
+    {
         $sql = 'DELETE FROM ' . $this->quoteTable($table);
         $input_params = array();
         if (($where = $this->prepareConditions($conditions, $params, $input_params)) != '') {

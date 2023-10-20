@@ -39,19 +39,20 @@ class AuthController extends Controller
             //登录成功
             DB::table('admin')->set('last_ip', Request::ip())
                 ->set('last_access_time', time())
+                ->where('username',$username)
                 ->update();
             session()->set('zapAdmin',[
                 'last_ip'=>$admin->last_ip,
                 'last_access_time'=>$admin->last_access_time,
                 'id'=>$admin->id,
                 'username'=>$admin->username,
-                'fullname'=> $admin->fullname ?: $admin->username
+                'full_name'=> $admin->full_name ?: $admin->username
             ]);
 
             if (Request::isAjax()) {
                 Response::json(['code'=>0,'msg'=>'登录成功','redirect_to'=>Url::action('Index')]);
             }else{
-                Response::redirect(Url::action('Index'), "登录成功", Session::SUCCESS);
+                Response::redirect(Url::action('Index'), "登录成功", FLASH_SUCCESS);
             }
         }
         View::render("auth.login");
@@ -60,7 +61,7 @@ class AuthController extends Controller
     function signOut()
     {
         Auth::signOut();
-        Response::redirect(Url::action('Auth@signIn'), "您已安全退出", Session::SUCCESS);
+        Response::redirect(Url::action('Auth@signIn'), "您已安全退出", FLASH_SUCCESS);
     }
 
 

@@ -37,10 +37,10 @@ class Catalog extends Category
         parent::__construct('catalog');
     }
 
-    public function add($data, $pid)
+    public function add($data): int
     {
         $data['created_at'] = time();
-        return parent::add($data, $pid);
+        return parent::add($data);
     }
 
     public function getCatalogPathById($catalogId){

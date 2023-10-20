@@ -44,10 +44,11 @@ class Category
     }
 
 
-    public function add($data, $pid)
+    public function add($data)
     {
-        if ($pid > 0) {
-            $parent = DB::table($this->table)->where('id', $pid)->fetch();
+        $data[$this->parentColumn] = $data[$this->parentColumn] ?? 0;
+        if ($data[$this->parentColumn] > 0) {
+            $parent = DB::table($this->table)->where($this->primaryKey, $data[$this->parentColumn])->fetch();
 //            $data[$this->pathColumn] = sprintf('%s,%s',$parent->path,$parent->id);
             $data[$this->pathColumn] = $parent->path;
             $data[$this->levelColumn] = $parent->level + 1;
@@ -56,10 +57,10 @@ class Category
             $data[$this->levelColumn] = 1;
         }
 
-        $data[$this->parentColumn] = $pid;
+//        $data[$this->parentColumn] = $data['pid'];
         $category_id = DB::insert($this->table, $data);
-        if($pid == 0){
-            DB::update($this->table,[$this->pathColumn => "{$category_id},"],[$this->primaryKey => $category_id]);
+        if($data[$this->parentColumn] == 0){
+            DB::update($this->table,[$this->pathColumn => ",{$category_id},"],[$this->primaryKey => $category_id]);
         }else{
             DB::update($this->table,[
                 $this->pathColumn => sprintf("%s%s,",$data[$this->pathColumn],$category_id)
@@ -78,7 +79,7 @@ class Category
 
 
             if($data[$this->parentColumn] == 0){
-                $data[$this->pathColumn] = "{$id},";
+                $data[$this->pathColumn] = ",{$id},";
             }else{
                 $parent = $this->get($data[$this->parentColumn]);
                 $data[$this->pathColumn] = "{$parent[$this->pathColumn]}{$id},";
@@ -97,7 +98,7 @@ class Category
             }
 
         }
-        DB::update($this->table,$data,['id'=>$id]);
+        DB::update($this->table,$data,[$this->primaryKey=>$id]);
     }
 
     public function remove($id){
@@ -170,6 +171,25 @@ class Category
             }else{
                 $query->where($name,$value);
             }
+        }
+        return $query->fetchAll(FETCH_ASSOC);
+    }
+
+    public function getAllByPath($conditions){
+        $query = DB::table($this->table);
+        foreach ($conditions['where'] ?? [] as $name=>$value){
+            if(is_int($name)){
+                $query->where(...$value);
+            }else{
+                $query->where($name,$value);
+            }
+        }
+        if(isset($conditions['count'])){
+            return $query->count($this->primaryKey);
+        }
+        $query->orderBy('path ASC');
+        if(isset($conditions['limit'])){
+            $query->limit(...$conditions['limit']);
         }
         return $query->fetchAll(FETCH_ASSOC);
     }

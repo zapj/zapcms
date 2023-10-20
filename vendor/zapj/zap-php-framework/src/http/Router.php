@@ -362,8 +362,17 @@ class Router
         return $this->baseUrl;
     }
 
-    public function setBaseUrl($baseUrl)
+    public function setBaseUrl($baseUrl): void
     {
         $this->baseUrl = $baseUrl;
+    }
+
+    public static function convertToUrlName($name) : string {
+        return strtolower(trim(preg_replace('/([A-Z])/', '-$1', $name),'-'));
+    }
+
+    public static function convertToName($name): string
+    {
+        return str_replace(['-', '_'], '',ucwords($name,'-_'));
     }
 }

@@ -16,9 +16,8 @@ use zap\NodeType;
         <label for="catalog_node_type" class="form-label">内容模型</label>
         <select class="form-select" id="catalog_node_type" name="catalog[node_type]" >
             <?php foreach (NodeType::getNodeTypes() as $key => $row):
-                if(!is_numeric($key)) continue;
                 ?>
-                <option value="<?php echo $row['id'];?>"  <?php echo $row['id'] == $catalog['node_type'] ?'selected':null;  ?> ><?php echo $row['title'];?></option>
+                <option value="<?php echo $row['type_name'];?>"  <?php echo $row['type_name'] == $catalog['node_type'] ?'selected':null;  ?> ><?php echo $row['title'];?></option>
             <?php endforeach; ?>
         </select>
 

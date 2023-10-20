@@ -15,18 +15,17 @@ class App implements \ArrayAccess
 
     public const VERSION = '1.0.2';
 
-
     protected $rootPath;
 
     protected $basePath;
 
     protected $baseUrl;
 
-    protected $logger = [];
+    protected array $logger = [];
 
-    protected static $instance;
+    protected static App $instance;
 
-    protected static $container;
+    protected static ArrayObject $container;
 
     public function __construct($basePath)
     {
@@ -256,5 +255,32 @@ class App implements \ArrayAccess
 
     public function set($name,$value){
         $this->offsetSet($name,$value);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function make($class , $args = [] , $alias = null){
+        try{
+            $instance = new ReflectionClass($class);
+            $constructMethod = $instance->getConstructor();
+            if($constructMethod && $constructMethod->getNumberOfParameters() > 0){
+                $params = $constructMethod->getParameters();
+                foreach ($params as $param){
+                    if(isset($args[$param->name])){
+                        continue;
+                    }
+                    $args[$param->name] = $this->get($param->name) ?? $this->get($param->getClass()->getName());
+                }
+                $object = $instance->newInstanceArgs($args);
+            }else{
+                $object = $instance->newInstance();
+            }
+            $this->offsetSet($alias ?? $class,$object);
+
+        }catch (\ReflectionException $e){
+            throw new Exception("App::make Instance initialization failed,Error:{$e->getMessage()}");
+        }
+        return $object;
     }
 }
