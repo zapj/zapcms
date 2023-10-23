@@ -98,6 +98,7 @@ class UserController extends AdminController
         }
         view('user.permissions_form',[
             'data'=>$permission ?? [],
+            'extras'=> $permission['extras'] ? json_decode($permission['extras'],true) : [],
             'pid'=>$pid
         ]);
     }
@@ -106,6 +107,14 @@ class UserController extends AdminController
         if(IS_AJAX && req()->isPost()){
             $data = Request::post('data',[]);
             $id = intval(Request::post('perm_id'));
+            $extras = [];
+            foreach (Request::post('extras') as $extra){
+                $extras[$extra['key']] = $extra['title'];
+            }
+            $data['extras'] = json_encode($extras,JSON_UNESCAPED_UNICODE);
+            if(json_last_error() !== JSON_ERROR_NONE){
+                $data['extras'] = '[]';
+            }
             if($id){
                 $data['updated_at'] = time();
                 Permissions::instance()->update($data,$id);

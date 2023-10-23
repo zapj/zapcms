@@ -45,6 +45,7 @@ IS_AJAX !== true && $this->extend('layouts/common');
                         </th>
 
                         <th scope="col">权限名称</th>
+                        <th scope="col">描述</th>
                         <th scope="col">修改时间</th>
                         <th scope="col">创建时间</th>
 
@@ -57,7 +58,6 @@ IS_AJAX !== true && $this->extend('layouts/common');
                     <tbody>
                     <?php
                     foreach ($data as $item){
-                        $paddingLeft = ($item['level'] - 1) + ($item['level'] - 1) * 0.5;
                         ?>
                         <tr>
                             <td class="w-auto">
@@ -67,14 +67,15 @@ IS_AJAX !== true && $this->extend('layouts/common');
                             </td>
 
 
-                            <td>
-                                <div style="padding-left:<?php echo $paddingLeft; ?>rem!important;">
+                            <td class="w-50">
+                                <div style="padding-left:<?php echo $item['level'] * 0.5; ?>rem!important;">
                                 <?php echo $item['title']; ?>
-                                    <small class="text-black-50"><?php echo $item['slug']; ?></small>
                                     <small class="text-black-50">ID:<?php echo $item['perm_id']; ?></small>
+                                    <small class="text-black-50"><?php echo $item['perm_key']; ?></small>
                                 </div>
                             </td>
 
+                            <td class="text-black-50"><?php echo $item['description']; ?></td>
                             <td class="text-black-50"><?php echo date(Z_DATE_TIME,$item['updated_at']); ?></td>
                             <td class="text-black-50"><?php echo date(Z_DATE_TIME,$item['created_at']); ?></td>
 

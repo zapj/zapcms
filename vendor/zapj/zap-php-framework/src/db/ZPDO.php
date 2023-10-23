@@ -14,7 +14,7 @@ class ZPDO extends PDO
 {
     protected $tablePrefix;
 
-    protected $driver;
+    public $driver;
 
     public $rowCount = 0;
 
@@ -518,6 +518,8 @@ class ZPDO extends PDO
         }
         return parent::quote($value, $type);
     }
+
+
 
 
 }

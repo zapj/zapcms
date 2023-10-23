@@ -1,12 +1,11 @@
 <?php
-\zap\Asset::library('bootstrap');
-$this->layout('install/layout');
+$this->layout('layout');
 ?>
 
 <div class="container">
     <main>
         <div class="py-5 text-center">
-            <img class="d-block mx-auto mb-4" src="<?php echo base_url('/assets/admin/img/zap_logo_green_rgb.svg') ?>" alt="" width="150" >
+            <img class="d-block mx-auto mb-4" src="../assets/admin/img/zap_logo_green_rgb.svg" alt="" width="150" >
             <h6>ZAP CMS安装向导</h6>
 
         </div>
@@ -60,7 +59,7 @@ $this->layout('install/layout');
                         </p>
                     </div>
                     <div class="card-footer text-center">
-                        <a href="<?php echo url_action('Install@check') ?>" class="btn btn-success">同意 继续安装</a>
+                        <a href="index.php?action=check" class="btn btn-success">同意 继续安装</a>
                     </div>
                 </div>
             </div>

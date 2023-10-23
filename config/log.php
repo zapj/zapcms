@@ -3,7 +3,7 @@
 return [
     "default"=> "app",
     "app"=>[
-        "handler"=>\Monolog\Handler\RotatingFileHandler::class,
+        "handler"=> '\Monolog\Handler\RotatingFileHandler',
         "params"=>[
             'filename'=> var_path('logs/app.log')
         ]

@@ -38,7 +38,7 @@ $this->layout('layouts/common');
             <tbody>
             <tr>
                 <td >ZapCMS 版本</td>
-                <td>v<?php echo \zap\Version::ZAPCMS_VERSION; ?></td>
+                <td>v<?php echo ZAP_CMS_VERSION; ?></td>
                 <td>PHP 版本</td>
                 <td><?php echo PHP_VERSION , '(' , php_sapi_name() , ')'; ?></td>
             </tr>

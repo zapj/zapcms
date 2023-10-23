@@ -4,7 +4,8 @@
     "zapj/zap-php-framework": "dev-main",
     "ext-pdo": "*",
     "ext-gd": "*",
-    "monolog/monolog": "^2.9"
+    "monolog/monolog": "^2.9",
+    "ext-json": "*"
   },
   "autoload": {
     "files":[],

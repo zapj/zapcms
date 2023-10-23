@@ -3,7 +3,7 @@
 namespace zap;
 
 /**
- * Category
+ * Categories
  *
  *
  * CREATE TABLE `zap_category` (
@@ -21,10 +21,12 @@ namespace zap;
  * @table Table Schema
  *
  */
-class Category
+class Categories
 {
     //表名
     protected $table;
+
+    protected $path_table;
     //分类Path
     protected $pathColumn = 'path';
     //父级ID列名
@@ -36,9 +38,10 @@ class Category
 
     protected $defaultLevel = 0;
 
-    public function __construct($table, $primaryKey = 'id', $parentColumn = 'pid', $pathColumn = 'path', $levelColumn = 'level')
+    public function __construct($table,$path_table, $primaryKey = 'id', $parentColumn = 'pid', $pathColumn = 'path', $levelColumn = 'level')
     {
         $this->table = $table;
+        $this->path_table = $path_table;
         $this->primaryKey = $primaryKey;
         $this->parentColumn = $parentColumn;
         $this->pathColumn = $pathColumn;
@@ -49,25 +52,23 @@ class Category
     public function add($data)
     {
         $data[$this->parentColumn] = $data[$this->parentColumn] ?? 0;
+        $data[$this->pathColumn] = '';
+        $data[$this->levelColumn] = $this->defaultLevel;
+
         if ($data[$this->parentColumn] > 0) {
-            $parent = DB::table($this->table)->where($this->primaryKey, $data[$this->parentColumn])->fetch();
-//            $data[$this->pathColumn] = sprintf('%s,%s',$parent->path,$parent->id);
-            $data[$this->pathColumn] = $parent->path;
-            $data[$this->levelColumn] = $parent->level + 1;
-        } else {
-            $data[$this->pathColumn] = '';
-            $data[$this->levelColumn] = $this->defaultLevel;
+            $parent = $this->get($data[$this->parentColumn]);
+            $data[$this->pathColumn] = $parent[$this->pathColumn];
+            $data[$this->levelColumn] = $parent[$this->levelColumn] + 1;
         }
 
-//        $data[$this->parentColumn] = $data['pid'];
         $category_id = DB::insert($this->table, $data);
-        if($data[$this->parentColumn] == 0){
-            DB::update($this->table,[$this->pathColumn => "{$category_id},"],[$this->primaryKey => $category_id]);
-        }else{
-            DB::update($this->table,[
-                $this->pathColumn => sprintf("%s%s,",$data[$this->pathColumn],$category_id)
-            ],[$this->primaryKey => $category_id]);
+        $data[$this->pathColumn] = "{$data[$this->pathColumn]}{$category_id},";
+        DB::update($this->table,[$this->pathColumn => $data[$this->pathColumn] ],[$this->primaryKey => $category_id]);
+        $path_ids = array_filter(explode(',',$data[$this->pathColumn]));
+        foreach ($path_ids as $level=>$path_id){
+            DB::insert($this->path_table,['taxonomy'=>$this->table,'taxonomy_id'=>$category_id,'path_id'=>$path_id,'level'=>$level]);
         }
+
         return $category_id;
     }
 
@@ -112,6 +113,7 @@ class Category
         $path = $category[$this->pathColumn];
         //删除子类
         DB::table($this->table)->where($this->pathColumn,'LIKE',"{$path}%")->delete();
+        DB::table($this->path_table)->where('taxonomy',$this->table)->where('path_id',$id)->delete();
         return DB::table($this->table)->where($this->primaryKey,$id)->delete();
     }
 
@@ -166,6 +168,14 @@ class Category
         return DB::table($this->table)->where($this->primaryKey, $id)->fetch(FETCH_ASSOC);
     }
 
+    public function getPaths($category_id){
+        return DB::table($this->path_table)
+            ->where('taxonomy', $this->table)
+            ->where('taxonomy_id', $category_id)
+            ->orderBy('level ASC')
+            ->fetchAll(FETCH_ASSOC);
+    }
+
     public function getAll($conditions){
         $query = DB::table($this->table);
         foreach ($conditions as $name=>$value){
@@ -177,9 +187,12 @@ class Category
         }
         return $query->fetchAll(FETCH_ASSOC);
     }
-
+//SELECT GROUP_CONCAT(c2.`title` ORDER BY cp.`level` SEPARATOR ' > ') AS `name`,cp.`perm_id`,  c2.`pid`,cp.level FROM zap_permissions_path cp
+//LEFT JOIN zap_permissions c2 ON (cp.`path_id` = c2.`perm_id`)
     public function getAllByPath($conditions){
-        $query = DB::table($this->table);
+
+        $query = DB::table($this->path_table,'tp');
+        $query->where('tp.taxonomy',$this->table);
         foreach ($conditions['where'] ?? [] as $name=>$value){
             if(is_int($name)){
                 $query->where(...$value);
@@ -188,12 +201,28 @@ class Category
             }
         }
         if(isset($conditions['count'])){
-            return $query->count($this->primaryKey);
+            return $query->count();
         }
-        $query->orderBy('path ASC');
+        $query->leftJoin([$this->table,'p'],"tp.taxonomy_id=p.{$this->primaryKey}");
+        $query->leftJoin([$this->table,'pp'],"tp.path_id=pp.{$this->primaryKey}");
+        if($query->driver == 'mysql'){
+            DB::rawExec("SET sql_mode='';");
+            $query->select(["GROUP_CONCAT(pp.`title` ORDER BY tp.`level` SEPARATOR ' > ') AS `title`",
+                "tp.taxonomy_id {$this->primaryKey}",
+                "p.perm_key",
+                "p.description",
+                "p.updated_at",
+                "p.created_at",
+                "tp.level"
+            ]);
+        }
+        $query->groupBy("tp.taxonomy_id");
+//        $query->orderBy("p.perm_id DESC");
+        $query->orderBy("p.updated_at DESC");
         if(isset($conditions['limit'])){
             $query->limit(...$conditions['limit']);
         }
+//        echo $query->getFullSQL();
         return $query->fetchAll(FETCH_ASSOC);
     }
 

@@ -45,11 +45,14 @@ class Query
      */
     protected $db;
 
+    public $driver;
+
     /**
      * @throws Exception
      */
     public function __construct($zPDO = null) {
         $this->db = $zPDO ?: DB::connect();
+        $this->driver = $this->db->driver;
     }
 
     public function asArray(): Query
@@ -518,7 +521,7 @@ class Query
     private function prepareSelectString(): string
     {
         if (empty($this->select)) {
-            $this->select("*");
+            $this->select();
         }
         return $this->distinct ? 'distinct ' . implode(", ", $this->select) . ' FROM ' : implode(", ", $this->select) . ' FROM ';
     }
@@ -598,7 +601,7 @@ class Query
         if (!empty($this->limit) && empty($this->offset)) {
             return " LIMIT {$this->limit}";
         } else if ($this->offset) {
-            return " LIMIT {$this->offset},{$this->limit}";
+            return " LIMIT {$this->limit} OFFSET {$this->offset}";
         }
         return '';
     }
@@ -632,10 +635,10 @@ class Query
         $this->offset = 0;
     }
 
-    public function insert($tableName, $columns): int
-    {
-        return $this->db->insert($tableName, $columns);
-    }
+//    public function insert($tableName, $columns): int
+//    {
+//        return $this->db->insert($tableName, $columns);
+//    }
 
     public function update($table = NULL, $columns = NULL, $conditions = '', $params = array()) {
         if (is_null($table)) {
@@ -659,4 +662,6 @@ class Query
         }
         return $this->db->delete($table, $conditions, $params);
     }
+
+
 }
