@@ -31,11 +31,11 @@
         <?php echo $this->block('content');?>
         </div>
         <footer class="pt-5 pb-2 text-body-secondary text-center text-small ">
-            <p class="mb-1">© 2023 ZAP.CN</p>
+            <p class="mb-1">© 2023 <a href="https://zap.cn/zapcms/" target="_blank">ZAP.CN</a> </p>
             <ul class="list-inline">
-                <li class="list-inline-item"><a href="#">Privacy</a></li>
-                <li class="list-inline-item"><a href="#">Terms</a></li>
-                <li class="list-inline-item"><a href="#">Support</a></li>
+                <li class="list-inline-item"><a href="<?php echo url_action('System@Privacy'); ?>">Privacy</a></li>
+                <li class="list-inline-item"><a href="<?php echo url_action('System@Terms'); ?>">Terms</a></li>
+                <li class="list-inline-item"><a href="<?php echo url_action('System@Support'); ?>">Support</a></li>
             </ul>
         </footer>
         <div class="toast-container p-3 start-50 translate-middle-x" style="top: 100px;" id="topCenterToast" data-original-class="toast-container p-3"></div>

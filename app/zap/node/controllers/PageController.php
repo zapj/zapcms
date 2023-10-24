@@ -2,6 +2,7 @@
 
 namespace zap\node\controllers;
 
+use zap\BreadCrumb;
 use zap\Catalog;
 use zap\component\Hooks;
 use zap\http\Request;
@@ -16,6 +17,7 @@ class PageController extends AbstractNodeType
     public function __init()
     {
         $this->title = '单页';
+
 //        if($this->action == 'Index'){
 //            add_filter('');
 //        }

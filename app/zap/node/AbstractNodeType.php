@@ -3,6 +3,7 @@
 namespace zap\node;
 
 use zap\Auth;
+use zap\BreadCrumb;
 use zap\Catalog;
 use zap\DB;
 use zap\db\Query;
@@ -35,6 +36,8 @@ class AbstractNodeType
     {
         $this->catalogId = intval(Request::get('cid'));
         $this->isAjax = Request::isAjax();
+        BreadCrumb::instance()->add('内容管理',url_action('Node'));
+
     }
 
     public function __init(){
@@ -53,7 +56,7 @@ class AbstractNodeType
 
     //controller actions
     public function index(){
-        $data['catalogPaths'] = $this->getCurrentCatalogPath();
+
         $data['title'] = $this->getTitle("%s管理");
 
         $conditions = [
@@ -149,6 +152,11 @@ class AbstractNodeType
         $data['_action'] = $this->action;
         $data['catalogId'] = $this->catalogId;
         $data['modTitle'] = $this->title;
+        $data['catalogPaths'] = $this->getCurrentCatalogPath();
+        $pathLen = count($data['catalogPaths']) - 1;
+        foreach ($data['catalogPaths'] as $key => $catalog){
+            BreadCrumb::instance()->add($catalog['title'],url_action("Node@{$this->controller}",req()->get()), $pathLen == $key);
+        }
         try{
             View::render("{$controller}.". ($name ?? $action),$data);
         }catch (ViewNotFoundException $e){

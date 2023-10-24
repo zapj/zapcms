@@ -53,7 +53,7 @@ IS_AJAX !== true && $this->layout('layouts/common');
             <tbody>
             <?php
             $menu->forEachAll(function ($admin_menu) {
-                $paddingLeft = ($admin_menu['level'] - 1) + ($admin_menu['level'] - 1) * 0.5;
+                $paddingLeft = $admin_menu['level'] ;
                 ?>
                 <tr>
                     <td>

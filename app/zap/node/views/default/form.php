@@ -1,6 +1,7 @@
 <?php
 
 use zap\Asset;
+use zap\BreadCrumb;
 use zap\facades\Url;
 
 Asset::library('summernote');
@@ -11,15 +12,8 @@ $this->layout('layouts/common');
 ?>
     <nav class="navbar bg-body-tertiary position-fixed w-100 shadow z-3 zap-top-bar">
         <div class="container-fluid">
-            <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);"
-                 aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="<?php echo Url::action('Node') ?>">内容管理</a></li>
-                    <li class="breadcrumb-item" aria-current="page"><a
-                                href="<?php echo Url::action("Node@{$_controller}", $_GET) ?>"><?php echo $title; ?></a></li>
-                    <li class="breadcrumb-item active" aria-current="page"><?php echo $sub_title; ?></li>
-                </ol>
-            </nav>
+            <?php BreadCrumb::instance()->display() ; ?>
+
             <div class=" text-end">
 <!--                <a class="btn btn-dark btn-sm" href="--><?php //echo url_action('Zap@news', $_GET); ?><!--"><i-->
 <!--                            class="fa fa-cancel"></i>-->
@@ -136,14 +130,14 @@ $this->layout('layouts/common');
                             </div>
                             <div class="mb-3">
                                 <label for="node_pub_time" class="form-label">发布时间</label>
-                                <input type="text" class="form-control datetimepicker" name="node[pub_time]"
+                                <input type="text" class="form-control datetimepicker text-black-50" name="node[pub_time]"
                                        id="node_pub_time"
                                        value="<?php echo $node->getPubTimeToDate(); ?>" required/>
                             </div>
                             <div class="mb-3">
                                 <label for="node_author_id" class="form-label">发布人</label>
                                 <input type="hidden" id="node_author_id" name="node[author_id]" value="<?php echo \zap\Auth::user('id') ?>">
-                                <input type="text" class="form-control-plaintext" id="node_author_name" readonly  placeholder="发布人" value="<?php echo \zap\Auth::user('full_name') ?>">
+                                <input type="text" class="form-control-plaintext text-black-50" id="node_author_name" readonly  placeholder="发布人" value="<?php echo \zap\Auth::user('full_name') ?>">
                             </div>
                             <?php if($node->update_time){ ?>
                                 <p class="text-black-50"><small>最后修改时间 :
@@ -153,7 +147,7 @@ $this->layout('layouts/common');
                             <?php } ?>
                         </div>
                         <div class="card-footer">
-                            <a class="btn btn-dark" href="<?php echo url_action("Node@{$_controller}", $_GET); ?>"><i
+                            <a class="btn btn-secondary" href="<?php echo url_action("Node@{$_controller}", $_GET); ?>"><i
                                         class="fa fa-cancel"></i> 取消</a>
                             <button type="button" class="btn btn-success" onclick="save();"><i class="fa fa-save"></i>
                                 保存

@@ -15,6 +15,11 @@ class AdminPage
 {
     use SingletonTrait;
 
+    public static function breadcrumb(): BreadCrumb
+    {
+        return BreadCrumb::instance();
+    }
+
     public function showFlashMessages(){
         $colorMap = [FLASH_ERROR => 'bgDanger',FLASH_INFO => 'bgInfo',FLASH_SUCCESS=>'bgSuccess',FLASH_WARNING=>'bgWarning'];
         echo '$(function(){';

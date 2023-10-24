@@ -30,9 +30,9 @@ use zap\NodeType;
             Catalog::instance()->forEachAll(function($row) use ($catalog){
                 ?>
                 <option value="<?php echo $row['id'];?>" <?php echo $catalog['pid'] == $row['id'] ? 'selected':''; ?>
-                    <?php echo \zap\util\Str::startsWith($row['path'],$catalog['path']) ? 'disabled':null;  ?>
+                    <?php echo $catalog['path'] && \zap\util\Str::startsWith($row['path'],$catalog['path']) ? 'disabled':null;  ?>
                 >
-                    <?php echo  str_repeat("&nbsp;&nbsp;",$row['level']-1) ?><?php echo $row['title'];?>
+                    <?php echo  str_repeat("&nbsp;&nbsp;",$row['level']) ?><?php echo $row['title'];?>
                 </option>
                 <?php
             });
