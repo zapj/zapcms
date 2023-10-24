@@ -7,4 +7,5 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'ed7610ef029ae6b6d5177039e3fb3277' => $vendorDir . '/zapj/zap-php-framework/src/functions.php',
+    '42958137b6d13be8aa87d316c453d768' => $baseDir . '/app/zap/functions.php',
 );

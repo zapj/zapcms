@@ -8,12 +8,17 @@ class ComposerStaticInit501184272d4d7ed612cf428f1bb86753
 {
     public static $files = array (
         'ed7610ef029ae6b6d5177039e3fb3277' => __DIR__ . '/..' . '/zapj/zap-php-framework/src/functions.php',
+        '42958137b6d13be8aa87d316c453d768' => __DIR__ . '/../..' . '/app/zap/functions.php',
     );
 
     public static $prefixLengthsPsr4 = array (
         'z' => 
         array (
             'zap\\' => 4,
+        ),
+        'm' => 
+        array (
+            'mods\\' => 5,
         ),
         'a' => 
         array (
@@ -34,6 +39,10 @@ class ComposerStaticInit501184272d4d7ed612cf428f1bb86753
         array (
             0 => __DIR__ . '/../..' . '/app/zap',
             1 => __DIR__ . '/..' . '/zapj/zap-php-framework/src',
+        ),
+        'mods\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/mods',
         ),
         'app\\' => 
         array (

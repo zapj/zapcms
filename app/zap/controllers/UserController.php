@@ -2,6 +2,7 @@
 
 namespace app\zap\controllers;
 
+use zap\Admin;
 use zap\AdminController;
 use zap\AdminMenu;
 use zap\Auth;
@@ -10,6 +11,8 @@ use zap\facades\Url;
 use zap\helpers\Pagination;
 use zap\http\Request;
 use zap\http\Response;
+use zap\Log;
+use zap\rbac\AdminRoles;
 use zap\rbac\Permissions;
 use zap\rbac\Roles;
 use zap\rbac\RolesPermissions;
@@ -22,13 +25,89 @@ class UserController extends AdminController
 
     public function index(){
         $pageHelper = new Pagination(intval(Request::get('page',1)),20, Request::get());
-        $pageHelper->setTotal(User::count());
-        $users = User::select()->get(FETCH_ASSOC);
+        $pageHelper->setTotal(Admin::count());
+        $users = Admin::select()->orderBy('id DESC')->get(FETCH_ASSOC);
         view('user.index',['pageHelper'=>$pageHelper,'users'=>$users]);
     }
 
     public function form(){
-        view('user.form',[]);
+        $id = intval(Request::get('id'));
+        AdminRoles::create([
+            'admin_id'=>1,
+            'role_id'=>2,
+            'assignment_time'=>time()
+        ]);
+        view('user.form',[
+            'user'=>Admin::getProfile($id),
+            'roles'=>Roles::findAll(),
+            'user_roles'=>AdminRoles::select('role_id')->where('admin_id',$id)->get(FETCH_COLUMN)
+        ]);
+    }
+
+    public function saveUser(){
+        if(IS_AJAX && req()->isPost()){
+            $data = Request::post('data',[]);
+            $user_roles = Request::post('user_roles',[]);
+            $admin_id = intval(Request::post('admin_id'));
+            if(strlen($data['password']) >= 6 && $data['password'] == $data['new_password']){
+                $data['password'] = Password::hash($data['password']);
+            }else{
+                unset($data['password']);
+            }
+            unset($data['new_password']);
+//            if(Auth::user('id') == 1){
+            if($admin_id == 1){
+                unset($data['status']);
+            }
+            $admin = Admin::findByUsername($data['username'])->fetch(FETCH_ASSOC);
+            if(($admin && $admin_id == 0)
+            || ($admin && Admin::getProfile($admin_id)['username']!=$data['username'])){
+                response(['code'=>1,'msg'=>'用户名已存在'.$admin->username])->withJson();
+            }
+            if($admin_id){
+                $data['updated_at'] = time();
+                Admin::updateAll($data,['id'=>$admin_id]);
+                AdminRoles::delete(['admin_id'=>$admin_id]);
+            }else{
+                $data['created_at'] = $data['updated_at'] = time();
+                $admin_id = Admin::create($data)->id;
+            }
+
+            foreach ($user_roles as $role_id){
+//                AdminRoles::create([
+//                    'admin_id'=>$admin_id,
+//                    'role_id'=>$role_id,
+//                    'assignment_time'=>time()
+//                ]);
+                DB::insert('admin_roles',[
+                    'admin_id'=>$admin_id,
+                    'role_id'=>$role_id,
+                    'assignment_time'=>time()
+                ]);
+
+            }
+            response(['code'=>0,'msg'=>'保存成功'])->withJson();
+        }
+    }
+
+    public function remove(){
+        $data = Request::post('admin',[]);
+
+        $admin_ids = array_unique(array_column($data,'id'));
+        if(in_array(1,$admin_ids)){
+            Response::json(['code'=>1,'msg'=>'超级管理员不能删除']);
+        }
+        if(count($admin_ids) < 1){
+            Response::json(['code'=>1,'msg'=>'请选择需要删除的角色']);
+        }
+        Admin::where('id','IN',$admin_ids)->delete();
+        AdminRoles::where('admin_id','IN',$admin_ids)->delete();
+        Response::json(['code'=>0,'msg'=>'用户删除成功']);
+    }
+
+
+    public function profile(){
+        view('user.profile',[]);
     }
 
     //roles

@@ -8,10 +8,13 @@
     "ext-json": "*"
   },
   "autoload": {
-    "files":[],
+    "files":[
+      "app/zap/functions.php"
+    ],
     "psr-4":{
       "app\\" :"app/",
-      "zap\\" :"app/zap/"
+      "zap\\" :"app/zap/",
+      "mods\\" :"mods/"
     }
   },
   "minimum-stability": "dev"

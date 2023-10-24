@@ -52,22 +52,6 @@ use zap\AdminMenu;
                     echo '</li>';
                 }
                 ?>
-<!--                <li class="nav-item">-->
-<!--                    <a class="nav-link" href="--><?php //echo Url::action('Content');?><!--"><i class="fa fa-cube"></i> 内容管理</a>-->
-<!--                </li>-->
-<!--                <li class="nav-item">-->
-<!--                    <a class="nav-link" href="--><?php //echo Url::action('Catalog');?><!--"><i class="fa fa-square-poll-horizontal"></i> 栏目</a>-->
-<!--                </li>-->
-<!---->
-<!--                <li class="nav-item dropdown">-->
-<!--                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">-->
-<!--                        <i class="fa fa-gear"></i> 设置</a>-->
-<!--                    <ul class="dropdown-menu">-->
-<!--                        <li><a class="dropdown-item" href="--><?php //echo Url::action('System@settings');?><!--">基础设置</a></li>-->
-<!--                        <li><a class="dropdown-item" href="--><?php //echo Url::action('AdminMenu');?><!--">系统菜单设置</a></li>-->
-<!---->
-<!--                    </ul>-->
-<!--                </li>-->
             </ul>
 
             <hr class="d-block d-sm-none text-white"/>
@@ -80,6 +64,8 @@ use zap\AdminMenu;
                     <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fa fa-user-cog"></i> <?php echo $zapAdmin['username']; ?></a>
                     <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="<?php echo Url::action('User@profile'); ?>">
+                                <i class="fa fa-user-pen"></i> 个人资料</a></li>
                         <li><a class="dropdown-item" href="<?php echo Url::action('User@changePassword'); ?>">
                                 <i class="fa fa-key"></i> 修改密码</a></li>
                         <li><a class="dropdown-item" href="<?php echo Url::action('Auth@signOut'); ?>">

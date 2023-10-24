@@ -59,7 +59,7 @@ class AbstractNodeType
         $conditions = [
             'where'=>[
                 'n.node_type'=>$this->nodeType,
-                'n.author_id'=>Auth::user('id'),
+//                'n.author_id'=>Auth::user('id'),
             ]
         ];
         $this->catalogId && $conditions['where']['nr.catalog_id']= $this->catalogId;

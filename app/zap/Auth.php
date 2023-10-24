@@ -27,8 +27,9 @@ class Auth
     public static function check($url = null,$message = null,$type = FLASH_INFO){
         if(!session()->has(static::$scope)){
             $url  = $url ?? Url::action('Auth@signIn');
+            $message = $message ?? '未登录或已超时，请重新登录';
             if(Request::isAjax()){
-                Response::json(['code'=>-1,'msg'=>'未登录或已超时，请重新登录']);
+                Response::json(['code'=>-1,'msg'=>$message]);
             }
 //            $prevUrl = Request::prevUrl();
             Response::redirect($url,$message,$type);
@@ -48,16 +49,15 @@ class Auth
         session()->remove($scope);
     }
 
-    public static function getProfile(){
-        $id = static::user('id');
-        return DB::table('admin')->where('id',$id)->fetch(FETCH_ASSOC);
-    }
-
     public static function scope($scope = null): string
     {
         if($scope){
             static::$scope = $scope;
         }
         return static::$scope;
+    }
+
+    public static function login($data){
+
     }
 }

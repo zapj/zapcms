@@ -4,17 +4,8 @@ namespace zap\db;
 
 use zap\DB;
 use zap\util\Arr;
-
 use zap\util\Str;
 
-use function app;
-
-
-/**
- * @method static Query select($columns = '*')
- * @method static insert($data)
- * @method static batchInsert($rows)
- */
 abstract class Model implements \ArrayAccess
 {
     protected $primaryKey = 'id';
@@ -171,7 +162,7 @@ abstract class Model implements \ArrayAccess
         return $this->db()->delete($this->getTable(), [$pkey=>$id]);
     }
 
-    public function insert($data) {
+    public static function insert($data) {
         return DB::insert(static::tableName(), $data);
     }
 
@@ -259,12 +250,12 @@ abstract class Model implements \ArrayAccess
         }
         if(isset($options['limit'])){
             is_string($options['limit']) && $query->limit($options['limit']);
-            is_array($options['limit']) && $query->limit($options['limit'][0],$options['limit'][1]);
+            is_array($options['limit']) && $query->limit(...$options['limit']);
         }
         return $query->get($fetchMode);
     }
 
-    public static function updateAll($params = array(),$condition = []) {
+    public static function updateAll($data = array(),$condition = []) {
         $query = static::createQuery();
         foreach ($condition as $key=>$where){
             if(is_int($key)){
@@ -273,7 +264,7 @@ abstract class Model implements \ArrayAccess
                 $query->where($key,$where);
             }
         }
-        $query->set($params);
+        $query->set($data);
         return $query->update();
     }
 

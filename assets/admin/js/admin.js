@@ -86,7 +86,7 @@ const ZapModal = {
             buttons:null,
             url:false,
             dialog_class:'modal-dialog-scrollable modal-dialog-centered modal-lg',
-            header_class:'bg-dark text-white',
+            header_class:'bg-success text-white',
             body_class:'',
         }
         if(replaced === undefined){replaced = false;}

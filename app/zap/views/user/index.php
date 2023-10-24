@@ -39,7 +39,7 @@ IS_AJAX !== true && $this->extend('layouts/common');
                     <tr class="table-secondary">
                         <th scope="col" style="width: 50px">
                             <label>
-                                <input class="form-check-input" type="checkbox" onclick="checkAll(this)"/>
+                                <input class="form-check-input" type="checkbox" onclick="Zap.CheckBox_CheckAll(this,'.users_list')"/>
                             </label>
                         </th>
                         <th scope="col">ID</th>
@@ -61,9 +61,9 @@ IS_AJAX !== true && $this->extend('layouts/common');
                         <tr>
                             <td>
                                 <?php if($user['id'] !=1){  ?>
-                                <input name="catalog[<?php echo $user['id']; ?>][id]"
+                                <input name="admin[<?php echo $user['id']; ?>][id]"
                                        value="<?php echo $user['id']; ?>"
-                                       class="form-check-input zap_catalog" type="checkbox"/>
+                                       class="form-check-input users_list" type="checkbox"/>
                                 <?php } ?>
                             </td>
 
@@ -71,11 +71,17 @@ IS_AJAX !== true && $this->extend('layouts/common');
                             <td><?php echo $user['username']; ?></td>
                             <td><?php echo $user['full_name']; ?></td>
                             <td><?php echo $user['email']; ?></td>
-                            <td><?php echo $user['phone']; ?></td>
-                            <td><?php echo $user['status']; ?></td>
+                            <td><?php echo $user['phone_number']; ?></td>
+                            <td>
+                                <?php if($user['status'] == 'activated'){ ?>
+                                <span class="badge rounded-pill text-bg-success"><i class="fa fa-check"></i></span>
+                                <?php } else { ?>
+                                    <span class="badge rounded-pill text-bg-secondary"><i class="fa fa-xmark"></i></span>
+                                <?php } ?>
+                            </td>
 
                             <td>
-                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addOrEdit(<?php echo $admin_menu['id']; ?>)">设置</button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addOrEdit(<?php echo $user['id']; ?>)">设置</button>
 
                             </td>
 
@@ -90,6 +96,9 @@ IS_AJAX !== true && $this->extend('layouts/common');
 
 
                 </table>
+                <div class="pb-2 ps-2 pe-3">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="remove()">删除</button>
+                </div>
                 <?php echo $pageHelper->render(7,'pagination  justify-content-center','page-item' ,'page-link'); ?>
             </div>
         </form>
@@ -120,15 +129,15 @@ IS_AJAX !== true && $this->extend('layouts/common');
     }
 
     function remove(){
-        const checkedCatalog = $('.zap_catalog:checked').serialize();
-        if(checkedCatalog.length === 0){
+        const checkedList = $('.users_list:checked').serialize();
+        if(checkedList.length === 0){
             ZapToast.alert('请选选择需要删除的栏目',{bgColor:bgWarning,position:Toast_Pos_Center});
             return;
         }
         $.ajax({
             url:'<?php echo Url::action("User@remove");?>',
             method:'post',
-            data:checkedCatalog,
+            data:checkedList,
             success:function (data){
                 ZapToast.alert(data.msg,{bgColor:data.code===0?bgSuccess:bgDanger,position:Toast_Pos_Center});
                 Zap.reload();
@@ -136,19 +145,19 @@ IS_AJAX !== true && $this->extend('layouts/common');
         })
     }
 
-    function addOrEdit(cid){
+    function addOrEdit(id){
         m = ZapModal.create({
-            id:'addCatalog',
-            title: (cid ? '修改' : '添加') + '系统管理员',
+            id:'addOrEditUser',
+            title: (id ? '修改' : '添加') + '系统管理员',
             content:ZapModal.loadding(),
             backdrop:false,
-            url:'<?php echo Url::action("User@form");?>?modalId=addCatalog&pid=0&cid='+cid,
+            url:'<?php echo Url::action("User@form");?>?id='+id,
             buttons:[{close:true,title:"关闭"},{title:"保存",class:'btn-success'}],
             btn2:function (){
                 $.ajax({
-                    url:'<?php echo Url::action("Catalog@saveCatalog");?>',
+                    url:'<?php echo Url::action("User@saveUser");?>',
                     method:'post',
-                    data:$('#addCatalog form').serialize(),
+                    data:$('#addOrEditUser form').serialize(),
                     success:function (data){
                         ZapToast.alert(data.msg,{bgColor:data.code===0?bgSuccess:bgDanger,position:Toast_Pos_Center});
                         Zap.reload();
