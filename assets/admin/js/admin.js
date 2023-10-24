@@ -348,6 +348,10 @@ Zap.RandID = function(){
     return result + ((new Date()).getTime());
 }
 
+Zap.CheckBox_CheckAll = function(el,id){
+    $(id).prop('checked', $(el).prop('checked'));
+}
+
 function ZapFaIcons(target,callback){
     const m = ZapModal.create({
         id:'faIcons',

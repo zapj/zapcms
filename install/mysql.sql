@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主机： localhost
--- 生成日期： 2023-10-20 21:34:17
+-- 生成日期： 2023-10-24 11:29:46
 -- 服务器版本： 5.7.26
 -- PHP 版本： 7.4.3
 
@@ -47,7 +47,7 @@ CREATE TABLE `zap_admin` (
 --
 
 INSERT INTO `zap_admin` (`id`, `username`, `password`, `full_name`, `phone_number`, `email`, `avatar_url`, `last_ip`, `last_access_time`, `status`, `updated_at`, `created_at`) VALUES
-(1, 'admin', '$2y$10$2ilnde/EUAD.hq8QSkusqeh2UKQAKT6KibISwOzYBOXeQuVKd09aC', NULL, NULL, NULL, NULL, '127.0.0.1', 1697702717, 'activated', 1695192655, 1693297157);
+(1, 'admin', '$2y$10$2ilnde/EUAD.hq8QSkusqeh2UKQAKT6KibISwOzYBOXeQuVKd09aC', NULL, NULL, NULL, NULL, '127.0.0.1', 1698029869, 'activated', 1695192655, 1693297157);
 
 -- --------------------------------------------------------
 
@@ -95,13 +95,13 @@ CREATE TABLE `zap_admin_menu` (
 --
 
 INSERT INTO `zap_admin_menu` (`id`, `title`, `pid`, `path`, `level`, `icon`, `link_to`, `link_target`, `link_type`, `active_rule`, `show_position`, `sort_order`, `updated_at`, `created_at`) VALUES
-(1, '内容管理', 0, ',1,', 1, 'fa fa-cube', 'Node', '_self', 'action', '(node/.*)', '1', 1, 1697786443, 1694683755),
-(2, '栏目', 0, ',2,', 1, 'fa fa-square-poll-horizontal', 'Catalog', '_self', 'action', 'catalog/.*', '1', 2, 1694684638, 1694684638),
-(3, '系统管理', 0, ',3,', 1, 'fa fa-gear', '', '_self', 'action', '(admin-menu/.*|system/.*|user/.*)', '1', 4, 1694684685, 1694684685),
-(4, '基础设置', 3, ',3,4,', 2, 'fa-solid fa-angle-right', 'System@settings', '_self', 'action', '(system/.*)', '1,2', 0, 1694684704, 1694684704),
-(5, '系统菜单设置', 3, ',3,5,', 2, 'fa-solid fa-angle-right', 'AdminMenu', '_self', 'action', '(admin-menu/.*|system/.*)', '1,2', 1, 1694684714, 1694684714),
-(7, '主题', 0, ',7,', 1, 'fa-solid fa-wand-magic-sparkles', 'Theme', '_self', 'action', '(theme/.*)', '1', 3, 1697790328, 1697700805),
-(8, '用户管理', 3, ',38,', 2, 'fa-solid fa-chevron-right', 'User', '_self', 'action', '(user/.*)', '1', 2, 1697700876, 1697700876);
+(1, '内容管理', 0, '1,', 1, 'fa fa-cube', 'Node', '_self', 'action', '(node/.*)', '1', 1, 1697786443, 1694683755),
+(2, '栏目', 0, '2,', 1, 'fa fa-square-poll-horizontal', 'Catalog', '_self', 'action', 'catalog/.*', '1', 2, 1694684638, 1694684638),
+(3, '系统管理', 0, '3,', 1, 'fa fa-gear', '', '_self', 'action', '(admin-menu/.*|system/.*|user/.*)', '1', 4, 1694684685, 1694684685),
+(4, '基础设置', 3, '3,4,', 2, 'fa-solid fa-angle-right', 'System@settings', '_self', 'action', '(system/.*)', '1,2', 0, 1694684704, 1694684704),
+(5, '系统菜单设置', 3, '3,5,', 2, 'fa-solid fa-angle-right', 'AdminMenu', '_self', 'action', '(admin-menu/.*|system/.*)', '1,2', 1, 1694684714, 1694684714),
+(7, '主题', 0, '7,', 1, 'fa-solid fa-wand-magic-sparkles', 'Theme', '_self', 'action', '(theme/.*)', '1', 3, 1697790328, 1697700805),
+(8, '用户管理', 3, '38,', 2, 'fa-solid fa-chevron-right', 'User', '_self', 'action', '(user/.*)', '1', 2, 1697700876, 1697700876);
 
 -- --------------------------------------------------------
 
@@ -144,14 +144,14 @@ CREATE TABLE `zap_catalog` (
 --
 
 INSERT INTO `zap_catalog` (`id`, `seo_name`, `title`, `content`, `pid`, `path`, `level`, `sort_order`, `icon`, `thumb_url`, `link_to`, `link_target`, `show_position`, `node_type`, `created_at`) VALUES
-(1, 'about-us', '关于我们', NULL, 0, ',1,', 1, 0, NULL, NULL, NULL, NULL, '1,2,3', 'page', 1695221265),
-(2, 'product', '产品中心', NULL, 0, ',2,', 1, 0, NULL, NULL, NULL, NULL, '1,2', 'product', 1695221280),
-(3, 'computer', '电脑', NULL, 2, ',2,3,', 2, 0, NULL, NULL, NULL, NULL, '1', 'product', 1695221301),
-(4, 'phone', '手机', NULL, 2, ',2,4,', 2, 0, NULL, NULL, NULL, NULL, '1', 'product', 1695221318),
-(5, 'news', '新闻中心', NULL, 0, ',5,', 1, 0, NULL, NULL, NULL, NULL, '1', 'article', 1695221346),
-(6, 'company-news', '公司新闻', NULL, 5, ',5,6,', 2, 0, NULL, NULL, NULL, NULL, '1', 'article', 1695221346),
-(7, 'industry-news', '行业新闻', NULL, 5, ',5,7,', 2, 0, NULL, NULL, NULL, NULL, '1', 'article', 1695221466),
-(8, 'faq', '常见问题', NULL, 0, ',8,', 1, 0, NULL, NULL, NULL, NULL, '1', 'faq', 1695996567);
+(1, 'about-us', '关于我们', NULL, 0, '1,', 1, 0, NULL, NULL, NULL, NULL, '1,2,3', 'page', 1695221265),
+(2, 'product', '产品中心', NULL, 0, '2,', 1, 0, NULL, NULL, NULL, NULL, '1,2', 'product', 1695221280),
+(3, 'computer', '电脑', NULL, 2, '2,3,', 2, 0, NULL, NULL, NULL, NULL, '1', 'product', 1695221301),
+(4, 'phone', '手机', NULL, 2, '2,4,', 2, 0, NULL, NULL, NULL, NULL, '1', 'product', 1695221318),
+(5, 'news', '新闻中心', NULL, 0, '5,', 1, 0, NULL, NULL, NULL, NULL, '1', 'article', 1695221346),
+(6, 'company-news', '公司新闻', NULL, 5, '5,6,', 2, 0, NULL, NULL, NULL, NULL, '1', 'article', 1695221346),
+(7, 'industry-news', '行业新闻', NULL, 5, '5,7,', 2, 0, NULL, NULL, NULL, NULL, '1', 'article', 1695221466),
+(8, 'faq', '常见问题', NULL, 0, '8,', 1, 0, NULL, NULL, NULL, NULL, '1', 'faq', 1695996567);
 
 -- --------------------------------------------------------
 
@@ -354,7 +354,7 @@ CREATE TABLE `zap_permissions` (
   `pid` int(11) DEFAULT NULL,
   `path` varchar(255) DEFAULT NULL,
   `level` int(11) DEFAULT '0',
-  `slug` varchar(255) DEFAULT NULL,
+  `perm_key` varchar(255) DEFAULT NULL,
   `extras` text,
   `description` varchar(255) DEFAULT NULL,
   `updated_at` int(11) DEFAULT NULL,
@@ -365,10 +365,12 @@ CREATE TABLE `zap_permissions` (
 -- 转存表中的数据 `zap_permissions`
 --
 
-INSERT INTO `zap_permissions` (`perm_id`, `title`, `pid`, `path`, `level`, `slug`, `extras`, `description`, `updated_at`, `created_at`) VALUES
-(8, '用户管理', 0, ',8,', 1, 'user.index', NULL, '', 1697804460, 1697804443),
-(10, '添加用户', 8, ',8,10,', 2, 'user.add', NULL, '', 1697805259, 1697805259),
-(11, '修改用户', 0, ',11,', 1, 'user.edit', NULL, '', 1697805548, 1697805548);
+INSERT INTO `zap_permissions` (`perm_id`, `title`, `pid`, `path`, `level`, `perm_key`, `extras`, `description`, `updated_at`, `created_at`) VALUES
+(1, '内容管理', 0, '1,', 0, 'node', '{\"btn4\":\"按钮4\",\"btn3\":\"按钮3\",\"btn2\":\"按钮2\",\"btn1\":\"按钮\",\"delete\":\"删除\",\"edit\":\"修改\",\"add\":\"添加\"}', '', 1698115161, 1698050613),
+(2, '栏目管理', 0, '2,', 0, 'catalog', '[]', '', 1698050626, 1698050626),
+(3, '添加栏目', 2, '2,3,', 1, 'catalog.add', '[]', '', 1698050644, 1698050644),
+(4, '修改栏目', 2, '2,4,', 1, 'catalog.edit', '[]', '', 1698050658, 1698050658),
+(5, '删除栏目', 2, '2,5,', 1, 'catalog.delete', '[]', '', 1698050678, 1698050678);
 
 -- --------------------------------------------------------
 
@@ -379,6 +381,7 @@ INSERT INTO `zap_permissions` (`perm_id`, `title`, `pid`, `path`, `level`, `slug
 CREATE TABLE `zap_roles` (
   `role_id` int(11) NOT NULL,
   `name` varchar(128) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
   `status` int(11) DEFAULT NULL,
   `updated_at` int(11) DEFAULT NULL,
   `created_at` int(11) DEFAULT NULL
@@ -388,8 +391,10 @@ CREATE TABLE `zap_roles` (
 -- 转存表中的数据 `zap_roles`
 --
 
-INSERT INTO `zap_roles` (`role_id`, `name`, `status`, `updated_at`, `created_at`) VALUES
-(1, '超级管理员', NULL, 1697780789, 1697774895);
+INSERT INTO `zap_roles` (`role_id`, `name`, `description`, `status`, `updated_at`, `created_at`) VALUES
+(1, '超级管理员', '系统管理员', 1, 1698118103, 1697774895),
+(2, '编辑', '发布文章', 1, 1698118114, 1698110905),
+(3, '内容管理员', '内容编辑', 1, 1698118125, 1698110928);
 
 -- --------------------------------------------------------
 
@@ -399,9 +404,79 @@ INSERT INTO `zap_roles` (`role_id`, `name`, `status`, `updated_at`, `created_at`
 
 CREATE TABLE `zap_roles_permissions` (
   `role_id` int(11) NOT NULL,
-  `perm_id` int(11) NOT NULL,
+  `perm_key` varchar(255) NOT NULL,
+  `extras` text,
   `assignment_time` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- 转存表中的数据 `zap_roles_permissions`
+--
+
+INSERT INTO `zap_roles_permissions` (`role_id`, `perm_key`, `extras`, `assignment_time`) VALUES
+(1, 'admin_menu_1', '', 1698118103),
+(1, 'admin_menu_2', '', 1698118103),
+(1, 'admin_menu_3', '', 1698118103),
+(1, 'admin_menu_4', '', 1698118103),
+(1, 'admin_menu_5', '', 1698118103),
+(1, 'admin_menu_7', '', 1698118103),
+(1, 'admin_menu_8', '', 1698118103),
+(1, 'catalog', '', 1698118103),
+(1, 'catalog.add', '', 1698118103),
+(1, 'catalog.delete', '', 1698118103),
+(1, 'catalog.edit', '', 1698118103),
+(1, 'node', '', 1698118103),
+(2, 'admin_menu_1', '', 1698118114),
+(2, 'admin_menu_2', '', 1698118114),
+(2, 'admin_menu_3', '', 1698118114),
+(2, 'admin_menu_4', '', 1698118114),
+(2, 'admin_menu_5', '', 1698118114),
+(2, 'admin_menu_7', '', 1698118114),
+(2, 'admin_menu_8', '', 1698118114),
+(2, 'catalog', '', 1698118114),
+(2, 'catalog.add', '', 1698118114),
+(2, 'catalog.delete', '', 1698118114),
+(2, 'catalog.edit', '', 1698118114),
+(2, 'node', '', 1698118114),
+(3, 'admin_menu_1', '', 1698118125),
+(3, 'admin_menu_2', '', 1698118125),
+(3, 'admin_menu_3', '', 1698118125),
+(3, 'admin_menu_4', '', 1698118125),
+(3, 'admin_menu_5', '', 1698118125),
+(3, 'admin_menu_7', '', 1698118125),
+(3, 'admin_menu_8', '', 1698118125),
+(3, 'catalog', '', 1698118125),
+(3, 'catalog.add', '', 1698118125),
+(3, 'catalog.delete', '', 1698118125),
+(3, 'catalog.edit', '', 1698118125),
+(3, 'node', '', 1698118125);
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `zap_taxonomy_path`
+--
+
+CREATE TABLE `zap_taxonomy_path` (
+  `taxonomy` varchar(64) NOT NULL,
+  `taxonomy_id` int(11) NOT NULL,
+  `path_id` int(11) NOT NULL,
+  `level` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- 转存表中的数据 `zap_taxonomy_path`
+--
+
+INSERT INTO `zap_taxonomy_path` (`taxonomy`, `taxonomy_id`, `path_id`, `level`) VALUES
+('permissions', 1, 1, 0),
+('permissions', 2, 2, 0),
+('permissions', 3, 2, 0),
+('permissions', 3, 3, 1),
+('permissions', 4, 2, 0),
+('permissions', 4, 4, 1),
+('permissions', 5, 2, 0),
+('permissions', 5, 5, 1);
 
 --
 -- 转储表的索引
@@ -499,7 +574,13 @@ ALTER TABLE `zap_roles`
 -- 表的索引 `zap_roles_permissions`
 --
 ALTER TABLE `zap_roles_permissions`
-  ADD PRIMARY KEY (`role_id`,`perm_id`);
+  ADD PRIMARY KEY (`role_id`,`perm_key`);
+
+--
+-- 表的索引 `zap_taxonomy_path`
+--
+ALTER TABLE `zap_taxonomy_path`
+  ADD PRIMARY KEY (`taxonomy`,`taxonomy_id`,`path_id`);
 
 --
 -- 在导出的表使用AUTO_INCREMENT
@@ -557,13 +638,13 @@ ALTER TABLE `zap_options`
 -- 使用表AUTO_INCREMENT `zap_permissions`
 --
 ALTER TABLE `zap_permissions`
-  MODIFY `perm_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `perm_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- 使用表AUTO_INCREMENT `zap_roles`
 --
 ALTER TABLE `zap_roles`
-  MODIFY `role_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `role_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

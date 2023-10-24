@@ -40,11 +40,11 @@ IS_AJAX !== true && $this->extend('layouts/common');
                     <tr class="table-secondary">
                         <th scope="col" style="width: 50px">
                             <label>
-                                <input class="form-check-input" type="checkbox" onclick="checkAll(this)"/>
+                                <input class="form-check-input" type="checkbox" onclick="Zap.CheckBox_CheckAll(this,'.roles_list')"/>
                             </label>
                         </th>
-                        <th scope="col">ID</th>
-                        <th scope="col">名称</th>
+                        <th scope="col">角色名称</th>
+                        <th scope="col">简介</th>
                         <th scope="col">修改时间</th>
                         <th scope="col">创建时间</th>
 
@@ -63,17 +63,18 @@ IS_AJAX !== true && $this->extend('layouts/common');
                                 <?php if($item['role_id'] !=1){  ?>
                                 <input name="data[<?php echo $item['role_id']; ?>][role_id]"
                                        value="<?php echo $item['role_id']; ?>"
-                                       class="form-check-input zap_catalog" type="checkbox"/>
+                                       class="form-check-input roles_list" type="checkbox"/>
                                 <?php } ?>
                             </td>
 
-                            <td><?php echo $item['role_id']; ?></td>
-                            <td><?php echo $item['name']; ?></td>
-                            <td><?php echo date(Z_DATE_TIME,$item['updated_at']); ?></td>
-                            <td><?php echo date(Z_DATE_TIME,$item['created_at']); ?></td>
+                            <td><?php echo $item['name']; ?>   <small class="text-black-50">ID:<?php echo $item['role_id']; ?></small></td>
+                            <td class="text-black-50"><?php echo $item['description']; ?></td>
+                            <td class="text-black-50"><?php echo date(Z_DATE_TIME,$item['updated_at']); ?></td>
+                            <td class="text-black-50"><?php echo date(Z_DATE_TIME,$item['created_at']); ?></td>
 
                             <td>
-                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addOrEdit(<?php echo $item['role_id']; ?>)">编辑</button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addOrEdit(<?php echo $item['role_id']; ?>)">
+                                    <i class="fa fa-edit"></i> 编辑</button>
 
                             </td>
 
@@ -107,7 +108,7 @@ IS_AJAX !== true && $this->extend('layouts/common');
     })
 
     function remove(){
-        const checkedCatalog = $('.zap_catalog:checked').serialize();
+        const checkedCatalog = $('.roles_list:checked').serialize();
         if(checkedCatalog.length === 0){
             ZapToast.alert('请选选择需要删除的角色',{bgColor:bgWarning});
             return;

@@ -14,4 +14,20 @@ class RolesPermissions extends Model
     {
         return 'roles_permissions';
     }
+
+    public static function getByRoleId($id): array
+    {
+        $rows = static::find(['role_id'=>$id])->select('perm_key,extras')
+            ->fetchAll(FETCH_ASSOC);
+        $role_permissions = [];
+        foreach ($rows as $row){
+            if(!empty($row['extras'])){
+                $role_permissions[$row['perm_key']] = array_fill_keys(explode(',',$row['extras']),true);
+            }else{
+                $role_permissions[$row['perm_key']] = [];
+            }
+
+        }
+        return $role_permissions;
+    }
 }

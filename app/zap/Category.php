@@ -178,7 +178,7 @@ class Category
         return $query->fetchAll(FETCH_ASSOC);
     }
 
-    public function getAllByPath($conditions){
+    public function getAllByPath($conditions = []){
         $query = DB::table($this->table);
         foreach ($conditions['where'] ?? [] as $name=>$value){
             if(is_int($name)){

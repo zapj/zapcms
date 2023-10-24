@@ -79,10 +79,8 @@ class Categories
         }
         //修改父类 需要更新
         if($data[$this->parentColumn] != $category[$this->parentColumn]){
-
-
             if($data[$this->parentColumn] == 0){
-                $data[$this->pathColumn] = ",{$id},";
+                $data[$this->pathColumn] = "{$id},";
             }else{
                 $parent = $this->get($data[$this->parentColumn]);
                 $data[$this->pathColumn] = "{$parent[$this->pathColumn]}{$id},";
@@ -113,6 +111,8 @@ class Categories
         $path = $category[$this->pathColumn];
         //删除子类
         DB::table($this->table)->where($this->pathColumn,'LIKE',"{$path}%")->delete();
+        DB::table($this->path_table)->where('taxonomy',$this->table)->where('taxonomy_id',$id)->delete();
+//        DB::table($this->path_table)->where('taxonomy',$this->table)->where('path_id',$id)->fetchAll(FETCH_ASSOC);
         DB::table($this->path_table)->where('taxonomy',$this->table)->where('path_id',$id)->delete();
         return DB::table($this->table)->where($this->primaryKey,$id)->delete();
     }
@@ -187,11 +187,12 @@ class Categories
         }
         return $query->fetchAll(FETCH_ASSOC);
     }
-//SELECT GROUP_CONCAT(c2.`title` ORDER BY cp.`level` SEPARATOR ' > ') AS `name`,cp.`perm_id`,  c2.`pid`,cp.level FROM zap_permissions_path cp
-//LEFT JOIN zap_permissions c2 ON (cp.`path_id` = c2.`perm_id`)
-    public function getAllByPath($conditions){
 
+    public function getAllByPath($conditions){
         $query = DB::table($this->path_table,'tp');
+        if($query->driver == 'mysql') {
+            DB::rawExec("SET sql_mode='';");
+        }
         $query->where('tp.taxonomy',$this->table);
         foreach ($conditions['where'] ?? [] as $name=>$value){
             if(is_int($name)){
@@ -201,15 +202,16 @@ class Categories
             }
         }
         if(isset($conditions['count'])){
+            $query->groupBy("tp.taxonomy_id");
             return $query->count();
         }
         $query->leftJoin([$this->table,'p'],"tp.taxonomy_id=p.{$this->primaryKey}");
         $query->leftJoin([$this->table,'pp'],"tp.path_id=pp.{$this->primaryKey}");
         if($query->driver == 'mysql'){
-            DB::rawExec("SET sql_mode='';");
             $query->select(["GROUP_CONCAT(pp.`title` ORDER BY tp.`level` SEPARATOR ' > ') AS `title`",
                 "tp.taxonomy_id {$this->primaryKey}",
                 "p.perm_key",
+                "p.extras",
                 "p.description",
                 "p.updated_at",
                 "p.created_at",
@@ -217,8 +219,10 @@ class Categories
             ]);
         }
         $query->groupBy("tp.taxonomy_id");
-//        $query->orderBy("p.perm_id DESC");
-        $query->orderBy("p.updated_at DESC");
+        $conditions['orderBy'] = $conditions['orderBy'] ?? 'title';
+        $conditions['order'] = $conditions['order'] ?? 'ASC';
+        $query->orderBy("{$conditions['orderBy']} {$conditions['order']}");
+//        $query->orderBy("p.updated_at DESC");
         if(isset($conditions['limit'])){
             $query->limit(...$conditions['limit']);
         }
