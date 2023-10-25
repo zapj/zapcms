@@ -24,6 +24,7 @@ class AbstractNodeType
     protected $nodeType;
 
     protected $catalogId;
+    protected $nodeId;
 
     public $controller;
     public $action;
@@ -37,21 +38,10 @@ class AbstractNodeType
         $this->catalogId = intval(Request::get('cid'));
         $this->isAjax = Request::isAjax();
         BreadCrumb::instance()->add('内容管理',url_action('Node'));
-
     }
 
     public function __init(){
 
-    }
-
-    public function isAjax(): bool
-    {
-        return $this->isAjax;
-    }
-
-    public function setIsAjax(bool $isAjax): void
-    {
-        $this->isAjax = $isAjax;
     }
 
     //controller actions
@@ -92,8 +82,8 @@ class AbstractNodeType
             }
             Node::updateAll($node,['id'=>$id]);
             Response::json(['code'=>0,'msg'=>$this->getTitle("%s修改成功"),'id'=>$id]);
-            return;
         }
+        $this->nodeId = $id;
         $data['title'] = $this->title;
         $data['sub_title'] = $this->getTitle("修改%s");
         $data['node'] = Node::findById($id);
@@ -171,6 +161,10 @@ class AbstractNodeType
     }
 
     protected function getCurrentCatalogPath(){
+        if(!$this->catalogId){
+            $this->catalogId = NodeRelation::find(['node_id'=>$this->nodeId])
+                ->select('catalog_id')->orderBy('catalog_id desc')->fetchColumn();
+        }
         return Catalog::instance()->getCatalogPathById($this->catalogId);
     }
 

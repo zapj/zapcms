@@ -13,13 +13,12 @@
 
                 Catalog::instance()->forEachAll(function($catalog) use ($catalogId){
                     $nodeType = NodeType::getNodeType($catalog['node_type']);
-                    $paddingLeft = ($catalog['level'] - 1) + ($catalog['level'] - 1) * 0.5;
                     ?>
                     <tr class="<?php echo $catalogId == $catalog['id'] ? ' table-success':''; ?>">
                         <td>
                             <i class="<?php echo $catalog['icon'];?>"></i>
                             <a href="<?php echo Url::action("Node@{$nodeType['type_name']}",['cid'=>$catalog['id']]); ?>">
-                                <span style="padding-left: <?php echo $paddingLeft;?>rem!important;"><?php echo $catalog['title'];?></span>
+                                <span style="padding-left: <?php echo $catalog['level'];?>rem!important;"><?php echo $catalog['title'];?></span>
                             </a>
                         </td>
 

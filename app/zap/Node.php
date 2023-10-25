@@ -10,7 +10,6 @@ class Node extends Model
 
     protected $primaryKey = 'id';
 
-
     const STATUS_PUBLISH = 'publish'; //已发布
     const STATUS_DRAFT = 'draft'; //草稿
     const STATUS_SOFT_DELETE = 'soft_delete'; //软删除
@@ -59,6 +58,8 @@ class Node extends Model
             ->groupBy('node_type')
             ->get(FETCH_KEY_PAIR);
     }
+
+
 
 
 

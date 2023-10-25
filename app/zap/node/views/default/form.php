@@ -5,7 +5,6 @@ use zap\BreadCrumb;
 use zap\facades\Url;
 
 Asset::library('summernote');
-//Asset::library('trumbowyg');
 Asset::library('datetimepicker');
 Asset::library('jqueryvalidation');
 $this->layout('layouts/common');
@@ -15,14 +14,12 @@ $this->layout('layouts/common');
             <?php BreadCrumb::instance()->display() ; ?>
 
             <div class=" text-end">
-<!--                <a class="btn btn-dark btn-sm" href="--><?php //echo url_action('Zap@news', $_GET); ?><!--"><i-->
-<!--                            class="fa fa-cancel"></i>-->
-<!--                    取消</a>-->
-<!--                <button type="button" class="btn btn-success btn-sm" onclick="save();">-->
-<!--                    <i class="fa fa-save"></i> 保存-->
-<!--                </button>-->
-                <!--                <a class="btn btn-primary btn-sm" href="-->
-                <?php //echo url_action('Zap@news'); ?><!--">返回</a>-->
+
+                <a class="btn btn-secondary btn-sm" href="<?php echo url_action("Node@{$_controller}", $_GET); ?>"><i
+                            class="fa fa-cancel"></i> 取消</a>
+                <button type="button" class="btn btn-success btn-sm" onclick="save();"><i class="fa fa-save"></i>
+                    保存
+                </button>
             </div>
         </div>
 
@@ -161,7 +158,7 @@ $this->layout('layouts/common');
                             <?php
                             while($catalog = array_shift($catalogList)){
                                 ?>
-                                <div class="form-check " style="margin-left:<?php echo $catalog['level']-1; ?>rem!important;">
+                                <div class="form-check " style="margin-left:<?php echo $catalog['level']; ?>rem!important;">
                                     <input class="form-check-input" type="checkbox" name="catalog[]" <?php echo !$node_relations[$catalog['id']] ?: 'checked' ?>
                                            value="<?php echo $catalog['id'];?>" id="catalog-<?php echo $catalog['id'];?>">
                                     <label class="form-check-label" for="catalog-<?php echo $catalog['id'];?>">
