@@ -57,7 +57,7 @@ class Option
         return $option_value;
     }
 
-    public static function getArray($option_name,$type): array
+    public static function getArray($option_name,$type = '='): array
     {
         $query = DB::table('options')->select('option_name,option_value')
             ->orderBy('sort_order desc');

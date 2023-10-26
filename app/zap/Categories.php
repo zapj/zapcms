@@ -66,7 +66,7 @@ class Categories
         DB::update($this->table,[$this->pathColumn => $data[$this->pathColumn] ],[$this->primaryKey => $category_id]);
         $path_ids = array_filter(explode(',',$data[$this->pathColumn]));
         foreach ($path_ids as $level=>$path_id){
-            DB::insert($this->path_table,['taxonomy'=>$this->table,'taxonomy_id'=>$category_id,'path_id'=>$path_id,'level'=>$level]);
+            DB::insert($this->path_table,['perm_id'=>$category_id,'path_id'=>$path_id,'level'=>$level]);
         }
 
         return $category_id;
@@ -111,9 +111,9 @@ class Categories
         $path = $category[$this->pathColumn];
         //删除子类
         DB::table($this->table)->where($this->pathColumn,'LIKE',"{$path}%")->delete();
-        DB::table($this->path_table)->where('taxonomy',$this->table)->where('taxonomy_id',$id)->delete();
+        DB::table($this->path_table)->where('perm_id',$id)->delete();
 //        DB::table($this->path_table)->where('taxonomy',$this->table)->where('path_id',$id)->fetchAll(FETCH_ASSOC);
-        DB::table($this->path_table)->where('taxonomy',$this->table)->where('path_id',$id)->delete();
+        DB::table($this->path_table)->where('path_id',$id)->delete();
         return DB::table($this->table)->where($this->primaryKey,$id)->delete();
     }
 
@@ -170,8 +170,7 @@ class Categories
 
     public function getPaths($category_id){
         return DB::table($this->path_table)
-            ->where('taxonomy', $this->table)
-            ->where('taxonomy_id', $category_id)
+            ->where('perm_id', $category_id)
             ->orderBy('level ASC')
             ->fetchAll(FETCH_ASSOC);
     }
@@ -193,7 +192,6 @@ class Categories
         if($query->driver == 'mysql') {
             DB::rawExec("SET sql_mode='';");
         }
-        $query->where('tp.taxonomy',$this->table);
         foreach ($conditions['where'] ?? [] as $name=>$value){
             if(is_int($name)){
                 $query->where(...$value);
@@ -202,14 +200,14 @@ class Categories
             }
         }
         if(isset($conditions['count'])){
-            $query->groupBy("tp.taxonomy_id");
+            $query->groupBy("tp.perm_id");
             return $query->count();
         }
-        $query->leftJoin([$this->table,'p'],"tp.taxonomy_id=p.{$this->primaryKey}");
+        $query->leftJoin([$this->table,'p'],"tp.perm_id=p.{$this->primaryKey}");
         $query->leftJoin([$this->table,'pp'],"tp.path_id=pp.{$this->primaryKey}");
         if($query->driver == 'mysql'){
             $query->select(["GROUP_CONCAT(pp.`title` ORDER BY tp.`level` SEPARATOR ' > ') AS `title`",
-                "tp.taxonomy_id {$this->primaryKey}",
+                "tp.perm_id {$this->primaryKey}",
                 "p.perm_key",
                 "p.extras",
                 "p.description",
@@ -218,7 +216,7 @@ class Categories
                 "tp.level"
             ]);
         }
-        $query->groupBy("tp.taxonomy_id");
+        $query->groupBy("tp.perm_id");
         $conditions['orderBy'] = $conditions['orderBy'] ?? 'title';
         $conditions['order'] = $conditions['order'] ?? 'ASC';
         $query->orderBy("{$conditions['orderBy']} {$conditions['order']}");

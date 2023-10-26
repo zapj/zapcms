@@ -9,8 +9,8 @@ use zap\NodeType;
         <input type="text" class="form-control" id="catalog_title" name="catalog[title]" value="<?php echo $catalog['title'];?>" placeholder="">
     </div>
     <div class="mb-3">
-        <label for="catalog_seo_name" class="form-label">SEO 名称</label>
-        <input type="text" class="form-control" id="catalog_seo_name" name="catalog[seo_name]" value="<?php echo $catalog['seo_name'];?>" placeholder="">
+        <label for="catalog_slug" class="form-label">别名</label>
+        <input type="text" class="form-control" id="catalog_slug" name="catalog[slug]" value="<?php echo $catalog['slug'];?>" placeholder="字母、中文、数字和-_">
     </div>
     <div class="mb-3">
         <label for="catalog_node_type" class="form-label">内容模型</label>

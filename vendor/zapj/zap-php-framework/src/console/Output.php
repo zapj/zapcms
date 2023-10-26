@@ -50,4 +50,12 @@ class Output {
 
         return stream_isatty($this->stdout);
     }
+
+    public function write($data){
+        fwrite($this->stdout,$data);
+    }
+
+    public function writeln($data){
+        fwrite($this->stdout,$data . PHP_EOL);
+    }
 }

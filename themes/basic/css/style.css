@@ -1,8 +1,8 @@
 /* Base */
 * {outline:none;}
 html, body {height: 100%;}
-body {font-family: 'Open Sans', sans-serif;font-size: 13px;line-height: 1.6;color: #8c8c8c;background-color: #fff;}
-h1, h2, h3, h4, h5, h6 {font-family: 'Open Sans', sans-serif;}
+body {font-family:  Microsoft Yahei, \5FAE\8F6F\96C5\9ED1, \5b8b\4f53, Arial, Lucida, Verdana, Helvetica, sans-serif;font-size: 14px;line-height: 1.6;color: #8c8c8c;background-color: #fff;}
+h1, h2, h3, h4, h5, h6 {font-family: 'Microsoft Yahei',Arial, Lucida, sans-serif;}
 a {color: #404040;}
 a:hover {color: #404040;transition-property: all;transition-duration: 0.3s;transition-timing-function: linear;}
 a.none:hover {text-decoration: none;}
@@ -19,9 +19,9 @@ a.none:hover {text-decoration: none;}
 /* Navigation */
 .navbar {-moz-border-radius: 0;-webkit-border-radius: 0;border-radius: 0;margin-bottom: 0;}
 .navbar .container {position: relative;}
-.navbar-default {-moz-transition: all 0.3s ease-out;-o-transition: all 0.3s ease-out;-webkit-transition: all 0.3s ease-out;transition: all 0.3s ease-out;width: 100%;border: none;border-bottom: 1px solid #e7e7e7;background-color: #fff;}
-.navbar-default .navbar-nav > li > a {color: #404040;font-weight: normal;font-size: 13px;}
-.navbar-default .navbar-nav > li > a:hover {background-color: transparent;color: #005FA6;}
+.navbar-default {-moz-transition: all 0.3s ease-out;-o-transition: all 0.3s ease-out;-webkit-transition: all 0.3s ease-out;transition: all 0.3s ease-out;width: 100%;border: none;border-bottom: 1px solid #c9c9c9;background-color: #fff;}
+.navbar-default .navbar-nav > li > a {color: #404040;}
+.navbar-default .navbar-nav > li > a:hover {background-color: #ebeff1;color: #005FA6;}
 .navbar-default .navbar-nav > .open > a,.navbar-default .navbar-nav > .open > a:hover,.navbar-default .navbar-nav > .open > a:focus {background-color: transparent;color: #005FA6;}
 .navbar-default .navbar-nav .active > a,.navbar-default .navbar-nav .active > a:hover,.navbar-default .navbar-nav .active > a:focus {color: #005FA6;background-color: transparent;}
 .navbar-default .navbar-toggle {margin: 10px 0 0 15px;}

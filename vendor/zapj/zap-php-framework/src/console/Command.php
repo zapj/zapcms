@@ -8,7 +8,7 @@ class Command{
     function init() :void{
 
     }
-    function execute(Args $input,Output $output) : int
+    function execute(Args $input,Output $out) : int
     {
         return self::SUCCESS;
     }

@@ -12,7 +12,7 @@ class Permissions extends Categories
 
     public function __construct()
     {
-        parent::__construct('permissions','taxonomy_path','perm_id');
+        parent::__construct('permissions','permissions_path','perm_id');
     }
 
     public function add($data): int
@@ -28,10 +28,3 @@ class Permissions extends Categories
         return parent::update($data, $id);
     }
 }
-
-/*
-
-SELECT GROUP_CONCAT(c2.`title` ORDER BY cp.`level` SEPARATOR ' > ') AS `name`,cp.`perm_id`,  c2.`pid`,cp.level FROM zap_permissions_path cp
-LEFT JOIN zap_permissions c2 ON (cp.`path_id` = c2.`perm_id`)
-WHERE 1
- */

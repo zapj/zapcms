@@ -77,7 +77,7 @@ IS_AJAX !== true && $this->layout('layouts/common');
                                    class="d-inline form-control form-control-sm w-auto"/>
                         </div>
                     </td>
-                    <td><?php echo $admin_menu['seo_name']; ?></td>
+                    <td><?php echo $admin_menu['slug']; ?></td>
                     <td><?php echo \zap\NodeType::getTitle($admin_menu['node_type']); ?></td>
 
                     <td>

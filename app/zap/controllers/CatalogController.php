@@ -16,7 +16,6 @@ use zap\view\View;
 class CatalogController extends AdminController
 {
     function index(){
-//        Asset::library('summernote');
         $data = [];
         $menu = new Catalog();
         $data['menu'] = $menu;
