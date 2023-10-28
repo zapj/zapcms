@@ -9,11 +9,17 @@ class Page
 {
     public $isHome;
     public $nodeId;
+    public $node;
     public $tags;
     public $tag;
     public $catalog;
 
     public $options = [];
+    public $isCatalog = false;
+    public $isNode = false;
+    public $nodeType;
+    public $nodeMimeType;
+
 
     public function addOptions($options){
         $this->options += $options;

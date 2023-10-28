@@ -349,6 +349,10 @@ class Router
         }else if(strstr($uri, '#')){
             $uri = substr($uri, 0, strpos($uri, '#'));
         }
+        if(($suffix = config('config.suffix',false)) !== false){
+//            $uri = substr($uri,0,strlen($suffix) * -1);
+            $uri = preg_replace('/'.preg_quote($suffix).'$/','',$uri);
+        }
         return '/' . trim($uri, '/');
     }
 

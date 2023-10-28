@@ -39,9 +39,44 @@ class Catalog extends Category
 
     public function add($data): int
     {
+        $node = Node::create([
+            'title'=>$data['title'],
+            'slug'=>$data['slug'],
+            'author_id'=>0,
+            'node_type'=>'catalog',
+            'mime_type'=>$data['node_type'],
+            'status'=>Node::STATUS_PUBLISH,
+            'pub_time'=>time(),
+            'update_time'=>time(),
+            'add_time'=>time(),
+        ]);
+        if($node){
+            $data[$this->primaryKey] = $node->id;
+        }
         $data['created_at'] = time();
         return parent::add($data);
     }
+
+    public function update($data, $id)
+    {
+        Node::updateAll([
+            'title'=>$data['title'],
+            'slug'=>$data['slug'],
+//            'node_type'=>$data['node_type'],
+            'node_type'=>'catalog',
+            'mime_type'=>$data['node_type'],
+            'update_time'=>time(),
+        ],['id'=>$id]);
+        return parent::update($data, $id);
+    }
+
+    public function remove($id)
+    {
+        Node::delete($id);
+        DB::table('node_meta')->where('object_id',$id)->delete();
+        return parent::remove($id);
+    }
+
 
     public function getCatalogPathById($catalogId){
         $catalog = $this->get($catalogId);

@@ -4,7 +4,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ZAP</title>
-<!--    <link href="--><?php //echo base_url();?><!--/assets/bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">-->
     <link href="<?php echo base_url();?>/assets/admin/css/bootstrap.css" rel="stylesheet">
     <link href="<?php echo base_url();?>/assets/admin/css/default.css" rel="stylesheet">
     <link href="<?php echo base_url();?>/assets/layer/theme/default/layer.css" rel="stylesheet">

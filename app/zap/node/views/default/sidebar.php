@@ -10,7 +10,9 @@
                 use zap\Catalog;
                 use zap\facades\Url;
                 use zap\NodeType;
-
+                if($catalogId===0){
+                    $catalogId = $node->id;
+                }
                 Catalog::instance()->forEachAll(function($catalog) use ($catalogId){
                     $nodeType = NodeType::getNodeType($catalog['node_type']);
                     ?>

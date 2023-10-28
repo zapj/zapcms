@@ -2,18 +2,28 @@
 defined('IN_ZAP_CMS') or die('No permission to access');
 $this->extend('layout/default'); ?>
 <main class="site-main">
-    <section class="hero_area">
-        <div class="hero_content">
-            <div class="container">
-                <div class="row">
-                    <div class="col-sm-12">
-                        <h1>COMPANY NAME</h1>
-                        <h2>Donec Elit Non Porta Gravida Eget Metus</h2>
-                    </div>
-                </div>
+    <!-- Slider main container -->
+    <div class="swiper">
+        <!-- Additional required wrapper -->
+        <div class="swiper-wrapper">
+            <!-- Slides -->
+            <div class="swiper-slide " >
+                <a href="#"  style="background: url('/themes/basic/img/banner1.png') no-repeat center center;  ">
+                </a>
             </div>
+            <div class="swiper-slide">
+                <a href="#"  style="background: url('/themes/basic/img/banner2.png') no-repeat center center; " >
+                </a>
+            </div>
+
         </div>
-    </section>
+        <div class="swiper-pagination"></div>
+
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-button-next"></div>
+
+    </div>
+
     <section class="boxes_area">
         <div class="container">
             <div class="row">
@@ -172,3 +182,21 @@ $this->extend('layout/default'); ?>
         </div>
     </section>
 </main>
+<script>
+    const swiper = new Swiper('.swiper', {
+        loop: true,
+
+        // If we need pagination
+        pagination: {
+            el: '.swiper-pagination',
+        },
+
+        // Navigation arrows
+        navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+        },
+
+
+    });
+</script>

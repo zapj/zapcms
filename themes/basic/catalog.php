@@ -5,7 +5,7 @@
             <div class="col-sm-12">
                 <ol class="breadcrumb">
                     <li><a href="#" title="Post">Home</a></li>
-                    <li class="active">Category Name</li>
+                    <li class="active">栏目</li>
                 </ol>
             </div>
         </div>

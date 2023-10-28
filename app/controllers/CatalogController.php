@@ -7,10 +7,9 @@ namespace app\controllers;
 
 use zap\http\Controller;
 
-class IndexController extends Controller
+class CatalogController extends Controller
 {
     function index(){
-        page()->isHome = true;
-        view('index',[]);
+        view('catalog',[]);
     }
 }

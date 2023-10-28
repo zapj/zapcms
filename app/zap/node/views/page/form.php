@@ -14,6 +14,8 @@ $this->extend('layouts/common');
         <div class="container-fluid">
             <?php BreadCrumb::instance()->display('<li class="d-block d-md-none d-lg-none"><i class="fa fa-bars me-1" onclick="$(\'#nodeleftsidebar\').toggleClass(\'d-none\');"></i> </li>') ; ?>
             <div class=" text-end">
+                <a class="btn btn-secondary btn-sm" href="<?php echo req()->prevUrl(url_action('Node@page'));?>">
+                    <i class="fa fa-rotate-back"></i> 返回</a>
                 <button type="button" class="btn btn-success btn-sm" onclick="save();"><i class="fa fa-save"></i> 保存</button>
             </div>
         </div>
@@ -29,8 +31,8 @@ $this->extend('layouts/common');
         <main class="container-fluid zap-main">
             <div class="row">
                 <?php
-                $this->include('default/sidebar','leftmenu');
-                echo $this->block('leftmenu');
+                $this->include('default/sidebar','left_menu');
+                echo $this->block('left_menu');
                 ?>
                 <div class="col-md-9 mb-3">
                     <div class="card  shadow">
@@ -68,11 +70,6 @@ $this->extend('layouts/common');
                                     <i class="fa fa-angle-double-right"></i> 更多设置
                                 </a>
                                 <div class="collapse" id="morenodesettings">
-                                    <div class="mb-3">
-                                        <label for="node_hits" class="form-label">文章点击量</label>
-                                        <input type="text" class="form-control" name="node[hits]" id="node_hits"
-                                               placeholder="文章点击量" value="<?php echo $node->hits ?? 0; ?>"/>
-                                    </div>
                                     <div class="mb-3">
                                         <label for="node_sort_order" class="form-label">排序</label>
                                         <input type="text" class="form-control" name="node[sort_order]" id="node_sort_order"

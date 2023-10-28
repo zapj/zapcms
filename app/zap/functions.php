@@ -11,6 +11,9 @@ function get_option($option_name, $default = null){
 }
 
 function get_options($option_name,$type = '=' , $ttl = 10000){
+    if(is_array($option_name)){
+        $option_name = join('|',$option_name);
+    }
     return \zap\facades\Cache::get($option_name,function() use ($option_name,$type){
         return \zap\Option::getArray($option_name,$type);
     },$ttl);

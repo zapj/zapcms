@@ -14,7 +14,13 @@ $catalogMenu = page()->getCatalog();
     <link href="<?php echo base_url();?>/themes/basic/css/bootstrap.min.css" rel="stylesheet">
     <link href="<?php echo base_url();?>/themes/basic/css/font-awesome.min.css" rel="stylesheet">
     <link href="<?php echo base_url();?>/themes/basic/css/style.css" rel="stylesheet">
+    <?php if(page()->isHome){ ?>
+    <link href="<?php echo base_url();?>/themes/basic/css/swiper-bundle.min.css" rel="stylesheet" >
+    <script src="<?php echo base_url();?>/themes/basic/js/swiper-bundle.min.js"></script>
+    <?php } ?>
+    <style>
 
+    </style>
     <!--[if lt IE 9]>
     <script src="<?php echo base_url();?>/themes/basic/js/html5shiv.min.js"></script>
     <script src="<?php echo base_url();?>/themes/basic/js/respond.min.js"></script>
@@ -48,9 +54,8 @@ $catalogMenu = page()->getCatalog();
                 <i class="fa fa-bars"></i>
             </button>
             <a href="<?php echo base_url('/'); ?>" class="navbar-brand">
-                <img src="img/logo.png" alt="Post">
+                <img src="img/zap_logo_green.svg" width="160px" alt="Post">
             </a>
-            <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-navbar-collapse">
                 <ul class="nav navbar-nav main-navbar-nav">
                     <li class="active"><a href="<?php echo base_url('/'); ?>" title="">首页</a></li>
@@ -62,15 +67,15 @@ $catalogMenu = page()->getCatalog();
                     <li class="nav-item <?php echo !empty($menu['children']) ? 'dropdown':''; ?>">
                         <a data-id="<?php echo $menu['id'];?>" href="<?php echo url_slug($childLastSlug,$menu['slug']);?>"
                             <?php if(!empty($menu['children'])) {
-                                echo 'class="nav-link dropdown-toggle " data-bs-toggle="dropdown" aria-expanded="false"';
+                                echo 'class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"';
                             }else if(count($childLastId)){
                                 echo 'class="dropdown-item"';
                             }else{
                                 echo 'class="nav-link "';
                             } ?>
                         >
-                            <i class="<?php echo $menu['icon'];?>"></i>
-                            <?php echo $menu['title'];?>
+
+                            <?php echo $menu['title'];?>  <?php if(!empty($menu['children'])) { echo '<span class="navbar-right-btn" ><span class="caret"></span></span>';} ?>
                         </a>
 
                         <?php
@@ -95,7 +100,6 @@ $catalogMenu = page()->getCatalog();
 
                 </ul>
             </div><!-- /.navbar-collapse -->
-            <!-- END MAIN NAVIGATION -->
         </div>
     </nav>
 </header>
@@ -104,7 +108,7 @@ $catalogMenu = page()->getCatalog();
     <div class="container">
         <div class="row">
             <div class="col-md-3 col-sm-6 col-xs-12 fbox">
-                <h4>COMPANY NAME</h4>
+                <h4><?php echo option('website.title');?></h4>
                 <p class="text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam congue lectus diam, sit amet cursus massa efficitur sed. </p>
                 <ul class="list-inline">
                     <li><a href="#"><i class="fa fa-facebook"></i></a></li>
@@ -150,7 +154,7 @@ $catalogMenu = page()->getCatalog();
         <div class="container">
             <div class="row">
                 <div class="col-md-4">
-                    <p class="pull-left">&copy; 2016 COMPANY NAME</p>
+                    <p class="pull-left">&copy; <?php echo date('Y'),'   ',option('website.title'); ?></p>
                 </div>
                 <div class="col-md-8">
                     <ul class="list-inline navbar-right">
@@ -169,6 +173,20 @@ $catalogMenu = page()->getCatalog();
 <script src="<?php echo base_url();?>/assets/jquery/jquery-3.6.4.min.js"></script>
 <script src="<?php echo base_url();?>/themes/basic/js/bootstrap.min.js"></script>
 
+<?php
+print_scripts(ASSETS_BODY);
+print_scripts(ASSETS_BODY_TEXT);
+?>
+
 <?php echo option('website.foot_script'); ?>
+<script>
+    $(document).ready(function(){
+        $('.navbar-right-btn').on('click',function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            console.log($(e.target).closest('li').toggleClass('open'))
+        });
+    });
+</script>
 </body>
 </html>

@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'e387ebb242d43c696088c43bccffb36611571115',
+        'reference' => '521cd05b78f023f3491632b2858d5236a67f5c86',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'e387ebb242d43c696088c43bccffb36611571115',
+            'reference' => '521cd05b78f023f3491632b2858d5236a67f5c86',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -22,7 +22,7 @@
         'monolog/monolog' => array(
             'pretty_version' => '2.x-dev',
             'version' => '2.9999999.9999999.9999999-dev',
-            'reference' => '1b93764d154ba06b18fe11f252bf991b9ef9aa62',
+            'reference' => '437cb3628f4cf6042cc10ae97fc2b8472e48ca1f',
             'type' => 'library',
             'install_path' => __DIR__ . '/../monolog/monolog',
             'aliases' => array(),
@@ -46,7 +46,7 @@
         'zapj/zap-php-framework' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'fcf99f38f96652c23a2b8f8e251f47567fbbdc20',
+            'reference' => '8997c1e47c862ef1db00eb93a2ca37010a2fcd00',
             'type' => 'library',
             'install_path' => __DIR__ . '/../zapj/zap-php-framework',
             'aliases' => array(

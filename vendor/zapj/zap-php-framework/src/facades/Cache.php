@@ -51,7 +51,7 @@ class Cache extends Facade
             case 'file':
             default:
                 $cacheDir = config('cache.file.path',var_path('cache'));
-                return new FileCache(['cacheDir'=>$cacheDir]);
+                return new FileCache(['cacheDir'=>$cacheDir,'isCache'=>config('cache.status','enabled')]);
         }
     }
 

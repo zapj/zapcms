@@ -13,7 +13,8 @@ class IndexController extends AdminController
     function index(){
         $data = [];
         $node = new Node();
-        $data['node_types_count'] = $node->getAllTypesCount();
+        $data['node_types_statistics'] = $node->getAllTypesCount();
+        $data['pages'] = $node->getPages();
         View::render("dashboard.index",$data);
     }
 

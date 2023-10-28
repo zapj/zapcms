@@ -7,7 +7,7 @@ namespace app\controllers;
 
 use zap\http\Controller;
 
-class TagsController extends Controller
+class FaqController extends Controller
 {
     function index(){
         view('index',[]);

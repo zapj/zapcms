@@ -58,9 +58,10 @@ class Category
             $data[$this->pathColumn] = '';
             $data[$this->levelColumn] = $this->defaultLevel;
         }
-
-//        $data[$this->parentColumn] = $data['pid'];
         $category_id = DB::insert($this->table, $data);
+        if(!$category_id){
+            $category_id = $data['id'];
+        }
         if($data[$this->parentColumn] == 0){
             DB::update($this->table,[$this->pathColumn => "{$category_id},"],[$this->primaryKey => $category_id]);
         }else{

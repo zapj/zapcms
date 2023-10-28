@@ -16,7 +16,7 @@ class DefaultController extends AbstractNodeType
 
     public function __init()
     {
-        $this->title = '文章';
+        $this->title = '内容';
         add_filter('node_total_conditions',function($conditions){
             unset($conditions['where']['n.node_type']);
             unset($conditions['where']['nr.catalog_id']);

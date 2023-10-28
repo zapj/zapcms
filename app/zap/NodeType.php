@@ -25,6 +25,14 @@ class NodeType
         return static::$nodeTypes;
     }
 
+    public static function getKeyPair($key = 'type_name',$value = 'title')
+    {
+        return DB::table('node_types')->select([$key,$value])
+            ->where('status',1)
+            ->orderBy('sort_order DESC')
+            ->get(FETCH_KEY_PAIR);
+    }
+
 
     public static function getNodeType($type_name,$key = null)
     {

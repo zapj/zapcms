@@ -5,9 +5,11 @@
 
 namespace app;
 
+use Exception;
 use zap\exception\NotFoundException;
 use zap\http\Middleware;
 use zap\http\Router;
+use zap\Node;
 use zap\Option;
 
 class Startup implements Middleware
@@ -17,12 +19,11 @@ class Startup implements Middleware
     public $router;
     public $currentUri;
     public $baseUrl;
-    /**
-     * @var mixed|string
-     */
     private $controller;
     private string $method;
     private string $controllerClass;
+    private bool $notFound = false;
+    private bool $hasParams;
 
     public function __construct($options = [])
     {
@@ -35,19 +36,21 @@ class Startup implements Middleware
     {
         define('IN_ZAP_CMS',true);
         app()->page = new Page();
-        $website = get_options('^website\.','REGEXP');
+
+        $website = get_options('website','REGEXP');
         //加载 配置
         app()->set('options_website',$website);
 
         config('config.theme',$website['website.theme'] ?? 'basic');
 
         $this->parseUrlPath();
+        if(!isset($this->controllerClass) || $this->notFound){
+//            $website_route = $website['website.route'] ?? 1;
+//            $this->initRoute($website_route);
+            $this->initRoute();
+        }
 
-        $website_route = $website['website.route'] ?? 1;
-        $this->initRoute($website_route);
-
-
-        if ( ! class_exists($this->controllerClass)) {
+        if ( !isset($this->controllerClass) || ! class_exists($this->controllerClass)) {
             $this->router->trigger404();
 
             return false;
@@ -57,8 +60,8 @@ class Startup implements Middleware
 
         try {
 //            app()->controller = new $this->controllerClass();
-            app()->make($this->controllerClass,[],'controller');
-            call_user_func_array([app()->controller, 'setParams'], ['params'=>$this->router->params]);
+            app()->make($this->controllerClass, [], 'controller');
+            call_user_func_array([app()->controller, 'setParams'], ['params' => $this->router->params]);
             if (method_exists(app()->controller, '_invoke')) {
                 call_user_func_array([app()->controller, '_invoke'],
                     ['method' => $this->method,
@@ -66,17 +69,19 @@ class Startup implements Middleware
                 );
             } else {
                 if (method_exists(app()->controller, $this->method)) {
-                    call_user_func_array([app()->controller, $this->method],$this->router->params);
+                    call_user_func_array([app()->controller, $this->method], $this->router->params);
                 } else {
                     throw new NotFoundException('not found');
                 }
             }
-        } catch (NotFoundException $e) {
+        }catch (NotFoundException $e) {
             if (method_exists(app()->controller, '_notfound')) {
                 call_user_func_array([app()->controller, '_notfound'],['method' => $this->method,'params' => $this->router->params]);
             } else {
                 $this->router->trigger404();
             }
+        } catch (Exception $e){
+            $this->router->trigger404();
         }
         return false;
     }
@@ -89,49 +94,59 @@ class Startup implements Middleware
             preg_replace("#$routeBase#iu", '', $this->currentUri, 1), '/ '
         );
         $segments = preg_split('#/#', trim($url, '/'), -1, PREG_SPLIT_NO_EMPTY);
-        $controller = array_shift($segments);
-        $method = array_shift($segments);
 
-        if ($controller != null && preg_match('/^[a-z]+[-_0-9a-z]+$/i', $controller)) {
-            $this->controller = $controller;
-            if ($method != null && preg_match('/^[a-z][a-z0-9-_]+$/i', $method)) {
-                $this->method = Router::convertToName($method);
-            } elseif ($method != null) {
-                array_unshift($segments, $method);
+        if (isset($segments[0]) && preg_match('/^[a-z]+[-_0-9a-z]+$/i', $segments[0])) {
+            $controllerClass = $namespace.'\\'. Router::convertToName($segments[0]) . 'Controller';
+            if(class_exists($controllerClass)){
+                $this->controllerClass = $controllerClass;
+                unset($segments[0]);
+            }else{
+                $this->notFound = true;
             }
-        } else {
-            array_unshift($segments, $controller);
+            if (isset($segments[1]) && preg_match('/^[a-z][a-z0-9-_]+$/i', $segments[1])) {
+                $this->method = Router::convertToName($segments[1]);
+                unset($segments[1]);
+            }
         }
 
         $this->hasParams = !((count($segments) == 0));
-
         $this->router->params = $segments;
-        $this->controllerClass = $namespace.'\\'. Router::convertToName($this->controller) . 'Controller';
     }
 
-    private function initRoute($routeType){
-        if($routeType === 1){
-            page()->nodeId = intval($_GET['p'] ?? 0);
-            page()->tags = isset($_GET['tags']);
-            page()->tag = $_GET['tag'] ?? 0;
-            page()->isHome = (count($_GET) == 0);
-            if(page()->isHome){
-                $this->resetRoute('index','index');
-            }else if(page()->nodeId){
-                $this->resetRoute('node','index');
-            }else if(page()->tags){
-                $this->resetRoute('tags','index');
-            }else if(page()->tag){
-                $this->resetRoute('tag','index');
+    private function initRoute(): void
+    {
+        if(($segment = current($this->router->params)) !== false){
+            switch ($segment){
+                case 'tags':
+                    page()->tags = true;
+                    $this->resetRoute('node', 'tags');
+                    return;
+                case 'tag':
+                    page()->tag = true;
+                    $this->resetRoute('node', 'tag');
+                    return;
             }
-
         }
+        $slug  = end($this->router->params);
+        if($slug){
+            $node = Node::where('slug',$slug)->fetch(FETCH_ASSOC);
+            $node or $this->router->trigger404();
+            page()->node = $node;
+            $this->resetRoute($node['node_type'], 'index');
+            page()->nodeType = $node['node_type'];
+            page()->nodeMimeType = $node['mime_type'];
+            return;
+        }
+        page()->isHome = true;
+        $this->resetRoute('index', 'index');
     }
 
-    private function resetRoute($controller,$action){
+    private function resetRoute($controller,$action): bool
+    {
         $namespace = $this->options['namespace'];
         $this->controller = $controller;
         $this->method = $action;
         $this->controllerClass = $namespace.'\\'. Router::convertToName($this->controller) . 'Controller';
+        return true;
     }
 }

@@ -5,7 +5,7 @@ $this->layout('layout');
 <div class="container">
     <main>
         <div class="py-5 text-center">
-            <img class="d-block mx-auto mb-4" src="../assets/admin/img/zap_logo_green_rgb.svg" alt="" width="150" >
+            <img class="d-block mx-auto mb-4" src="../assets/admin/img/zap_logo_green.svg" alt="" width="150" >
             <h6>ZAP CMS安装向导</h6>
 
         </div>

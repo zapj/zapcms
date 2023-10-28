@@ -59,6 +59,13 @@ class Option
 
     public static function getArray($option_name,$type = '='): array
     {
+        if(is_array($option_name) && $type == 'REGEXP'){
+            $option_name = join('|',$option_name);
+            $option_name = "^({$option_name}).*";
+        }else if(is_string($option_name) && $type == 'REGEXP'){
+            $option_name = "^({$option_name}).*";
+        }
+
         $query = DB::table('options')->select('option_name,option_value')
             ->orderBy('sort_order desc');
         $query->where('option_name',$type,$option_name);

@@ -4,18 +4,11 @@ use zap\NodeType;
 
 $this->layout('layouts/common');
 ?>
-
-
-
-
-
 <main class="container">
     <div class="row mt-3">
-        <?php foreach($node_types_count as $type=>$count){
+        <?php foreach($node_types_statistics as $type=>$count){
             ?>
-
-
-        <div class="col">
+        <div class="col-3">
             <div class="card">
                 <div class="card-body text-center">
                     <a  href="<?php echo url_action("Node@{$type}"); ?>">

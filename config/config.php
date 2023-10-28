@@ -10,6 +10,9 @@ return [
     // Debug
     "debug" => true,
 
+    //url
+    'suffix'=>'.html',
+
     // i18N
     "fallback_locale"=>'zh-CN',
     "available_languages" => [],

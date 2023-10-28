@@ -6,6 +6,8 @@ class FileCache implements CacheInterface
 {
     protected $cacheDir;
 
+    protected string $isCache = 'enabled';
+
     public function __construct($options = null)
     {
         if(!isset($options['cacheDir'])){
@@ -13,6 +15,7 @@ class FileCache implements CacheInterface
         }
 
         $this->cacheDir = $options['cacheDir'];
+        $this->isCache = $options['isCache'] == 'enabled';
 
         if(!is_dir($this->cacheDir)){
             throw new CacheException('invalid cacheDir "'.$this->cacheDir.'"');
@@ -27,11 +30,15 @@ class FileCache implements CacheInterface
     {
         $filename = $this->getFilePath($key);
 
-        if(is_file($filename)){
+        if(is_file($filename) && $this->isCache){
             $content = file_get_contents($filename);
 
             if(!empty($content)){
                 $data = unserialize($content);
+
+                if($data === false || $ttl !== $data->ttl){
+                    $data->ttl = 0;
+                }
 
                 if($data->ttl === null || $data->ttl > time()){
                     return $data->content;
@@ -90,11 +97,11 @@ class FileCache implements CacheInterface
         return true;
     }
 
-    public function getMultiple($keys, $default = null)
+    public function getMultiple($keys, $default = null,$ttl = null)
     {
         $items = [];
         foreach ($keys as $key){
-            $items[$key] = $this->get($key,is_array($default) ? $default[$key] : $default);
+            $items[$key] = $this->get($key,is_array($default) ? $default[$key] : $default,$ttl);
         }
         return $items;
     }

@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "1b93764d154ba06b18fe11f252bf991b9ef9aa62"
+                "reference": "437cb3628f4cf6042cc10ae97fc2b8472e48ca1f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/1b93764d154ba06b18fe11f252bf991b9ef9aa62",
-                "reference": "1b93764d154ba06b18fe11f252bf991b9ef9aa62",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/437cb3628f4cf6042cc10ae97fc2b8472e48ca1f",
+                "reference": "437cb3628f4cf6042cc10ae97fc2b8472e48ca1f",
                 "shasum": ""
             },
             "require": {
@@ -106,7 +106,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-06-22T06:44:58+00:00"
+            "time": "2023-10-27T15:25:26+00:00"
         },
         {
             "name": "psr/log",
@@ -164,12 +164,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/zapj/zap-php-framework.git",
-                "reference": "fcf99f38f96652c23a2b8f8e251f47567fbbdc20"
+                "reference": "8997c1e47c862ef1db00eb93a2ca37010a2fcd00"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/fcf99f38f96652c23a2b8f8e251f47567fbbdc20",
-                "reference": "fcf99f38f96652c23a2b8f8e251f47567fbbdc20",
+                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/8997c1e47c862ef1db00eb93a2ca37010a2fcd00",
+                "reference": "8997c1e47c862ef1db00eb93a2ca37010a2fcd00",
                 "shasum": ""
             },
             "require": {
@@ -207,7 +207,7 @@
                 "issues": "https://github.com/zapj/zap-php-framework/issues",
                 "source": "https://github.com/zapj/zap-php-framework/tree/main"
             },
-            "time": "2023-10-24T08:22:53+00:00"
+            "time": "2023-10-28T07:03:17+00:00"
         }
     ],
     "packages-dev": [],

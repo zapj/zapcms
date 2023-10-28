@@ -17,12 +17,13 @@ class NodeController extends AdminController
     {
         View::paths(base_path("/app/zap/node/views"));
         if($method == 'index'){$method = 'default';}
-        if(in_array($method , ['types'])){
+        if(in_array($method , ['types','typesForm'])){
             $this->$method();
         }else{
             $action = array_shift($params) ?? 'index';
-            $controller = str_replace('-','',ucwords($method,"-"));
-            $action = str_replace('-','',ucwords($action,"-"));
+            $controller = Router::convertToName($method);
+            $action = Router::convertToName($action);
+
 
             $class = "\\zap\\node\\controllers\\{$controller}Controller";
             if(!class_exists($class)){
@@ -36,7 +37,7 @@ class NodeController extends AdminController
                 IS_AJAX ? Response::json($respondData) : View::render('node.notfound',$respondData);
                 return false;
             }
-            $typeName = Router::convertToUrlName($method);
+            $typeName = $controller; //Router::convertToUrlName($method);
             $zapController = new $class();
             $zapController->controller = $controller;
             $zapController->action = $action;

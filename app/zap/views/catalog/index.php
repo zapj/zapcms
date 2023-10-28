@@ -158,7 +158,7 @@ IS_AJAX !== true && $this->layout('layouts/common');
                     method:'post',
                     data:$('#addCatalog form').serialize(),
                     success:function (data){
-                        ZapToast.alert(data.msg,{bgColor:data.code===0?bgSuccess:bgDanger,position:Toast_Pos_Center});
+                        ZapToast.alert(data.msg,{bgColor:data.code===0?bgSuccess:bgDanger});
                         Zap.reload();
                     }
                 }).always(function(){

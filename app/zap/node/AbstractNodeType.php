@@ -46,9 +46,7 @@ class AbstractNodeType
 
     //controller actions
     public function index(){
-
         $data['title'] = $this->getTitle("%s管理");
-
         $conditions = [
             'where'=>[
                 'n.node_type'=>$this->nodeType,
@@ -143,9 +141,16 @@ class AbstractNodeType
         $data['catalogId'] = $this->catalogId;
         $data['modTitle'] = $this->title;
         $data['catalogPaths'] = $this->getCurrentCatalogPath();
-        $pathLen = count($data['catalogPaths']) - 1;
-        foreach ($data['catalogPaths'] as $key => $catalog){
-            BreadCrumb::instance()->add($catalog['title'],url_action("Node@{$this->controller}",req()->get()), $pathLen == $key);
+//        print_r(Catalog::instance()->getCatalogPathById($this->catalogId));
+//        print_r( $data['catalogPaths'] );die;
+        if($data['catalogPaths']){
+            $lastKey = array_key_last($data['catalogPaths']);
+            foreach ($data['catalogPaths'] as $key => $catalog){
+                BreadCrumb::instance()->add($catalog['title'],url_action("Node@{$this->controller}",req()->get()), $lastKey == $key);
+            }
+        }else{
+            //获取catalog path
+
         }
         try{
             View::render("{$controller}.". ($name ?? $action),$data);
@@ -184,7 +189,7 @@ class AbstractNodeType
                 ->select('count(n.id) as rowcount');
         }else{
             $query = DB::table('node','n');
-
+            $query->where('author_id','!=',0);
         }
 
         $this->prepareConditions($query,$conditions);
@@ -198,6 +203,7 @@ class AbstractNodeType
                 ->leftJoin(['node','n'],'nr.node_id=n.id');
         }else{
             $query = DB::table('node','n');
+            $query->where('author_id','!=',0);
         }
         $query->select('n.*');
         $this->prepareConditions($query,$conditions);
