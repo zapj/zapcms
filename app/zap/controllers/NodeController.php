@@ -37,7 +37,7 @@ class NodeController extends AdminController
                 IS_AJAX ? Response::json($respondData) : View::render('node.notfound',$respondData);
                 return false;
             }
-            $typeName = $controller; //Router::convertToUrlName($method);
+            $typeName = Router::convertToUrlName($method);
             $zapController = new $class();
             $zapController->controller = $controller;
             $zapController->action = $action;

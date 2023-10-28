@@ -4,10 +4,10 @@ function mod_path($mod_name){
     return base_path('/mods/'.$mod_name);
 }
 
-function get_option($option_name, $default = null){
+function get_option($option_name, $default = null,$ttl = null){
     return \zap\facades\Cache::get($option_name,function() use ($option_name,$default){
         return \zap\Option::get($option_name,$default);
-    },3000);
+    },$ttl);
 }
 
 function get_options($option_name,$type = '=' , $ttl = 10000){
@@ -22,7 +22,7 @@ function get_options($option_name,$type = '=' , $ttl = 10000){
 function option($name,$default = null){
     $group = explode('.',$name)[0];
     if(!app()->has('options_'.$group)){
-        return $default;
+        app()->set('options_'.$group , get_options($group,'REGEXP'));
     }
     return app()->get('options_'.$group)[$name] ?? $default;
 }
