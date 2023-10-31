@@ -1,13 +1,13 @@
 <?php
 
 use zap\facades\Url;
-$catalogMenu = page()->getCatalog();
+$catalogMenu = page()->getCatalogList();
+$footerCatalogMenu = $catalogMenu;
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="utf-8">
-    <base href="<?php echo base_url();?>/themes/basic/">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo option('website.title'); ?></title>
@@ -29,6 +29,7 @@ $catalogMenu = page()->getCatalog();
 </head>
 <body>
 <header class="site-header">
+    <form action="<?php echo site_url('/search') ?>">
     <div class="top">
         <div class="container">
             <div class="row">
@@ -37,35 +38,34 @@ $catalogMenu = page()->getCatalog();
                 </div>
                 <div class="col-sm-6">
                     <ul class="list-inline pull-right">
-                        <li><a href="#"><i class="fa fa-facebook"></i></a></li>
-                        <li><a href="#"><i class="fa fa-twitter"></i></a></li>
-                        <li><a href="#"><i class="fa fa-linkedin"></i></a></li>
-                        <li><a href="#"><i class="fa fa-envelope-o"></i></a></li>
+                        <li><input autocomplete="off" type="text" name="q" value="" placeholder="站内搜索" />
+                        <input type="submit" value="搜索" /></li>
                         <li><a href="tel:<?php echo option('website.tel') ?>"><i class="fa fa-phone"></i> <?php echo option('website.tel') ?></a></li>
                     </ul>
                 </div>
             </div>
         </div>
     </div>
+    </form>
     <nav class="navbar navbar-default">
         <div class="container">
             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-collapse">
                 <span class="sr-only">Toggle Navigation</span>
                 <i class="fa fa-bars"></i>
             </button>
-            <a href="<?php echo base_url('/'); ?>" class="navbar-brand">
-                <img src="img/zap_logo_green.svg" width="160px" alt="Post">
+            <a href="<?php echo home_url(); ?>" class="navbar-brand">
+                <img src="<?php echo theme_url();?>img/zap_logo_green.svg" width="160px" alt="Post">
             </a>
             <div class="collapse navbar-collapse" id="bs-navbar-collapse">
                 <ul class="nav navbar-nav main-navbar-nav">
-                    <li class="active"><a href="<?php echo base_url('/'); ?>" title="">首页</a></li>
+                    <li <?php echo page()->isHome ? 'class="active"':null; ?> ><a href="<?php echo base_url('/'); ?>" title="">首页</a></li>
                     <?php
                     $childLastId = [];
                     $childLastSlug = [];
                     while($menu = array_shift($catalogMenu)){
                     ?>
-                    <li class="nav-item <?php echo !empty($menu['children']) ? 'dropdown':''; ?>">
-                        <a data-id="<?php echo $menu['id'];?>" href="<?php echo url_slug($childLastSlug,$menu['slug']);?>"
+                    <li class="nav-item <?php echo !empty($menu['children']) ? 'dropdown':''; ?> <?php echo ($menu['id']===page()->nodeId||page()->nodeId===$menu['link_object']) ?'active': ''; ?>">
+                        <a data-id="<?php echo $menu['id'];?>" href="<?php echo url_slug($childLastSlug,$menu['slug']==='--zap-link-url'?$menu['link_to']:$menu['slug']);?>" title="<?php echo $menu['title']; ?>"
                             <?php if(!empty($menu['children'])) {
                                 echo 'class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"';
                             }else if(count($childLastId)){
@@ -107,65 +107,43 @@ $catalogMenu = page()->getCatalog();
 <footer class="site-footer">
     <div class="container">
         <div class="row">
+
+            <?php foreach($footerCatalogMenu as $menu){
+                if(!in_array(4,explode(',',$menu['show_position']))){
+                    continue;
+                }
+                ?>
+            <div class="col-md-3 col-sm-6 col-xs-12 fbox">
+                <h4><?php echo $menu['title']; ?></h4>
+
+                <ul class="big">
+                    <?php foreach ($menu['children'] as $child){
+                        if(!in_array(4,explode(',',$menu['show_position']))){
+                            continue;
+                        }
+                        ?>
+                    <li><a href="#" title=""><?php echo $child['title'];?></a></li>
+                    <?php } ?>
+
+                </ul>
+            </div>
+            <?php } ?>
+
             <div class="col-md-3 col-sm-6 col-xs-12 fbox">
                 <h4><?php echo option('website.title');?></h4>
-                <p class="text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam congue lectus diam, sit amet cursus massa efficitur sed. </p>
-                <ul class="list-inline">
-                    <li><a href="#"><i class="fa fa-facebook"></i></a></li>
-                    <li><a href="#"><i class="fa fa-twitter"></i></a></li>
-                    <li><a href="#"><i class="fa fa-linkedin"></i></a></li>
-                </ul>
-            </div>
-            <div class="col-md-3 col-sm-6 col-xs-12 fbox">
-                <h4>SERVICES</h4>
-                <ul class="big">
-                    <li><a href="#" title="">Title One</a></li>
-                    <li><a href="#" title="">Title Two</a></li>
-                    <li><a href="#" title="">Title Three</a></li>
-                    <li><a href="#" title="">Title Four</a></li>
-                    <li><a href="#" title="">Title Five</a></li>
-                    <li><a href="#" title="">Title Six</a></li>
-                    <li><a href="#" title="">Title Seven</a></li>
-                    <li><a href="#" title="">Title Eight</a></li>
-                </ul>
-            </div>
-            <div class="col-md-3 col-sm-6 col-xs-12 fbox">
-                <h4>CONTENT</h4>
-                <ul class="big">
-                    <li><a href="#" title="">Title One</a></li>
-                    <li><a href="#" title="">Title Two</a></li>
-                    <li><a href="#" title="">Title Three</a></li>
-                    <li><a href="#" title="">Title Four</a></li>
-                    <li><a href="#" title="">Title Five</a></li>
-                    <li><a href="#" title="">Title Six</a></li>
-                    <li><a href="#" title="">Title Seven</a></li>
-                    <li><a href="#" title="">Title Eight</a></li>
-                </ul>
-            </div>
-            <div class="col-md-3 col-sm-6 col-xs-12 fbox">
-                <h4>CONTENT</h4>
-                <p class="text">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                <p><a href="tel:+902222222222"><span class="glyphicon glyphicon-earphone" aria-hidden="true"></span> +90 222 222 22 22</a></p>
-                <p><a href="mailto:iletisim@agrisosgb.com"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span> mail@awebsitename.com</a></p>
+                <p class="text"></p>
+                <p><a href="tel:<?php echo option('website.tel');?>"><span class="glyphicon glyphicon-earphone" aria-hidden="true"></span> <?php echo option('website.tel');?></a></p>
+                <p><a href="mailto:<?php echo option('website.email');?>"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span> <?php echo option('website.email');?></a></p>
             </div>
         </div>
     </div>
     <div id="copyright">
         <div class="container">
             <div class="row">
-                <div class="col-md-4">
-                    <p class="pull-left">&copy; <?php echo date('Y'),'   ',option('website.title'); ?></p>
+                <div class="col-md-12 text-center">
+                  &copy; <?php echo date('Y'),'   ',option('website.copyright'); ?>  <a href="https://www.zap.cn/zapcms">Powered by ZapCMS</a>
                 </div>
-                <div class="col-md-8">
-                    <ul class="list-inline navbar-right">
-                        <li><a href="#">HOME</a></li>
-                        <li><a href="#">MENU ITEM</a></li>
-                        <li><a href="#">MENU ITEM</a></li>
-                        <li><a href="#">MENU ITEM</a></li>
-                        <li><a href="#">MENU ITEM</a></li>
-                        <li><a href="#">MENU ITEM</a></li>
-                    </ul>
-                </div>
+
             </div>
         </div>
     </div>

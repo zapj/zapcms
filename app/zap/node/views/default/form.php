@@ -15,8 +15,8 @@ $this->layout('layouts/common');
 
             <div class=" text-end">
 
-                <a class="btn btn-secondary btn-sm" href="<?php echo url_action("Node@{$_controller}", $_GET); ?>"><i
-                            class="fa fa-cancel"></i> 取消</a>
+                <a class="btn btn-secondary btn-sm" href="<?php echo url_action("Node@{$_controller}", $_GET); ?>">
+                    <i class="fa fa-cancel"></i> 取消</a>
                 <button type="button" class="btn btn-success btn-sm" onclick="save();"><i class="fa fa-save"></i>
                     保存
                 </button>
@@ -153,14 +153,15 @@ $this->layout('layouts/common');
                     </div>
 
                     <div class="card shadow-sm">
-                        <div class="card-header"><i class="fa-solid fa-sliders"></i> 选项</div>
+                        <div class="card-header"><i class="fa-solid fa-sliders"></i> 分类</div>
                         <div class="card-body">
                             <?php
                             while($catalog = array_shift($catalogList)){
                                 ?>
                                 <div class="form-check " style="margin-left:<?php echo $catalog['level']; ?>rem!important;">
-                                    <input class="form-check-input" type="checkbox" name="catalog[]" <?php echo !$node_relations[$catalog['id']] ?: 'checked' ?>
-                                           value="<?php echo $catalog['id'];?>" id="catalog-<?php echo $catalog['id'];?>">
+
+                                    <input class="form-check-input" type="checkbox" name="catalog[<?php echo $catalog['id']; ?>]" <?php echo !$node_relations[$catalog['id']] ?: 'checked' ?>
+                                           value="<?php echo $catalog['level'];?>" id="catalog-<?php echo $catalog['id'];?>">
                                     <label class="form-check-label" for="catalog-<?php echo $catalog['id'];?>">
                                         <?php echo $catalog['title'];?>
                                     </label>

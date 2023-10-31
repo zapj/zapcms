@@ -74,7 +74,8 @@ IS_AJAX !== true && $this->layout('layouts/common');
                             <i class="<?php echo $admin_menu['icon']; ?>"></i>
                             <input name="catalog[<?php echo $admin_menu['id']; ?>][title]"
                                    value="<?php echo $admin_menu['title']; ?>"
-                                   class="d-inline form-control form-control-sm w-auto"/>
+                                   class="d-inline form-control form-control-sm w-auto"/><small class="text-black-50">ID:<?php echo $admin_menu['id'];?></small>
+                            <?php if($admin_menu['node_type']=='link-url'){ ?><i class="fa fa-external-link" title="快捷链接"></i><?php } ?>
                         </div>
                     </td>
                     <td><?php echo $admin_menu['slug']; ?></td>

@@ -27,7 +27,8 @@ class NodeController extends AdminController
 
             $class = "\\zap\\node\\controllers\\{$controller}Controller";
             if(!class_exists($class)){
-                $class = AbstractNodeType::class;
+                $nodeTypeClass = NodeType::getClass($method);
+                $class = class_exists($nodeTypeClass) ? $nodeTypeClass : AbstractNodeType::class;
             }
             if(!method_exists($class,$action)){
 //                trigger_error("{$class}::{$action} - Method does not exist!!",E_USER_ERROR);

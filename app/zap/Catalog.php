@@ -90,4 +90,10 @@ class Catalog extends Category
         ]);
     }
 
+    public function getSubCatalogList($catalogId){
+        return $this->getAll([
+            [$this->pathColumn,'LIKE',"{$catalogId},%"]
+        ]);
+    }
+
 }

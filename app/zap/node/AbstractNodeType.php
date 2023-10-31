@@ -75,8 +75,8 @@ class AbstractNodeType
             $node['pub_time'] = strtotime($node['pub_time']) ?: time();
 //            $node['slug'] = Str::slug($node['title']);
             NodeRelation::delete(['node_id'=>$id]);
-            foreach ($catalogArray as $catalog_id){
-                NodeRelation::create(['node_id'=>$id,'catalog_id'=>$catalog_id]);
+            foreach ($catalogArray as $catalog_id=>$level){
+                NodeRelation::create(['node_id'=>$id,'catalog_id'=>$catalog_id,'level'=>$level]);
             }
             Node::updateAll($node,['id'=>$id]);
             Response::json(['code'=>0,'msg'=>$this->getTitle("%s修改成功"),'id'=>$id]);
@@ -102,8 +102,8 @@ class AbstractNodeType
             $node['pub_time']  = strtotime($node['pub_time']) ?: time();
             $node = apply_filters('node_add',$node);
             $nodeModel = Node::create($node);
-            foreach ($catalogArray as $catalog_id){
-                NodeRelation::create(['node_id'=>$nodeModel->id,'catalog_id'=>$catalog_id]);
+            foreach ($catalogArray as $catalog_id=>$level){
+                NodeRelation::create(['node_id'=>$nodeModel->id,'catalog_id'=>$catalog_id,'level'=>$level]);
             }
             Response::json(['code'=>0,'msg'=> $this->title . '创建成功','id'=>$nodeModel->id,'redirect_to'=>url_action("Node@{$this->controller}/edit/{$nodeModel->id}",$_GET)]);
 

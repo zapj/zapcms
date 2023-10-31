@@ -13,6 +13,7 @@ use zap\http\Session;
 use zap\Node;
 use zap\node\AbstractNodeType;
 use zap\NodeRelation;
+use zap\view\View;
 
 class PageController extends AbstractNodeType
 {
@@ -30,6 +31,7 @@ class PageController extends AbstractNodeType
             ]);
             return;
         }
+        View::share('catalog',$this->getCatalogById($this->catalogId));
         parent::edit($this->catalogId);
 
 //        $node = $this->getNodeByCatalogId($this->catalogId);

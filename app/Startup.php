@@ -6,7 +6,9 @@
 namespace app;
 
 use Exception;
+use zap\DB;
 use zap\exception\NotFoundException;
+use zap\exception\ViewNotFoundException;
 use zap\http\Middleware;
 use zap\http\Router;
 use zap\Node;
@@ -49,7 +51,6 @@ class Startup implements Middleware
 //            $this->initRoute($website_route);
             $this->initRoute();
         }
-
         if ( !isset($this->controllerClass) || ! class_exists($this->controllerClass)) {
             $this->router->trigger404();
 
@@ -57,6 +58,7 @@ class Startup implements Middleware
         }
 
 
+        require 'app/zap/helpers/theme_helpers.php';
 
         try {
 //            app()->controller = new $this->controllerClass();
@@ -76,11 +78,14 @@ class Startup implements Middleware
             }
         }catch (NotFoundException $e) {
             if (method_exists(app()->controller, '_notfound')) {
-                call_user_func_array([app()->controller, '_notfound'],['method' => $this->method,'params' => $this->router->params]);
+                call_user_func_array([app()->controller, '_notfound'], ['method' => $this->method, 'params' => $this->router->params]);
             } else {
                 $this->router->trigger404();
             }
+        }catch (ViewNotFoundException $e){
+            echo $e->getMessage();
         } catch (Exception $e){
+            echo $e->getMessage();
             $this->router->trigger404();
         }
         return false;
@@ -94,7 +99,6 @@ class Startup implements Middleware
             preg_replace("#$routeBase#iu", '', $this->currentUri, 1), '/ '
         );
         $segments = preg_split('#/#', trim($url, '/'), -1, PREG_SPLIT_NO_EMPTY);
-
         if (isset($segments[0]) && preg_match('/^[a-z]+[-_0-9a-z]+$/i', $segments[0])) {
             $controllerClass = $namespace.'\\'. Router::convertToName($segments[0]) . 'Controller';
             if(class_exists($controllerClass)){
@@ -103,7 +107,7 @@ class Startup implements Middleware
             }else{
                 $this->notFound = true;
             }
-            if (isset($segments[1]) && preg_match('/^[a-z][a-z0-9-_]+$/i', $segments[1])) {
+            if (!$this->notFound && isset($segments[1]) && preg_match('/^[a-z][a-z0-9-_]+$/i', $segments[1])) {
                 $this->method = Router::convertToName($segments[1]);
                 unset($segments[1]);
             }
@@ -129,12 +133,19 @@ class Startup implements Middleware
         }
         $slug  = end($this->router->params);
         if($slug){
-            $node = Node::where('slug',$slug)->fetch(FETCH_ASSOC);
+            $node = Node::where('slug',$slug)->where('status',Node::STATUS_PUBLISH)
+                ->fetch(FETCH_ASSOC);
             $node or $this->router->trigger404();
             page()->node = $node;
-            $this->resetRoute($node['node_type'], 'index');
+            page()->nodeId = $node['id'];
             page()->nodeType = $node['node_type'];
             page()->nodeMimeType = $node['mime_type'];
+            if(!$this->resetRoute($node['node_type'], empty($node['mime_type']) ?'index':$node['mime_type'])){
+                DB::update('node',['hits'=>DB::raw('hits+1')],['id'=>$node['id']]);
+                $this->resetRoute('node', $node['node_type']);
+            }
+            page()->isNode = $node['node_type']!=='catalog';
+            page()->isCatalog = $node['node_type']==='catalog';
             return;
         }
         page()->isHome = true;
@@ -147,6 +158,6 @@ class Startup implements Middleware
         $this->controller = $controller;
         $this->method = $action;
         $this->controllerClass = $namespace.'\\'. Router::convertToName($this->controller) . 'Controller';
-        return true;
+        return class_exists($this->controllerClass);
     }
 }

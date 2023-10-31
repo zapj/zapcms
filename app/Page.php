@@ -5,6 +5,8 @@
 
 namespace app;
 
+use zap\Catalog;
+
 class Page
 {
     public $isHome;
@@ -13,6 +15,8 @@ class Page
     public $tags;
     public $tag;
     public $catalog;
+    public $catalogList;
+    public $catalogPaths;
 
     public $options = [];
     public $isCatalog = false;
@@ -25,11 +29,20 @@ class Page
         $this->options += $options;
     }
 
-    public function getCatalog(){
-        $this->catalog = \zap\facades\Cache::get('top_menu',function(){
-            return \zap\Catalog::instance()->getTreeArray();
-        },5000);
-        return $this->catalog;
+    public function getCatalog($key = null){
+        if(!$this->catalog && $this->nodeType == 'catalog'){
+            $this->catalog = Catalog::instance()->get($this->nodeId);
+        }
+        return $key ? $this->catalog[$key] : $this->catalog;
+    }
+
+    public function getCatalogList(){
+        if(!$this->catalogList){
+            $this->catalogList = \zap\facades\Cache::get('top_menu',function(){
+                return \zap\Catalog::instance()->getTreeArray();
+            },5000);
+        }
+        return $this->catalogList;
     }
 
 }

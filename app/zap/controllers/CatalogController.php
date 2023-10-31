@@ -34,8 +34,12 @@ class CatalogController extends AdminController
     public function saveCatalog(){
         $catalog = Request::post('catalog',[]);
         $catalogId = intval(Request::post('catalog_id',0));
+        if($catalog['node_type'] == 'link-url'){
+            $catalog['slug'] = '--zap-link-url';
+        }else{
+            $catalog['slug'] = Str::slug(empty($catalog['slug']) ? $catalog['title'] : $catalog['slug']);
+        }
 
-        $catalog['slug'] = Str::slug(empty($catalog['slug']) ? $catalog['title'] : $catalog['slug']);
         $catalog['show_position'] = join(',', $catalog['show_position'] ?? []);
         $menu = new Catalog();
         if($catalogId){

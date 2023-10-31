@@ -27,7 +27,7 @@ $this->extend('layouts/common');
         <input type="hidden" name="node[pub_time]" value="<?php echo $node->getPubTimeToDate(); ?>" />
         <input name="node[status]" id="node_status" type="hidden" value="<?php echo $node->status ?: \zap\Node::STATUS_PUBLISH;?>" />
         <input type="hidden" id="node_author_id" name="node[author_id]" value="<?php echo \zap\Auth::user('id') ?>">
-        <input type="hidden" name="catalog[]" value="<?php echo $catalogId;?>"  />
+        <input type="hidden" name="catalog[<?php echo $catalogId;?>]" value="<?php echo $catalog['level'];?>"  />
         <main class="container-fluid zap-main">
             <div class="row">
                 <?php

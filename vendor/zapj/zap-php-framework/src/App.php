@@ -230,17 +230,20 @@ class App implements \ArrayAccess
         return isset(static::$container[$offset]);
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         return static::$container[$offset];
     }
 
-    public function offsetSet($offset, $value)
+    #[\ReturnTypeWillChange]
+    public function offsetSet($offset, $value):void
     {
         static::$container[$offset] = $value;
     }
 
-    public function offsetUnset($offset){
+    #[\ReturnTypeWillChange]
+    public function offsetUnset($offset):void{
         unset(static::$container[$offset]);
     }
 
