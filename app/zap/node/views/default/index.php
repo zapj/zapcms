@@ -8,7 +8,7 @@ use zap\NodeType;
 $this->layout('layouts/common');
 ?>
 
-<nav class="navbar bg-body-tertiary position-fixed w-100 shadow z-3 ">
+<nav class="navbar bg-body-tertiary position-fixed w-100 shadow-sm z-3 ">
     <div class="container-fluid">
         <?php BreadCrumb::instance()->display('<li class="d-block d-md-none d-lg-none"><i class="fa fa-bars me-1" onclick="$(\'#nodeleftsidebar\').toggleClass(\'d-none\');"></i> </li>') ; ?>
 

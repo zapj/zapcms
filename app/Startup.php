@@ -37,7 +37,6 @@ class Startup implements Middleware
     public function handle()
     {
         define('IN_ZAP_CMS',true);
-        app()->page = new Page();
 
         $website = get_options('website','REGEXP');
         //加载 配置
@@ -65,10 +64,7 @@ class Startup implements Middleware
             app()->make($this->controllerClass, [], 'controller');
             call_user_func_array([app()->controller, 'setParams'], ['params' => $this->router->params]);
             if (method_exists(app()->controller, '_invoke')) {
-                call_user_func_array([app()->controller, '_invoke'],
-                    ['method' => $this->method,
-                        'params' => $this->router->params]
-                );
+                call_user_func_array([app()->controller, '_invoke'],['method' => $this->method,'params' => $this->router->params]);
             } else {
                 if (method_exists(app()->controller, $this->method)) {
                     call_user_func_array([app()->controller, $this->method], $this->router->params);
@@ -85,7 +81,6 @@ class Startup implements Middleware
         }catch (ViewNotFoundException $e){
             echo $e->getMessage();
         } catch (Exception $e){
-            echo $e->getMessage();
             $this->router->trigger404();
         }
         return false;

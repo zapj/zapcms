@@ -29,6 +29,9 @@ function option($name,$default = null){
 
 
 function page() : \app\Page {
+    if(!app()->has('page')){
+        app()->make(\app\Page::class,[],'page');
+    }
     return app()->page;
 }
 

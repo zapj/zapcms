@@ -27,11 +27,11 @@ echo $this->extend('layout/default'); ?>
             </aside>
             <section class="category-content col-sm-9">
                 <h2 class="category-title">FAQ (常见问题)</h2>
-                <div class="accordion" id="faqList">
+                <div class="panel-group" id="faqList" role="tablist" aria-multiselectable="true">
                     <?php foreach($data_list as $data){ ?>
-                    <div class="card">
-                        <div class="card-header" id="faq<?php echo $data['id'];?>" >
-                            <h2 class="mb-0">
+                    <div class="panel panel-default">
+                        <div class="panel-heading" id="faq<?php echo $data['id'];?>" >
+                            <h2 class="mb-0 panel-title">
                                 <a class="btn btn-link" type="button" data-toggle="collapse" data-target="#faqContent<?php echo $data['id'];?>" aria-expanded="true" aria-controls="collapseOne">
                                     <?php echo $data['title'];?>
                                 </a>
@@ -39,7 +39,7 @@ echo $this->extend('layout/default'); ?>
                         </div>
 
                         <div id="faqContent<?php echo $data['id'];?>" class="collapse" aria-labelledby="faq<?php echo $data['id'];?>" data-parent="#faqList">
-                            <div class="card-body">
+                            <div class="panel-body">
                                 <?php echo $data['content'];?>
                             </div>
                         </div>

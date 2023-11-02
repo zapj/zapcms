@@ -1,6 +1,6 @@
 <div class="col-md-3 d-none d-md-block d-lg-block mb-3" id="nodeleftsidebar">
 
-    <div class="card shadow ">
+    <div class="card shadow-sm ">
         <div class="card-header"><i class="fa fa-square-poll-horizontal"></i> 栏目</div>
         <div class="card-body p-0">
             <table class="table table-hover">

@@ -9,6 +9,8 @@ use zap\facades\Url;
 use zap\helpers\Pagination;
 use zap\http\Request;
 use zap\http\Response;
+use zap\Option;
+use zap\Theme;
 use zap\User;
 use zap\util\Password;
 use zap\view\View;
@@ -17,10 +19,10 @@ class ThemeController extends AdminController
 {
 
     public function index(){
-        $pageHelper = new Pagination(intval(Request::get('page',1)),20, Request::get());
-        $pageHelper->setTotal(User::count());
-        $users = User::select()->get(FETCH_ASSOC);
-        view('user.index',['pageHelper'=>$pageHelper,'users'=>$users]);
+        config_set('cache.status','disabled');
+        $themes = Theme::instance()->getAllThemesInfo();
+        $current_theme = Option::getArray('website.theme','basic');
+        view('theme.index',['themes'=>$themes]);
     }
 
     public function form(){

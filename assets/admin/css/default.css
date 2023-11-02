@@ -173,3 +173,23 @@ a {
     display: block;
 }
 
+.theme-screenshot {
+    display: block;
+    overflow: hidden;
+    position: relative;
+    -webkit-backface-visibility: hidden;
+    transition: opacity .2s ease-in-out;
+}
+.theme-screenshot img {
+    height: auto;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    transition: opacity .2s ease-in-out;
+}
+.theme-screenshot:after {
+    content: "";
+    display: block;
+    padding-top: 66.66666%;
+}

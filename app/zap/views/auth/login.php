@@ -42,7 +42,7 @@
 <main class="form-signin w-100 m-auto">
     <form action="<?php echo \zap\facades\Url::action('Auth@signIn'); ?>" method="post" id="reqForm"  enctype="multipart/form-data">
         <p class="text-center">
-            <img class="mb-4 m-auto " src="<?php echo base_url();?>/assets/admin/img/zap_logo_green_rgb.svg" alt="ZAP" width="150" >
+            <img class="mb-4 m-auto " src="<?php echo base_url();?>/assets/admin/img/zap_logo_green.svg" alt="ZAP" width="150" >
         </p>
 <!--        <h1 class="text-center">ZAP</h1>-->
 

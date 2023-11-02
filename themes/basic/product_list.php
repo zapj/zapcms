@@ -30,7 +30,7 @@ echo $this->extend('layout/default'); ?>
 <!--                <h2 class="category-title">产品列表</h2>-->
                 <div class="row product-list">
                     <?php foreach ($data_list as $node){ ?>
-                        <div class="col-md-3 col-6 mb-2 product">
+                        <div class="col-md-3 col-xs-6 mb-2 product">
                             <div class="product-img">
                                 <a href="<?php echo site_url("/product/{$node['slug']}") ?>" title="Post">
                                     <img  src="<?php echo theme_url(); ?>img/h1.jpeg" alt="Post" >

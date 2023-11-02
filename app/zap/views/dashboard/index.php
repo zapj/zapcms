@@ -4,7 +4,7 @@ use zap\NodeType;
 
 $this->layout('layouts/common');
 ?>
-<main class="container">
+<main class="container ">
     <div class="row mt-3">
         <div class="col-12"><h6 class=" pb-2 mb-0"><i class="fa fa-file-pen"></i> 单页管理</h6></div>
         <?php foreach($pages as $page){ ?>

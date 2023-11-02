@@ -30,7 +30,7 @@ $footerCatalogMenu = $catalogMenu;
 <body>
 <header class="site-header">
     <form action="<?php echo site_url('/search') ?>">
-    <div class="top">
+    <div class="top hidden-xs">
         <div class="container">
             <div class="row">
                 <div class="col-sm-6">

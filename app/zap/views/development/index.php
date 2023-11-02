@@ -1,5 +1,5 @@
 <?php
-\zap\Asset::library('ace');
+//\zap\Asset::library('ace');
 //\zap\Asset::library('codemirror');
 //register_scripts(base_url('/assets/admin/js/util.js'),ASSETS_BODY);
 //register_scripts(base_url('/assets/admin/js/main.js'),ASSETS_BODY);
@@ -11,7 +11,6 @@ $this->layout('layouts/common');
              aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item active"><a href="<?php echo url_action('Development') ?>">在线开发工具</a></li>
-
             </ol>
         </nav>
         <div class=" text-end" >
@@ -130,23 +129,37 @@ $this->layout('layouts/common');
         editorInstances[path] = {
             id: uId,
             editor : null,
-            tab: null
+            tab: null,
+            type:'<?php echo option('zap.default_dev_editor','textarea'); ?>'
         };
-
-
+        var defaultEditor = `<textarea id="${uId}" class="z-2" style="height: calc(100vh - 200px);width: 100%"></textarea>`;
+        if(editorInstances[path].type === 'ace'){
+            defaultEditor = `<div id="${uId}" class="z-2" style="height: calc(100vh - 200px)"></div>`;
+            editorInstances[path].type = 'ace';
+        }else if(editorInstances[path].type === 'codemirror'){
+            editorInstances[path].type = 'codemirror';
+        }
+        //CodeJar
         $('#fileToolbarTabs').append(`<li class="nav-item" role="presentation">
                     <a class="nav-link" id="${uId}-tab" data-bs-toggle="tab" data-bs-target="#${uId}-tab-pane"
                           title="${path}"   role="tab" aria-controls="home-tab-pane" aria-selected="true">${filename} <i class="ps-2 fa fa-close" onclick="closeTab('${uId}');"></i></a>
                 </li>`);
 
-        $('#fileContentTabs').append(`<div class="tab-pane fade" id="${uId}-tab-pane" role="tabpanel" aria-labelledby="${uId}-tab" tabindex="0">
-                    <div id="${uId}" class="z-2" style="height: calc(100vh - 200px)"></div>
-                </div>`);
-        editorInstances[path].editor = ace.edit(uId);
-        const modelist = ace.require("ace/ext/modelist")
-        const mode = modelist.getModeForPath(filename).mode
-        editorInstances[path].editor.session.setMode(mode)
-        editorInstances[path].editor.setValue(content, -1)
+        $('#fileContentTabs').append(`<div class="tab-pane fade" id="${uId}-tab-pane" role="tabpanel" aria-labelledby="${uId}-tab" tabindex="0">${defaultEditor}</div>`);
+
+
+        if(editorInstances[path].type === 'ace'){
+            editorInstances[path].editor = ace.edit(uId);
+            const modelist = ace.require("ace/ext/modelist")
+            const mode = modelist.getModeForPath(filename).mode
+            editorInstances[path].editor.session.setMode(mode)
+            editorInstances[path].editor.setValue(content, -1)
+        }else if(editorInstances[path].type === 'codemirror'){
+
+        }else {
+            document.getElementById(uId).value = content;
+        }
+
 
         var triggerEl = document.querySelector('#' + uId + '-tab');
         editorInstances[path].tab = new bootstrap.Tab(triggerEl)
@@ -164,6 +177,9 @@ $this->layout('layouts/common');
             const lastTab = bootstrap.Tab.getInstance(lastTabEl);
             lastTab.show()
         }
+
+    }
+    function getEditor(uId){
 
     }
 </script>

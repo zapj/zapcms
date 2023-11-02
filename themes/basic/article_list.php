@@ -38,13 +38,13 @@ echo $this->extend('layout/default'); ?>
                             </a>
                         </div>
                         <div class="media-body">
-                            <h3 class="media-heading"><a href="<?php echo site_url("/article/{$node['slug']}") ?>" title="<?php echo $node['title'];?>"><?php echo $node['title'];?></a></h3>
-                            <p><?php echo \zap\util\Str::truncate(strip_tags($node['content']),200);?></p>
+                            <h4 class="media-heading"><a href="<?php echo site_url("/article/{$node['slug']}") ?>" title="<?php echo $node['title'];?>"><?php echo $node['title'];?></a></h4>
+                            <p class="text-muted"><?php echo \zap\util\Str::truncate(strip_tags($node['content']),200);?></p>
                             <aside class="meta category-meta">
                                 <div class="pull-left ">
-                                    <div class="arc-comment "><a href="#" title="Comment" class="text-black-50"><i class="fa fa-comments"></i> <?php echo empty($node['comment_count']) ? 0 :$node['comment_count']; ?> 条回复</a></div>
-                                    <div class="arc-comment "><a href="#" title="Comment" class="text-black-50"><i class="fa fa-eye"></i> 阅读量  <?php echo empty($node['hits']) ? 0 :$node['hits']; ?> </a></div>
-                                    <div class="arc-date text-black-50"><?php echo date(Z_DATE,$node['pub_time']); ?></div>
+                                    <div class="arc-comment "><a href="#" title="Comment" class="text-muted"><i class="fa fa-comments"></i> <?php echo empty($node['comment_count']) ? 0 :$node['comment_count']; ?> 条回复</a></div>
+                                    <div class="arc-comment "><a href="#" title="Comment" class="text-muted"><i class="fa fa-eye"></i> 阅读量  <?php echo empty($node['hits']) ? 0 :$node['hits']; ?> </a></div>
+                                    <div class="arc-date text-muted"><?php echo date(Z_DATE,$node['pub_time']); ?></div>
                                 </div>
                                 <div class="pull-right">
                                     <ul class="arc-share">

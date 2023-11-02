@@ -39,7 +39,7 @@ echo $this->extend('layout/default'); ?>
 
 
                         </div>
-                         <div class="col-6 mb-2 text-left">
+                         <div class="col-md-6 mb-2 text-left">
                              <h3><?php echo page()->node['title'];?></h3>
                         </div>
                 </div>
