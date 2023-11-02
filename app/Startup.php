@@ -6,6 +6,7 @@
 namespace app;
 
 use Exception;
+use Twig\Error\Error;
 use zap\DB;
 use zap\exception\NotFoundException;
 use zap\exception\ViewNotFoundException;
@@ -13,6 +14,7 @@ use zap\http\Middleware;
 use zap\http\Router;
 use zap\Node;
 use zap\Option;
+use zap\view\View;
 
 class Startup implements Middleware
 {
@@ -42,7 +44,10 @@ class Startup implements Middleware
         //加载 配置
         app()->set('options_website',$website);
 
-        config('config.theme',$website['website.theme'] ?? 'basic');
+        config_set('config.theme',$website['website.theme'] ?? 'basic');
+        if($website['website.theme'] !== 'basic'){
+            View::paths(themes_path('basic'));
+        }
 
         $this->parseUrlPath();
         if(!isset($this->controllerClass) || $this->notFound){
@@ -80,8 +85,8 @@ class Startup implements Middleware
             }
         }catch (ViewNotFoundException $e){
             echo $e->getMessage();
-        } catch (Exception $e){
-            $this->router->trigger404();
+        } catch (Error $e){
+            echo $e->getMessage();
         }
         return false;
     }

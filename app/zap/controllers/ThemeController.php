@@ -21,13 +21,27 @@ class ThemeController extends AdminController
     public function index(){
         config_set('cache.status','disabled');
         $themes = Theme::instance()->getAllThemesInfo();
-        $current_theme = Option::getArray('website.theme','basic');
-        view('theme.index',['themes'=>$themes]);
+        $website_options = Option::getArray('website','REGEXP');
+        view('theme.index',['themes'=>$themes,'website_options'=>$website_options]);
     }
 
     public function form(){
 
         view('user.form',[]);
+    }
+
+    public function activationTheme(){
+        if(Request::isPost()){
+            $theme = trim(req()->post('theme'));
+            if(preg_match('/^[a-z0-9]{1,255}$/i',$theme) === false){
+                Response::json(['code'=>1,'msg'=>'主题名字不合法']);
+            }
+            if(!is_dir(themes_path($theme))){
+                Response::json(['code'=>1,'msg'=>'主题不存在']);
+            }
+            Option::update('website.theme',$theme);
+            Response::json(['code'=>0,'msg'=>'主题设置成功']);
+        }
     }
 
 

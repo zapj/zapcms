@@ -5,7 +5,8 @@
     "ext-pdo": "*",
     "ext-gd": "*",
     "monolog/monolog": "^2.9",
-    "ext-json": "*"
+    "ext-json": "*",
+    "twig/twig": "^3.0"
   },
   "autoload": {
     "files":[
