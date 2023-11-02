@@ -1,5 +1,5 @@
 <?php
-//\zap\Asset::library('ace');
+\zap\Asset::library('ace');
 //\zap\Asset::library('codemirror');
 //register_scripts(base_url('/assets/admin/js/util.js'),ASSETS_BODY);
 //register_scripts(base_url('/assets/admin/js/main.js'),ASSETS_BODY);
@@ -130,7 +130,7 @@ $this->layout('layouts/common');
             id: uId,
             editor : null,
             tab: null,
-            type:'<?php echo option('zap.default_dev_editor','textarea'); ?>'
+            type:'<?php echo option('zap.default_dev_editor','ace'); ?>'
         };
         var defaultEditor = `<textarea id="${uId}" class="z-2" style="height: calc(100vh - 200px);width: 100%"></textarea>`;
         if(editorInstances[path].type === 'ace'){
