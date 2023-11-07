@@ -54,7 +54,12 @@ function base_url($url = null): string
     return app()->baseUrl($url);
 }
 
-function view($template,$data,$return = false): ?string
+function themes_url($url = null): string
+{
+    return app()->themesUrl($url);
+}
+
+function view($template,$data = [],$return = false): ?string
 {
     return \zap\view\View::render($template,$data,$return);
 }
@@ -490,4 +495,11 @@ function remove_all_filter($hookName){
 
 function remove_all_action($hookName){
     Hooks::instance()->remove_all_action($hookName);
+}
+
+function event_fire($eventName,...$args){
+    if(is_file(base_path($eventName.'.php'))){
+        require_once base_path($eventName.'.php');
+    }
+    do_action($eventName,...$args);
 }

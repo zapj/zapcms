@@ -1,7 +1,7 @@
 <?php
 
 function mod_path($mod_name){
-    return base_path('/mods/'.$mod_name);
+    return base_path('mods/'.$mod_name);
 }
 
 function get_option($option_name, $default = null,$ttl = null){
@@ -28,11 +28,11 @@ function option($name,$default = null){
 }
 
 
-function page() : \app\Page {
-    if(!app()->has('page')){
-        app()->make(\app\Page::class,[],'page');
+function pageState() : \app\PageState {
+    if(!app()->has('page_state')){
+        app()->page_state = new \app\PageState();
     }
-    return app()->page;
+    return app()->page_state;
 }
 
 function url_slug(...$args){

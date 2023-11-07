@@ -15,13 +15,13 @@ echo $this->extend('layout/default'); ?>
         <div class="row mb-20px">
             <aside class="sidebar col-sm-3">
                 <div class="widget">
-                    <h4><?php  $topCatalog = array_shift(page()->subCatalogList);
+                    <h4><?php  $topCatalog = array_shift(pageState()->subCatalogList);
                                     echo $topCatalog['title'];
                                     $slugs[] = $topCatalog['slug'];
                                     ?></h4>
                     <ul>
-                        <?php foreach(page()->subCatalogList as $catalog){ ?>
-                            <li <?php if(page()->nodeId == $catalog['id']){echo 'class="current"';} ?>
+                        <?php foreach(pageState()->subCatalogList as $catalog){ ?>
+                            <li <?php if(pageState()->nodeId == $catalog['id']){echo 'class="current"';} ?>
                             ><a href="<?php echo site_url("/{$catalog['slug']}"); ?>" title="<?php echo $catalog['title'];?>"><?php echo $catalog['title'];?></a></li>
                         <?php } ?>
 
@@ -40,7 +40,7 @@ echo $this->extend('layout/default'); ?>
 
                         </div>
                          <div class="col-md-6 mb-2 text-left">
-                             <h3><?php echo page()->node['title'];?></h3>
+                             <h3><?php echo pageState()->node['title'];?></h3>
                         </div>
                 </div>
 
@@ -53,7 +53,7 @@ echo $this->extend('layout/default'); ?>
 
                 <div class="tab-content " id="myTabContent">
                     <div class="tab-pane show active" id="home" role="tabpanel" aria-labelledby="home-tab">
-                        <?php echo page()->node['content']; ?>
+                        <?php echo pageState()->node['content']; ?>
                     </div>
 
                 </div>

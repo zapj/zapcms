@@ -33,32 +33,33 @@ class CatalogController extends Controller
 
     function index(){
         $firstSegment = current($this->params);
-//        echo page()->nodeType;
-//        echo page()->nodeMimeType;
-        page()->getCatalog();
+//        echo pageState()->nodeType;
+//        echo pageState()->nodeMimeType;
+        pageState()->getCatalog();
 
-        page()->catalogPaths = Catalog::instance()->getCatalogPathById(page()->nodeId);
-        $lastKey = array_key_last(page()->catalogPaths );
-        foreach (page()->catalogPaths as $key => $catalog){
+        pageState()->catalogPaths = Catalog::instance()->getCatalogPathById(pageState()->nodeId);
+        $lastKey = array_key_last(pageState()->catalogPaths );
+        foreach (pageState()->catalogPaths as $key => $catalog){
             BreadCrumb::instance()->add($catalog['title'],site_url("/{$catalog['slug']}"),$key === $lastKey);
         }
 
-        page()->subCatalogList = Catalog::instance()->getSubCatalogList(page()->catalog['pid'] == 0 ? page()->catalog['id'] : page()->catalog['pid']);
+        pageState()->subCatalogList = Catalog::instance()->getSubCatalogList(pageState()->catalog['pid'] == 0 ? pageState()->catalog['id'] : pageState()->catalog['pid']);
         try{
-            if(page()->nodeMimeType==='page') {
-                $view = View::make(page()->nodeMimeType);
+            if(pageState()->nodeMimeType==='page') {
+                $view = View::make(pageState()->nodeMimeType);
             }else{
-                $view = View::make( theme_file_is_exists(page()->nodeMimeType . '_list') ? page()->nodeMimeType.'_list' : page()->nodeMimeType);
+                $page = new Pagination(intval(req()->get('page',1)),12,req()->get());
+                $view = View::make( theme_file_is_exists(pageState()->nodeMimeType . '_list') ? pageState()->nodeMimeType.'_list' : pageState()->nodeMimeType);
                 $query = DB::table('node_relation','nr')->leftJoin(['node','n'],'nr.node_id=n.id')
-                    ->where('nr.catalog_id',page()->nodeId);
-                $page = new Pagination(intval(req()->get('page',1)),20,req()->get());
+                    ->where('nr.catalog_id',pageState()->nodeId);
                 $view->page = $page->setTotal($query->count('n.id'));
+                $query->limit($page->getLimit(),$page->getOffset());
                 $view->data_list = $query->get(FETCH_ASSOC);
 
             }
 
         }catch (ViewNotFoundException $exception){
-            $view = View::make(page()->nodeType);
+            $view = View::make(pageState()->nodeType);
         }
         $view->display();
     }

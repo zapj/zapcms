@@ -13,7 +13,7 @@ class ModController extends AdminController
         if($module == 'index'){
             $this->$module();
         }else{
-            View::paths(base_path("/app/mods/{$module}/views"));
+            View::paths(base_path("app/mods/{$module}/views"));
             $controller = array_shift($params) ?? 'Index';
             $action = array_shift($params) ?? 'index';
             $controller = str_replace('-','',ucwords($controller,"-"));

@@ -10,7 +10,7 @@ use zap\http\Controller;
 class IndexController extends Controller
 {
     function index(){
-        page()->isHome = true;
+        pageState()->isHome = true;
         view('index',[]);
     }
 }

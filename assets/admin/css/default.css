@@ -193,3 +193,67 @@ a {
     display: block;
     padding-top: 66.66666%;
 }
+
+
+/* ZAP UPLOADER */
+.zapUploader {
+    border: 2px dashed #ccc;
+    /*border-radius: 20px;*/
+    width: 100%;
+    /*margin: 50px auto;*/
+    padding: 20px;
+}
+.zapUploader.highlight {
+    border-color: dodgerblue;
+}
+/*.zapUploader .zap-preview{*/
+/*    display: none;*/
+/*}*/
+
+.zapUploader input[type="file"] {
+    display: none;
+}
+
+.zap-preview-template {
+    display: none;
+}
+.zapUploader .zap-preview{
+    text-align: left;
+}
+.zap-file-details{
+
+}
+.zap-file-thumb{
+    width: 100%;
+}
+.zap-thumbnails{
+    width: 100px;
+    height: 100px;
+    overflow: hidden;
+    text-align: center;
+    vertical-align: middle;
+}
+.zap-thumbnails img {
+    width: 100px;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+
+}
+
+.zap-none{
+    display: none;
+}
+.zap-msg-error {
+    font-weight: bold;
+    color: red;
+}
+.zap-msg-success {
+    font-weight: bold;
+    color: green;
+}
+.zap-file-progress{
+    font-weight: bold;
+    color: green;
+}

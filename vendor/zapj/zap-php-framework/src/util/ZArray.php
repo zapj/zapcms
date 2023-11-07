@@ -134,11 +134,22 @@ class ZArray implements IteratorAggregate, ArrayAccess, Serializable, Countable
         while (count($keys) > 1) {
             $key = array_shift($keys);
             if (!isset($array[$key]) || !is_array($array[$key])) {
-                $array[$key] = array();
+                $array[$key] = [];
             }
             $array = &$array[$key];
         }
-        $array[array_shift($keys)] = $value;
+        $key = array_shift($keys);
+        switch ($key){
+            case '$':
+                $array[] = $value;
+                break;
+            case '^':
+                array_unshift($array,$value);
+                break;
+            default:
+                $array[$key] = $value;
+        }
+
     }
 
     /**

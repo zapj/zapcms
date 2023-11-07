@@ -1,7 +1,7 @@
 <?php
 
 use zap\facades\Url;
-$catalogMenu = page()->getCatalogList();
+$catalogMenu = pageState()->getCatalogList();
 $footerCatalogMenu = $catalogMenu;
 ?>
 <!DOCTYPE html>
@@ -14,7 +14,7 @@ $footerCatalogMenu = $catalogMenu;
     <link href="<?php echo base_url();?>/themes/basic/css/bootstrap.min.css" rel="stylesheet">
     <link href="<?php echo base_url();?>/themes/basic/css/font-awesome.min.css" rel="stylesheet">
     <link href="<?php echo base_url();?>/themes/basic/css/style.css" rel="stylesheet">
-    <?php if(page()->isHome){ ?>
+    <?php if(pageState()->isHome){ ?>
     <link href="<?php echo base_url();?>/themes/basic/css/swiper-bundle.min.css" rel="stylesheet" >
     <script src="<?php echo base_url();?>/themes/basic/js/swiper-bundle.min.js"></script>
     <?php } ?>
@@ -54,17 +54,17 @@ $footerCatalogMenu = $catalogMenu;
                 <i class="fa fa-bars"></i>
             </button>
             <a href="<?php echo home_url(); ?>" class="navbar-brand">
-                <img src="<?php echo theme_url();?>img/zap_logo_green.svg" width="160px" alt="Post">
+                <img src="<?php echo themes_url('basic');?>/img/zap_logo_green.svg" width="160px" alt="ZAP CMS Logo">
             </a>
             <div class="collapse navbar-collapse" id="bs-navbar-collapse">
                 <ul class="nav navbar-nav main-navbar-nav">
-                    <li <?php echo page()->isHome ? 'class="active"':null; ?> ><a href="<?php echo base_url('/'); ?>" title="">首页</a></li>
+                    <li <?php echo pageState()->isHome ? 'class="active"':null; ?> ><a href="<?php echo base_url('/'); ?>" title="">首页</a></li>
                     <?php
                     $childLastId = [];
                     $childLastSlug = [];
                     while($menu = array_shift($catalogMenu)){
                     ?>
-                    <li class="nav-item <?php echo !empty($menu['children']) ? 'dropdown':''; ?> <?php echo ($menu['id']===page()->nodeId||page()->nodeId===$menu['link_object']) ?'active': ''; ?>">
+                    <li class="nav-item <?php echo !empty($menu['children']) ? 'dropdown':''; ?> <?php echo ($menu['id']===pageState()->nodeId||pageState()->nodeId===$menu['link_object']) ?'active': ''; ?>">
                         <a data-id="<?php echo $menu['id'];?>" href="<?php echo url_slug($childLastSlug,$menu['slug']==='--zap-link-url'?$menu['link_to']:$menu['slug']);?>" title="<?php echo $menu['title']; ?>"
                             <?php if(!empty($menu['children'])) {
                                 echo 'class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"';

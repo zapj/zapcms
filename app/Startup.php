@@ -65,8 +65,8 @@ class Startup implements Middleware
         require 'app/zap/helpers/theme_helpers.php';
 
         try {
-//            app()->controller = new $this->controllerClass();
-            app()->make($this->controllerClass, [], 'controller');
+            app()->controller = new $this->controllerClass();
+//            app()->make($this->controllerClass, [], 'controller');
             call_user_func_array([app()->controller, 'setParams'], ['params' => $this->router->params]);
             if (method_exists(app()->controller, '_invoke')) {
                 call_user_func_array([app()->controller, '_invoke'],['method' => $this->method,'params' => $this->router->params]);
@@ -99,6 +99,7 @@ class Startup implements Middleware
             preg_replace("#$routeBase#iu", '', $this->currentUri, 1), '/ '
         );
         $segments = preg_split('#/#', trim($url, '/'), -1, PREG_SPLIT_NO_EMPTY);
+
         if (isset($segments[0]) && preg_match('/^[a-z]+[-_0-9a-z]+$/i', $segments[0])) {
             $controllerClass = $namespace.'\\'. Router::convertToName($segments[0]) . 'Controller';
             if(class_exists($controllerClass)){
@@ -119,14 +120,15 @@ class Startup implements Middleware
 
     private function initRoute(): void
     {
+        $pageState = pageState();
         if(($segment = current($this->router->params)) !== false){
             switch ($segment){
                 case 'tags':
-                    page()->tags = true;
+                    $pageState->tags = true;
                     $this->resetRoute('node', 'tags');
                     return;
                 case 'tag':
-                    page()->tag = true;
+                    $pageState->tag = true;
                     $this->resetRoute('node', 'tag');
                     return;
             }
@@ -136,19 +138,19 @@ class Startup implements Middleware
             $node = Node::where('slug',$slug)->where('status',Node::STATUS_PUBLISH)
                 ->fetch(FETCH_ASSOC);
             $node or $this->router->trigger404();
-            page()->node = $node;
-            page()->nodeId = $node['id'];
-            page()->nodeType = $node['node_type'];
-            page()->nodeMimeType = $node['mime_type'];
+            $pageState->node = $node;
+            $pageState->nodeId = $node['id'];
+            $pageState->nodeType = $node['node_type'];
+            $pageState->nodeMimeType = $node['mime_type'];
             if(!$this->resetRoute($node['node_type'], empty($node['mime_type']) ?'index':$node['mime_type'])){
                 DB::update('node',['hits'=>DB::raw('hits+1')],['id'=>$node['id']]);
                 $this->resetRoute('node', $node['node_type']);
             }
-            page()->isNode = $node['node_type']!=='catalog';
-            page()->isCatalog = $node['node_type']==='catalog';
+            $pageState->isNode = $node['node_type']!=='catalog';
+            $pageState->isCatalog = $node['node_type']==='catalog';
             return;
         }
-        page()->isHome = true;
+        $pageState->isHome = true;
         $this->resetRoute('index', 'index');
     }
 

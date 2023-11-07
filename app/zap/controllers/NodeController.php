@@ -15,7 +15,7 @@ class NodeController extends AdminController
 
     public function _invoke($method,$params)
     {
-        View::paths(base_path("/app/zap/node/views"));
+        View::paths(base_path("app/zap/node/views"));
         if($method == 'index'){$method = 'default';}
         if(in_array($method , ['types','typesForm'])){
             $this->$method();

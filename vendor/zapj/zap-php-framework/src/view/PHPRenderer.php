@@ -8,7 +8,7 @@ class PHPRenderer extends ViewRenderer
 {
 
 
-    public function render($return = false)
+    public function render($output = false)
     {
         $this->_render($this->view->viewFile);
         $aliasName = 'content';
@@ -16,7 +16,7 @@ class PHPRenderer extends ViewRenderer
             $aliasName = 'layout';
             $this->_render($this->view->layout,'layout');
         }
-        if ($return) {
+        if ($output) {
             return $this->view->blocks[$aliasName];
         }
         echo $this->view->blocks[$aliasName];
@@ -35,7 +35,6 @@ class PHPRenderer extends ViewRenderer
         extract(View::$globalData, EXTR_SKIP);
         try {
             if(!is_file($template)){
-                //                throw new Exception("Template File: {$template} not found");
                 trigger_error("Template File: {$template} not found",E_USER_ERROR);
             }
             include $template;

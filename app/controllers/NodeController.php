@@ -27,35 +27,35 @@ class NodeController extends Controller
     }
 
     function index(){
-        page()->catalogPaths = $this->getCatalogPathByNodeId(page()->nodeId);
+        pageState()->catalogPaths = $this->getCatalogPathByNodeId(pageState()->nodeId);
         $slugs = [];
-        foreach (page()->catalogPaths as $catalog){
+        foreach (pageState()->catalogPaths as $catalog){
             $slugs[] = $catalog['slug'];
             BreadCrumb::instance()->add($catalog['title'],site_url("/{$catalog['slug']}"));
         }
-        $slug = page()->node['slug'];
-        BreadCrumb::instance()->add(page()->node['title'],site_url("/{$slug}"),true);
+        $slug = pageState()->node['slug'];
+        BreadCrumb::instance()->add(pageState()->node['title'],site_url("/{$slug}"),true);
 
         //侧边栏菜单
-        $topCatalog = current(page()->catalogPaths);
-        page()->subCatalogList = Catalog::instance()->getSubCatalogList($topCatalog['id']);
+        $topCatalog = current(pageState()->catalogPaths);
+        pageState()->subCatalogList = Catalog::instance()->getSubCatalogList($topCatalog['id']);
         view('node',[]);
     }
 
     function product(){
         //获取 url path
-        page()->catalogPaths = $this->getCatalogPathByNodeId(page()->nodeId);
+        pageState()->catalogPaths = $this->getCatalogPathByNodeId(pageState()->nodeId);
         $slugs = [];
-        foreach (page()->catalogPaths as $catalog){
+        foreach (pageState()->catalogPaths as $catalog){
             $slugs[] = $catalog['slug'];
             BreadCrumb::instance()->add($catalog['title'],site_url("/{$catalog['slug']}"));
         }
-        $slug = page()->node['slug'];
-        BreadCrumb::instance()->add(page()->node['title'],site_url("/{$slug}"),true);
+        $slug = pageState()->node['slug'];
+        BreadCrumb::instance()->add(pageState()->node['title'],site_url("/{$slug}"),true);
 
         //侧边栏菜单
-        $topCatalog = current(page()->catalogPaths);
-        page()->subCatalogList = Catalog::instance()->getSubCatalogList($topCatalog['id']);
+        $topCatalog = current(pageState()->catalogPaths);
+        pageState()->subCatalogList = Catalog::instance()->getSubCatalogList($topCatalog['id']);
         view('product',[]);
     }
 

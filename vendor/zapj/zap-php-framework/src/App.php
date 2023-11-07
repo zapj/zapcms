@@ -30,10 +30,10 @@ class App implements \ArrayAccess
     public function __construct($basePath)
     {
         if ($this->isWin()) {
-            $this->basePath = str_replace('\\', '/', $basePath);
-            $this->rootPath = str_replace('\\', '/', Arr::get($_SERVER, 'DOCUMENT_ROOT', $basePath));
+            $this->basePath = str_replace('\\', '/', $basePath) . '/';
+            $this->rootPath = str_replace('\\', '/', Arr::get($_SERVER, 'DOCUMENT_ROOT', $basePath)) . '/';
         } else {
-            $this->basePath = $basePath;
+            $this->basePath = $basePath . '/';
             $this->rootPath = Arr::get($_SERVER, 'DOCUMENT_ROOT', $basePath);
         }
         self::$instance = $this;
@@ -44,8 +44,6 @@ class App implements \ArrayAccess
         }
         ErrorHandler::register();
         $this->prepare();
-
-
     }
 
 
@@ -89,55 +87,62 @@ class App implements \ArrayAccess
     public function configPath($filename = null): string
     {
         if ($filename) {
-            return $this->basePath.'/config/'.$filename;
+            return $this->basePath.'config/'.$filename;
         }
 
-        return $this->basePath.'/config/';
+        return $this->basePath.'config/';
     }
 
     public function assetsPath($filename = null): string
     {
         if ($filename) {
-            return $this->basePath.'/assets/'.$filename;
+            return $this->basePath.'assets/'.$filename;
         }
 
-        return $this->basePath.'/assets/';
+        return $this->basePath.'assets/';
     }
 
     public function storagePath($filename = null): string
     {
         if ($filename) {
-            return $this->basePath.'/storage/'.$filename;
+            return $this->basePath.'storage/'.$filename;
         }
 
-        return $this->basePath.'/storage/';
+        return $this->basePath.'storage/';
     }
 
     public function resourcesPath($filename = null): string
     {
         if ($filename) {
-            return $this->basePath.'/resources/'.$filename;
+            return $this->basePath.'resources/'.$filename;
         }
 
-        return $this->basePath.'/resources/';
+        return $this->basePath.'resources/';
     }
 
     public function themesPath($filename = null): string
     {
         if ($filename) {
-            return $this->basePath.'/themes/'.$filename;
+            return $this->basePath.'themes/'.$filename;
         }
 
-        return $this->basePath.'/themes/';
+        return $this->basePath.'themes/';
     }
 
     public function varPath($filename = null): string
     {
         if ($filename) {
-            return $this->basePath.'/var/'.$filename;
+            return $this->basePath.'var/'.$filename;
         }
 
-        return $this->basePath.'/var/';
+        return $this->basePath.'var/';
+    }
+
+    public function themesUrl($url){
+        if($url){
+            return $this->baseUrl . '/themes/' . $url;
+        }
+        return $this->baseUrl . '/themes/';
     }
 
     public function isWin(): bool

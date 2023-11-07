@@ -34,7 +34,7 @@ function theme_url($path = null): string
 
 function theme_path($path = null){
     $theme = config('config.theme','basic');
-    return base_path("/themes/{$theme}/{$path}");
+    return base_path("themes/{$theme}/{$path}");
 }
 
 function theme_file_is_exists($file,$extList = null): bool

@@ -1,14 +1,8 @@
 <div class="container text-nowrap text-start">
     <div class="row">
-        <div class="col-1 p-1">
-            <button class="btn btn-light w-100 mb-1 w-100 mb-1"><i class="fa-solid fa-house"></i> </button>
-        </div>
-        <div class="col-1 p-1">
-            <button class="btn btn-light w-100 mb-1 w-100 mb-1"><i class="fa-solid fa-magnifying-glass"></i> </button>
-        </div>
-        <div class="col-1 p-1">
-            <button class="btn btn-light w-100 mb-1 w-100 mb-1"><i class="fa-solid fa-user"></i> </button>
-        </div>
+        <div class="col-1 p-1"><button class="btn btn-light w-100 mb-1 w-100 mb-1"><i class="fa-solid fa-house"></i></button></div>
+        <div class="col-1 p-1"><button class="btn btn-light w-100 mb-1 w-100 mb-1"><i class="fa-solid fa-magnifying-glass"></i></button></div>
+        <div class="col-1 p-1"><button class="btn btn-light w-100 mb-1 w-100 mb-1"><i class="fa-solid fa-user"></i> </button></div>
         <div class="col-1 p-1">
             <button class="btn btn-light w-100 mb-1 w-100 mb-1"><i class="fa-regular fa-user"></i> </button>
         </div>

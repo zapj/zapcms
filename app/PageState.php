@@ -5,9 +5,10 @@
 
 namespace app;
 
+use ArrayObject;
 use zap\Catalog;
 
-class Page
+class PageState extends \ArrayObject
 {
     public $isHome;
     public $nodeId;
@@ -24,6 +25,10 @@ class Page
     public $nodeType;
     public $nodeMimeType;
 
+    public function __construct()
+    {
+        parent::__construct([], ArrayObject::STD_PROP_LIST|ArrayObject::ARRAY_AS_PROPS, "ArrayIterator");
+    }
 
     public function addOptions($options){
         $this->options += $options;
@@ -44,5 +49,8 @@ class Page
         }
         return $this->catalogList;
     }
+
+
+
 
 }

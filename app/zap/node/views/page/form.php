@@ -133,7 +133,7 @@ $this->extend('layouts/common');
                 ZapToast.alert('请修改错误项，重新提交', {bgColor: bgDanger, position: Toast_Pos_Center});
                 return false;
             }
-            const index = Zap.loadding('正在保存，请稍后', 1);
+            const load = Zap.loadding('正在保存，请稍后');
             $.ajax({
                 url: '<?php echo Url::current();?>',
                 method: 'post',
@@ -156,7 +156,7 @@ $this->extend('layouts/common');
                     }
                 }
             }).always(function () {
-                Zap.closeLayer(index)
+                load.dispose()
             });
 
 

@@ -7,7 +7,15 @@ use zap\facades\Url;
 Asset::library('summernote');
 Asset::library('datetimepicker');
 Asset::library('jqueryvalidation');
-$this->layout('layouts/common');
+//Asset::library('dropzone');
+register_scripts(base_url('/assets/plugins/zapuploader.js'));
+register_styles(<<<EOF
+#showimg hover a {
+display:block;
+}
+EOF
+);
+!IS_AJAX && $this->layout('layouts/common');
 ?>
     <nav class="navbar bg-body-tertiary position-fixed w-100 shadow z-3 zap-top-bar">
         <div class="container-fluid">
@@ -182,6 +190,28 @@ $this->layout('layouts/common');
 
                     </div>
 
+                    <div class="card mt-2">
+                        <div class="card-header">
+                            文章主图
+                        </div>
+                        <div id="showimg">
+                            <img src="" class="object-fit-cover border rounded img-thumbnail" />
+<!--                            <a href="" class="btn btn-success d-none" >删除</a>-->
+                        </div>
+                        <div class="zapUploader text-center" id="uploadImage">
+
+                            <p class="text-black-50">请选择要上传的图片</p>
+                            <input type="file" id="uploader3" multiple >
+                            <label class="btn btn-outline-success m-2" for="uploader3">选择图片</label>
+                            <div class="zap-message mb-2"></div>
+                            <div class="progress zap-progress mb-2" style="display: none;height: 2px">
+                                <div class="progress-bar zap-progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0"
+                                     aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </main>
@@ -201,16 +231,29 @@ $this->layout('layouts/common');
                 }
             });
 
+            // $('#uploadImage').dropzone({url:'/post'});
+            var upload = new ZAPUploader('#uploadImage',{
+                allowedExtensions: '.jpg|.png|.jpeg',
+                url: '<?php echo url_action('Upload@image') ?>',
+                success:function (i,resp) {
+                    data = JSON.parse(resp);
+                    if(data.code === 1){
+
+                    }
+                    $('#showimg img').attr('src',data.url);
+                }
+            });
+
 
         });
 
         function save() {
             const zapForm = $('#zapForm');
             if (!zapForm.valid()) {
-                ZapToast.alert('请修改错误项，重新提交', {bgColor: bgDanger, position: Toast_Pos_Center});
+                ZapToast.alert('请修改错误项，重新提交', {bgColor: bgDanger});
                 return false;
             }
-            const index = Zap.loadding('正在保存，请稍后', 1);
+            const load = Zap.loadding('正在保存，请稍后');
             $.ajax({
                 url: '<?php echo Url::current();?>',
                 method: 'post',
@@ -219,7 +262,7 @@ $this->layout('layouts/common');
                 success: function (data) {
                     if (data.code === 0) {
                         ZapToast.alert(data.msg, {
-                            bgColor: bgSuccess, position: Toast_Pos_Center, callback: function () {
+                            bgColor: bgSuccess, callback: function () {
                                 <?php if($node->id){ ?>
                                 location.reload();
                                 <?php }else{ ?>
@@ -233,7 +276,7 @@ $this->layout('layouts/common');
                     }
                 }
             }).always(function () {
-                Zap.closeLayer(index)
+                load.dispose()
             });
 
 

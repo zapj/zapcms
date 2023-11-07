@@ -215,6 +215,7 @@ class Router
             }
             ZView::render(ZAP_SRC.'/resources/views/http/404.html');
         }
+        exit(0);
     }
 
     private function patternMatches($pattern, $uri, &$matches, $flags)
@@ -350,7 +351,6 @@ class Router
             $uri = substr($uri, 0, strpos($uri, '#'));
         }
         if(($suffix = config('config.suffix',false)) !== false){
-//            $uri = substr($uri,0,strlen($suffix) * -1);
             $uri = preg_replace('/'.preg_quote($suffix).'$/','',$uri);
         }
         return '/' . trim($uri, '/');

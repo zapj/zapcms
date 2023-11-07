@@ -151,41 +151,20 @@ const ZapModal = {
 
 };
 
-//https://layui.dev/2.7/docs/modules/layer.html
-var ZapFinder = {
-    open: function(url){
-        layer.open({
-            type: 2, // page 层类型
-            // area: ['500px', '300px'],
-            title: 'ZAP Finder',
-            shade: 0.6, // 遮罩透明度
-            shadeClose: true, // 点击遮罩区域，关闭弹层
-            maxmin: true, // 允许全屏最小化
-            anim: 0, // 0-6 的动画形式，-1 不开启
-            content: url
-        });
-    }
-}
-
 var Zap = {
-    loadding:function(title,icon){
-        return layer.open({
-            title:false,
-            closeBtn:false,
-            btn:false,
-            content: '<div class="d-flex justify-content-center">\n' +
-                '  <div class="spinner-border text-success" role="status">\n' +
-                '    <span class="visually-hidden">Loading...</span>\n' +
-                '  </div>\n' +
-                '</div>'+
-                '<div class="text-center">'+title+'</div>'
-        });
-    },
-    closeLayer:function(index){
-        layer.close(index)
-    },
-    closeAllLayer:function(){
-        layer.closeAll()
+    loadding:function(title){
+        if(title===undefined){
+            title = '加载中，请稍后...'
+        }
+        const content = `<div class="d-flex justify-content-center">
+          <div class="spinner-border text-success" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+        <div class="text-center">${title}</div>`;
+        const loadModal = new ZapDialog({content:content,backdrop:true});
+        loadModal.show()
+        return loadModal;
     },
     EnableToolTip:function (){
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
@@ -194,6 +173,24 @@ var Zap = {
     AjaxPost:function(settings){
         settings['method'] = 'post';
         return $.ajax(settings);
+    },
+    alert:function(msg,title){
+        const alert = new ZapDialog({content:msg,title:title,backdrop:false});
+        alert.show()
+    },
+    finder:function(options){
+        options = options || {};
+        options.title = options.title  || "文件管理器";
+        options.path = options.path || '/';
+        const fDialog = new ZapDialog({
+            id:options.id,
+            url:ZAP_BASE_URL + '/finder/list?path=' + options.path ,
+            title:options.title,
+            backdrop:false,
+            dialogClass:'modal-xl'
+        });
+        fDialog.show()
+        return fDialog;
     }
 
 }
@@ -216,6 +213,8 @@ function ZapDialog(settings){
         bodyClass:'',
         footerClass:'',
         url:null,
+        method:'get',
+        data:{},
         buttons:[],
         events:{}
     };
@@ -244,7 +243,7 @@ function ZapDialog(settings){
     }
 
     this.modalHeader = function(value){
-        if(this.settings.title === null) return false;
+        if(this.settings.title === null || this.settings.title === undefined) return '';
         let closeBtn = `<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>`;
         if(this.settings.closeBtn === false){
             closeBtn = '';
@@ -274,6 +273,7 @@ function ZapDialog(settings){
         if(this.settings.replace === true && q !==null){
             q.remove();
         }else if(this.settings.replace === false && q !==null){
+            this.modal = new bootstrap.Modal(q)
             return;
         }
         let modalNode = Zap.createElement(this.render());
@@ -282,6 +282,16 @@ function ZapDialog(settings){
         for (const eventKey in this.settings.events) {
             modalNode.addEventListener(eventKey,this.settings.events[eventKey]);
         }
+        if(this.settings.url !== null){
+            $.ajax({
+                url:this.settings.url,
+                method:this.settings.method,
+                data:this.settings.data,
+                success:(data)=>{
+                    this.setContent(data);
+                }
+            })
+        }
     }
     this.setContent = function (content){
         document.querySelector('#'+this.settings.id+' .modal-body').innerHTML = content;
@@ -289,6 +299,7 @@ function ZapDialog(settings){
 }
 
 ZapDialog.prototype.show = function(){
+
     if(this.modal === undefined){
         this.create();
     }
