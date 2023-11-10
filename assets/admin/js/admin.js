@@ -1,3 +1,15 @@
+const bgPrimary = 'text-bg-primary';
+const bgSecondary = 'text-bg-secondary';
+const bgSuccess = 'text-bg-success';
+const bgDanger = 'text-bg-danger';
+const bgWarning = 'text-bg-warning';
+const bgInfo = 'text-bg-info';
+const bgDark = 'text-bg-dark';
+
+const Toast_Pos_TopCenter = 'topCenterToast';
+const Toast_Pos_TopRight = 'topRightToast';
+const Toast_Pos_Center = 'centerToast';
+
 $(function(){
     const navbarSideCollapse = document.querySelector('#navbarSideCollapse');
     if (navbarSideCollapse !== null) {
@@ -14,17 +26,7 @@ $(function(){
 });
 
 
-const bgPrimary = 'text-bg-primary';
-const bgSecondary = 'text-bg-secondary';
-const bgSuccess = 'text-bg-success';
-const bgDanger = 'text-bg-danger';
-const bgWarning = 'text-bg-warning';
-const bgInfo = 'text-bg-info';
-const bgDark = 'text-bg-dark';
 
-const Toast_Pos_TopCenter = 'topCenterToast';
-const Toast_Pos_TopRight = 'topRightToast';
-const Toast_Pos_Center = 'centerToast';
 const ZapToast = {
     alert:function(msg,params){
         const defaultParams = {
@@ -157,7 +159,7 @@ const ZapModal = {
 };
 
 var Zap = {
-    loadding:function(title){
+    loading:function(title){
         if(title===undefined){
             title = '加载中，请稍后...'
         }
@@ -190,7 +192,7 @@ var Zap = {
         }
         options = options || {};
         options.title = options.title  || "文件管理器";
-        options.path = options.path || '/';
+        options.path = options.path || '';
         options.target = options.target || '';
         options.size = options.size || '';
         options.callback = options.callback || '';
@@ -199,7 +201,8 @@ var Zap = {
             url:ZAP_BASE_URL + '/finder/list?initialize=true&path=' + options.path +'&target='+encodeURIComponent(options.target) +  '&callback='+options.callback + '&size='+options.size,
             title:options.title,
             backdrop:false,
-            dialogClass:'modal-xl'
+            dialogClass:'modal-xl',
+            context:options.context
         });
         window.zapFinder.show()
         return window.zapFinder;
@@ -268,7 +271,7 @@ function ZapDialog(settings){
         const body = this.modalBody(this.settings.content)
         const footer = this.modalFooter()
         const backdrop = this.settings.backdrop === true ? `data-bs-backdrop="static" data-bs-keyboard="false"`:'';
-        return `<div class="modal fade ${this.settings.modalClass}" tabindex="-1" id="${this.settings.id}" ${backdrop} aria-hidden="true">    
+        return `<div class="modal  ${this.settings.modalClass}" tabindex="-1" id="${this.settings.id}" ${backdrop} aria-hidden="true">    
                   <div class="modal-dialog ${this.settings.dialogClass}">
                     <div class="modal-content ${this.settings.contentClass}">
                       ${header}
@@ -288,7 +291,7 @@ function ZapDialog(settings){
         }
         let modalNode = Zap.createElement(this.render());
         document.body.appendChild(modalNode);
-        this.modal = new bootstrap.Modal(modalNode)
+        this.modal = new bootstrap.Modal(document.getElementById(this.settings.id))
         for (const eventKey in this.settings.events) {
             modalNode.addEventListener(eventKey,this.settings.events[eventKey]);
         }
@@ -299,22 +302,25 @@ function ZapDialog(settings){
     this.setContent = function (content){
         document.querySelector('#'+this.settings.id+' .modal-body').innerHTML = content;
     }
-}
 
-ZapDialog.prototype.show = function(){
-
-    if(this.modal === undefined){
-        this.create();
+    this.dispose = function(){
+      this.modal.dispose();
+        document.querySelector('#'+this.settings.id).remove();
     }
-    this.modal.show();
-}
-ZapDialog.prototype.hide = function(){
-    this.modal.hide();
+
+    this.hide = function(){
+        this.modal.hide();
+    }
+    this.show = function(){
+
+        if(this.modal === undefined){
+            this.create();
+        }
+        this.modal.show();
+    }
 }
 
-ZapDialog.prototype.dispose = function(){
-    this.modal.dispose();
-}
+
 
 Zap.createModal = function(settings){
     return new ZapDialog(settings)

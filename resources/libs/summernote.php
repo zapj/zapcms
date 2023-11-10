@@ -1,5 +1,5 @@
 <?php
-register_styles(base_url('/assets/summernote/summernote-lite.min.css'));
+register_styles(base_url('/assets/plugins/summernote/summernote-lite.min.css'));
 register_styles(<<<EOF
 .note-editor .note-toolbar .note-color-all .note-dropdown-menu, .note-popover .popover-content .note-color-all .note-dropdown-menu {
     min-width: 343px;
@@ -22,5 +22,6 @@ pre {
 }
 
 EOF,ASSETS_HEAD_TEXT);
-register_scripts(base_url('/assets/summernote/summernote-lite.min.js'));
-register_scripts(base_url('/assets/summernote/lang/summernote-zh-CN.js'));
+register_scripts(base_url('/assets/plugins/summernote/summernote-lite.min.js'));
+register_scripts(base_url('/assets/plugins/snfinder/summernote-ext-snfinder.js'));
+register_scripts(base_url('/assets/plugins/summernote/lang/summernote-zh-CN.js'));

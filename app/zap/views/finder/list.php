@@ -63,7 +63,9 @@
                             >
                                 <?php if ($file['is_image']) { ?>
                                     <img src="<?php echo $file['thumb_url']; ?>" alt="<?php echo $file['filename']; ?>"
-                                         title="<?php echo $file['filename']; ?>" class="img-thumbnail">
+                                         title="<?php echo $file['filename']; ?>" class="img-thumbnail"
+                                         data-original="<?php echo base_url('/storage/' . $file['path']); ?>"
+                                    >
                                 <?php } else { ?>
                                     <i class="<?php echo $file['icon']; ?> fa-9x"></i>
                                 <?php } ?>
@@ -161,7 +163,7 @@
             }
             if ($(this).data('type') === 'file') {
                 <?php if ($callback) {
-                echo $callback, '(', event, ');';
+                echo $callback, '(event);';
             } ?>
                 TARGET_LIST.forEach((value) => {
                     $target = $(value);

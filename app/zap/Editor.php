@@ -26,6 +26,7 @@ class Editor
     protected function init()
     {
         Asset::library('summernote');
+        register_scripts(base_url('/assets/plugins/zapuploader.js'));
     }
 
     public function setOptions($options = []){
@@ -37,13 +38,17 @@ class Editor
     public function create($name,$options = []){
         $this->setOptions($options);
         register_scripts(<<<EOF
+function createEditor(){
 $('{$name}').summernote({
     height: {$this->options['height']},
     lang:'{$this->options['lang']}',
+    toolbar:[['snfinder'] ],
     callbacks:{
         onImageUpload: {$this->options['image_upload']}        
     }
 });
+}
+createEditor();
 EOF,ASSETS_BODY_TEXT
 );
     }

@@ -7,8 +7,7 @@ use zap\facades\Url;
 Asset::library('summernote');
 Asset::library('datetimepicker');
 Asset::library('jqueryvalidation');
-$this->extend('layouts/common');
-
+!IS_AJAX && $this->extend('layouts/common');
 ?>
     <nav class="navbar bg-body-tertiary position-fixed w-100 shadow z-3 zap-top-bar">
         <div class="container-fluid">
@@ -133,7 +132,7 @@ $this->extend('layouts/common');
                 ZapToast.alert('请修改错误项，重新提交', {bgColor: bgDanger, position: Toast_Pos_Center});
                 return false;
             }
-            const load = Zap.loadding('正在保存，请稍后');
+            zapload = Zap.loading('正在保存，请稍后');
             $.ajax({
                 url: '<?php echo Url::current();?>',
                 method: 'post',
@@ -141,22 +140,23 @@ $this->extend('layouts/common');
                 dataType: 'json',
                 success: function (data) {
                     if (data.code === 0) {
-                        ZapToast.alert(data.msg, {
-                            bgColor: bgSuccess, position: Toast_Pos_Center, callback: function () {
-                                <?php if($node->id){ ?>
-                                location.reload();
-                                <?php }else{ ?>
-                                location.href = data.redirect_to;
-                                <?php } ?>
+                        ZapToast.alert(data.msg, {bgColor: bgSuccess, position: Toast_Pos_Center});
 
-                            }
-                        });
+                        <?php if($node->id){ ?>
+                        Zap.reload({callback:function (){
+                                console.log(zapload)
+                                zapload.dispose();
+                                createEditor();
+                            }});
+                        <?php }else{ ?>
+                        location.href = data.redirect_to;
+                        <?php } ?>
                     } else {
                         ZapToast.alert(data.msg, {bgColor: bgDanger, position: Toast_Pos_Center});
                     }
+
                 }
-            }).always(function () {
-                load.dispose()
+
             });
 
 
@@ -165,7 +165,7 @@ $this->extend('layouts/common');
 
     </script>
 <?php
-\zap\Editor::instance()->create('.summernote', [
+!IS_AJAX && \zap\Editor::instance()->create('.summernote', [
     'image_upload' => 'zapSendFile',
     'upload_url' => url_action('Upload@image')
 ]);

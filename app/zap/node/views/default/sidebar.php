@@ -9,16 +9,18 @@
                 <?php
                 use zap\Catalog;
                 use zap\facades\Url;
-                use zap\NodeType;
                 if($catalogId===0){
                     $catalogId = $node->id;
                 }
                 Catalog::instance()->forEachAll(function($catalog) use ($catalogId){
+                    if($catalog['node_type'] === 'link-url'){
+                        $catalog['node_type'] = $catalog['link_object'] ? $catalog['link_type'] :$catalog['node_type'];
+                    }
                     ?>
                     <tr class="<?php echo $catalogId == $catalog['id'] ? ' table-success':''; ?>">
                         <td>
                             <i class="<?php echo $catalog['icon'];?>"></i>
-                            <a href="<?php echo Url::action("Node@{$catalog['node_type']}",['cid'=>$catalog['id']]); ?>">
+                            <a href="<?php echo Url::action("Node@{$catalog['node_type']}",['cid'=>$catalog['link_object']?:$catalog['id']]); ?>">
                                 <span style="padding-left: <?php echo $catalog['level'];?>rem!important;"><?php echo $catalog['title'];?></span>
                             </a>
                         </td>

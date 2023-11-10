@@ -9,12 +9,7 @@ Asset::library('datetimepicker');
 Asset::library('jqueryvalidation');
 //Asset::library('dropzone');
 register_scripts(base_url('/assets/plugins/zapuploader.js'));
-register_styles(<<<EOF
-#showimg hover a {
-display:block;
-}
-EOF
-);
+
 !IS_AJAX && $this->layout('layouts/common');
 ?>
     <nav class="navbar bg-body-tertiary position-fixed w-100 shadow z-3 zap-top-bar">
@@ -222,10 +217,6 @@ EOF
                 }
             });
 
-            // $('#uploadImage').dropzone({url:'/post'});
-
-
-
         });
 
         function save() {
@@ -234,7 +225,7 @@ EOF
                 ZapToast.alert('请修改错误项，重新提交', {bgColor: bgDanger});
                 return false;
             }
-            const load = Zap.loadding('正在保存，请稍后');
+            const load = Zap.loading('正在保存，请稍后');
             $.ajax({
                 url: '<?php echo Url::current();?>',
                 method: 'post',
