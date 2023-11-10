@@ -42,7 +42,19 @@ function createEditor(){
 $('{$name}').summernote({
     height: {$this->options['height']},
     lang:'{$this->options['lang']}',
-    toolbar:[['snfinder'] ],
+    toolbar: [
+    ['style', ['style']],
+    ['font', ['bold', 'italic', 'underline', 'clear']],
+    ['fontname', ['fontname']],
+    ['color', ['color']],
+    ['para', ['ul', 'ol', 'paragraph']],
+    ['height', ['height']],
+    ['table', ['table']],
+    ['insert', ['link', 'picture', 'hr']],
+    ['view', ['fullscreen', 'codeview']],
+    ['snfinder',['snfinder']],
+    ['help', ['help']]
+  ],
     callbacks:{
         onImageUpload: {$this->options['image_upload']}        
     }

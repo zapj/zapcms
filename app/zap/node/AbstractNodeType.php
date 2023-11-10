@@ -188,8 +188,8 @@ class AbstractNodeType
                 ->leftJoin(['node','n'],'nr.node_id=n.id')
                 ->select('count(n.id) as rowcount');
         }else{
-            $query = DB::table('node','n');
-            $query->where('author_id','!=',0);
+            $query = DB::table('node','n')->select('count(n.id) as rowcount');
+//            $query->where('author_id','!=',0);
         }
 
         $this->prepareConditions($query,$conditions);
@@ -203,7 +203,7 @@ class AbstractNodeType
                 ->leftJoin(['node','n'],'nr.node_id=n.id');
         }else{
             $query = DB::table('node','n');
-            $query->where('author_id','!=',0);
+//            $query->where('author_id','!=',0);
         }
         $query->select('n.*');
         $this->prepareConditions($query,$conditions);

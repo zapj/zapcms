@@ -33,7 +33,7 @@ echo $this->extend('layout/default'); ?>
                         <div class="col-md-3 col-xs-6 mb-2 product">
                             <div class="product-img">
                                 <a href="<?php echo site_url("/product/{$node['slug']}") ?>" title="Post">
-                                    <img  src="<?php echo theme_url(); ?>img/h1.jpeg" alt="Post" >
+                                    <img  src="<?php echo \zap\helpers\ThumbHelper::thumb($node['image'],200,200); ?>" alt="Post" >
                                 </a>
                             </div>
 

@@ -14,7 +14,7 @@
                 }
                 Catalog::instance()->forEachAll(function($catalog) use ($catalogId){
                     if($catalog['node_type'] === 'link-url'){
-                        $catalog['node_type'] = $catalog['link_object'] ? $catalog['link_type'] :$catalog['node_type'];
+                        $catalog['node_type'] = $catalog['link_object'] ? $catalog['content'] :$catalog['node_type'];
                     }
                     ?>
                     <tr class="<?php echo $catalogId == $catalog['id'] ? ' table-success':''; ?>">

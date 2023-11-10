@@ -749,6 +749,7 @@ p.text {
 .product-list .product-img img {
     cursor: pointer;
     transition: all 0.6s;
+    max-height: 200px;
 }
 
 .product-list .product {

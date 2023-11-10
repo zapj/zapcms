@@ -19,7 +19,7 @@ class DefaultController extends AbstractNodeType
         $this->title = '内容';
         add_filter('node_total_conditions',function($conditions){
             unset($conditions['where']['n.node_type']);
-            $conditions['where'][] = ['n.node_type','NOT IN',['catalog']];
+            $conditions['where'][] = ['n.node_type','!=','catalog'];
             unset($conditions['where']['nr.catalog_id']);
             return $conditions;
         });
