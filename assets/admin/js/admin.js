@@ -6,6 +6,11 @@ $(function(){
         })
     }
 
+    $('button[data-zap-toggle=\"image\"]').on('click',function(e){
+        e.preventDefault();
+        Zap.finder({target:$(this).data('zap-target'),callback:$(this).data('zap-callback'),size:$(this).data('zap-size')});
+    });
+
 });
 
 
@@ -179,18 +184,25 @@ var Zap = {
         alert.show()
     },
     finder:function(options){
+        if(window.zapFinder){
+            window.zapFinder.show()
+            return window.zapFinder;
+        }
         options = options || {};
         options.title = options.title  || "文件管理器";
         options.path = options.path || '/';
-        const fDialog = new ZapDialog({
-            id:options.id,
-            url:ZAP_BASE_URL + '/finder/list?path=' + options.path ,
+        options.target = options.target || '';
+        options.size = options.size || '';
+        options.callback = options.callback || '';
+        window.zapFinder = new ZapDialog({
+            id:'zapFinder',
+            url:ZAP_BASE_URL + '/finder/list?initialize=true&path=' + options.path +'&target='+encodeURIComponent(options.target) +  '&callback='+options.callback + '&size='+options.size,
             title:options.title,
             backdrop:false,
             dialogClass:'modal-xl'
         });
-        fDialog.show()
-        return fDialog;
+        window.zapFinder.show()
+        return window.zapFinder;
     }
 
 }
@@ -213,8 +225,6 @@ function ZapDialog(settings){
         bodyClass:'',
         footerClass:'',
         url:null,
-        method:'get',
-        data:{},
         buttons:[],
         events:{}
     };
@@ -283,14 +293,7 @@ function ZapDialog(settings){
             modalNode.addEventListener(eventKey,this.settings.events[eventKey]);
         }
         if(this.settings.url !== null){
-            $.ajax({
-                url:this.settings.url,
-                method:this.settings.method,
-                data:this.settings.data,
-                success:(data)=>{
-                    this.setContent(data);
-                }
-            })
+            $('#'+this.settings.id+' .modal-body').load(this.settings.url);
         }
     }
     this.setContent = function (content){

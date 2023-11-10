@@ -227,6 +227,8 @@ class ZPDO extends PDO
     {
         $params = [];
         $values = [];
+        list($name,$name1) = explode('.',$name);
+        $name = $name1 ?: $name;
         for($i = 0;$i<count($array);$i++){
             $params[$i] = ":{$name}{$i}";
             $values[$params[$i]] = $array[$i];

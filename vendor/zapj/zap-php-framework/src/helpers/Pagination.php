@@ -5,9 +5,12 @@ namespace zap\helpers;
 class Pagination
 {
     public $limit;
+    public $offset;
     public $page;
     public $total;
     public $data;
+    public $url;
+    public $displayTotal = true;
     public $prevLink = 'javascript:void(0);';
     public $nextLink = 'javascript:void(0);';
 
@@ -15,6 +18,7 @@ class Pagination
         $this->page = $page ? $page : 1;
         $this->limit = $limit;
         $this->data = $data;
+        $this->offset = ceil(($this->page - 1) * $this->limit);
     }
 
     public function setTotal($total) {
@@ -27,11 +31,12 @@ class Pagination
         return $this;
     }
 
-    public function getLimit() {
+    public function getLimit() : int {
         return $this->limit;
     }
 
-    public function getOffset() {
+    public function getOffset()
+    {
         return ceil(($this->page - 1) * $this->limit);
     }
 
@@ -53,24 +58,30 @@ class Pagination
         }
 
         if ($start > 1) {
-            $html .= '<li class="' . $li_class .'"><a class="'.$a_class.'"  href="?' . $this->buildQuery(array('limit' => $this->limit, 'page' => 1)) . '">1</a></li>';
+            $curl = $this->url . '?' .  $this->buildQuery(array('limit' => $this->limit, 'page' => 1));
+            $html .= '<li class="' . $li_class .'"><a class="'.$a_class.'"  href="' . $curl . '">1</a></li>';
             $html .= '<li class="' . $li_class .' disabled" ><span>...</span></li>';
         }
 
         for ($i = $start; $i <= $end; $i++) {
             $class = ( $this->page == $i ) ? "active" : "";
-            $html .= '<li class="' . $li_class .'  ' . $class . '"><a class="'.$a_class.'" href="?' . $this->buildQuery(array('limit' => $this->limit, 'page' => $i)) . '">' . $i . '</a></li>';
+            $curl = $this->url . '?' .  $this->buildQuery(array('limit' => $this->limit, 'page' => $i));
+            $html .= '<li class="' . $li_class .'  ' . $class . '"><a class="'.$a_class.'" href="' . $curl . '">' . $i . '</a></li>';
         }
 
         if ($end < $last) {
+            $curl = $this->url . '?' .  $this->buildQuery(array('limit' => $this->limit, 'page' => $last));
             $html .= '<li class="' . $li_class .' disabled"><span>...</span></li>';
-            $html .= '<li class="' . $li_class .'" ><a  class="'.$a_class.'" href="?' . $this->buildQuery(array('limit' => $this->limit, 'page' => $last)) . '">' . $last . '</a></li>';
+            $html .= '<li class="' . $li_class .'" ><a  class="'.$a_class.'" href="' . $curl . '">' . $last . '</a></li>';
         }
 
         if ($this->page == $last) {
             $html .= '<li class="' . $li_class .' disabled"><a class="'.$a_class.'" href="javascript:void(0);">&raquo;</a></li>';
         }
-
+        if($this->displayTotal){
+            $html .= '<li class="' . $li_class .' " style="width: 17px"></li>';
+            $html .= '<li class="' . $li_class .' " ><span class="page-link" style="color: #ccc;">Total:'.$this->total.'行/'.$last.'页</span></li>';
+        }
         $html .= '</ul></nav>';
 
         return $html;

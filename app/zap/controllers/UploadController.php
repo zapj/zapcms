@@ -32,6 +32,29 @@ class UploadController extends AdminController
 
     }
 
+
+    function file()
+    {
+
+        if (Request::isPost()) {
+            $file = Request::file('file');
+            $path = Request::post('path');
+            if (isset($file['error']) && $file['error'] == UPLOAD_ERR_OK) {
+                $name = md5(rand(100, 200));
+                $ext = explode('.', $_FILES['file']['name']);
+                $filename = $name . '.' . $ext[1];
+                $path = empty($path) ? '' : $path . '/';
+                $destination = storage_path($path . $filename);
+                $location = $_FILES["file"]["tmp_name"];
+                move_uploaded_file($location, $destination);
+                Response::json(['code' => 0, 'url' => base_url('/storage/' . $path . $filename)]);
+            } else {
+                Response::json(['code' => 1, 'msg' => $this->errorMessage($file['error'])]);
+            }
+        }
+
+    }
+
     private function errorMessage($code): string
     {
         switch ($code) {

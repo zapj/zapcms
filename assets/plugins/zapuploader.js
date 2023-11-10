@@ -45,6 +45,7 @@ function ZAPUploader(id,options){
         uploadStart:function(){
             const progress = $$this.dropArea.querySelector('.zap-progress');
             if(progress){
+                progress.classList.remove('zap-none');
                 progress.style.display = '';
             }
         },
@@ -325,9 +326,7 @@ ZAPUploader.prototype.processQueue = function () {
     this.uploadProgress.fill(0);
     this.fileNumber = this.fileData.length;
 
-    console.log('processQueue',this.fileData.length,this.fileData)
     for (let i = 0; i < this.fileData.length; i++) {
-        console.log("process",this.fileData[i])
         this.uploadFile(this.fileData[i].file,i,this.fileData[i].path);
     }
 }

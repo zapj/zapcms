@@ -33,7 +33,7 @@ EOF
 
     </nav>
 
-    <form id="zapForm">
+    <form id="zapForm" method="post">
         <input type="hidden" value="<?php echo $node->id; ?>" name="node_id">
         <main class="container-fluid zap-main">
             <div class="row">
@@ -191,25 +191,16 @@ EOF
                     </div>
 
                     <div class="card mt-2">
-                        <div class="card-header">
-                            文章主图
-                        </div>
-                        <div id="showimg">
-                            <img src="" class="object-fit-cover border rounded img-thumbnail" />
-<!--                            <a href="" class="btn btn-success d-none" >删除</a>-->
-                        </div>
-                        <div class="zapUploader text-center" id="uploadImage">
-
-                            <p class="text-black-50">请选择要上传的图片</p>
-                            <input type="file" id="uploader3" multiple >
-                            <label class="btn btn-outline-success m-2" for="uploader3">选择图片</label>
-                            <div class="zap-message mb-2"></div>
-                            <div class="progress zap-progress mb-2" style="display: none;height: 2px">
-                                <div class="progress-bar zap-progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0"
-                                     aria-valuemin="0" aria-valuemax="100"></div>
+                        <div class="card-header">文章主图</div>
+                        <div id="card">
+                            <img src="<?php echo \zap\helpers\ThumbHelper::thumb($node['image'],136,136); ?>" class="img-thumbnail rounded mx-auto d-block" id="node-image-thumb" style="max-height: 200px;" alt=""/>
+                            <input type="hidden" name="node[image]" id="node-image" value="<?php echo $node['image']; ?>" />
+                            <div class="card-footer">
+                                <button class="btn btn-success" data-zap-toggle="image" data-zap-callback="" data-zap-target="#node-image|#node-image-thumb">选择图片</button>
+                                <button class="btn btn-success" >删除</button>
                             </div>
-
                         </div>
+
                     </div>
 
                 </div>
@@ -232,17 +223,7 @@ EOF
             });
 
             // $('#uploadImage').dropzone({url:'/post'});
-            var upload = new ZAPUploader('#uploadImage',{
-                allowedExtensions: '.jpg|.png|.jpeg',
-                url: '<?php echo url_action('Upload@image') ?>',
-                success:function (i,resp) {
-                    data = JSON.parse(resp);
-                    if(data.code === 1){
 
-                    }
-                    $('#showimg img').attr('src',data.url);
-                }
-            });
 
 
         });
