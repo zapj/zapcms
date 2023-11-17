@@ -46,7 +46,7 @@
         </div>
         <?php } ?>
         <div id="finderContent">
-            <div class="row row-cols-sm-3 row-cols-lg-5 zapFinderFileList">
+            <div class="row row-cols-2 row-cols-sm-3 row-cols-lg-5 zapFinderFileList">
 
                 <input type="hidden" name="path" value="<?php echo $path; ?>" id="cur-path">
                 <input type="hidden" name="parent_path" value="<?php echo $parent_path; ?>" id="parent-path">
@@ -94,7 +94,7 @@
     <script>
         Zap.EnableToolTip();
         const FinderUrl = '<?php echo url_action('finder@list') ?>?path=';
-        const TARGET_LIST = [
+        let TARGET_LIST = [
             <?php  foreach ($target as $t) {
             echo "'", $t, "',";
         } ?>
@@ -167,9 +167,10 @@
             } ?>
                 TARGET_LIST.forEach((value) => {
                     $target = $(value);
-                    if ($target[0].nodeName === 'IMG') {
+                    if ($target[0] !== undefined && $target[0].nodeName === 'IMG') {
                         $target.prop('src', $(this).find('img').attr('src'))
-                    } else if ($target[0].nodeName === 'INPUT') {
+                        $target.attr('data-original', $(this).data('original'))
+                    } else if ($target[0] !== undefined && $target[0].nodeName === 'INPUT') {
                         $target.val($(this).data('original'))
                     }
 
@@ -188,19 +189,16 @@
                 ZapToast.alert(response, {bgColor: bgDanger})
             }
         }
+        function Finder_Show(event){
+            TARGET_LIST = [];
+            TARGET_LIST.push(...$(event.target).data('zap-target').split("|"))
+        }
 
         var upload = new ZAPUploader('#zapFinderFileList', {
             allowedExtensions: '.jpg|.png|.jpeg',
             url: '<?php echo url_action('Upload@file') ?>',
-            customFormData: {
-                path: $('#cur-path').val()
-            },
-            success: function (i, resp) {
-                data = JSON.parse(resp);
-                if (data.code === 1) {
-
-                }
-                console.log(this.progressPercent)
+            sending:function(file,xhr,formData){
+                formData.append('path',$('#cur-path').val());
             },
             progress:function(percent){
                 progressBar.css('width',percent + '%');
@@ -209,6 +207,7 @@
                 }
             }
         });
+
     </script>
     <?php } ?>
 </form>

@@ -15,17 +15,12 @@ class ThumbHelper
     {
         $file = ltrim($file,'/\\');
         $path_parts = pathinfo($file);
-
-        $thumb_file = "{$path_parts['dirname']}/{$path_parts['filename']}-{$width}x{$height}.{$path_parts['extension']}";
+        $path_parts['dirname'] = $path_parts['dirname'] == '.' ? '' : "{$path_parts['dirname']}/";
+        $thumb_file = "{$path_parts['dirname']}{$path_parts['filename']}-{$width}x{$height}.{$path_parts['extension']}";
         if(is_file(storage_path("thumbs/".$thumb_file))){
             return base_url("/storage/thumbs/".$thumb_file);
         }
-        if(Str::startsWith($file,'storage')){
-            $file = realpath($file);
-        }else{
-            $file = storage_path(realpath($file));
-        }
-
+        $file = storage_path($file);
         if(!is_file($file)){
             return base_url("/assets/images/placeholder.jpg");
         }

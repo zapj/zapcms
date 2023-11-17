@@ -6,11 +6,16 @@
 namespace app\controllers;
 
 use zap\http\Controller;
+use zap\Node;
 
 class IndexController extends Controller
 {
     function index(){
         pageState()->isHome = true;
-        view('index',[]);
+        $latestNews = Node::where('status',Node::STATUS_PUBLISH)
+            ->where('node_type','article')
+            ->limit(4)
+            ->get(FETCH_ASSOC);
+        view('index',['latestNews'=>$latestNews]);
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 use zap\NodeType;
 
 !IS_AJAX && $this->layout('layouts/common');
@@ -9,7 +8,7 @@ use zap\NodeType;
         <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);"
              aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item active"><a href="<?php echo url_action('User') ?>">主题管理</a></li>
+                <li class="breadcrumb-item active"><a href="<?php echo url_action('theme') ?>">主题管理</a></li>
             </ol>
         </nav>
         <div class=" text-end" >
@@ -35,7 +34,7 @@ use zap\NodeType;
                     </div>
                     <div class="card-footer ">
                         <?php if($website_options['website.theme'] === $theme['dirname']){ ?>
-                            <a href="#" class="btn btn-outline-info btn-sm">主题设置</a>
+                            <a href="<?php echo url_action('Theme@settings'); ?>" class="btn btn-outline-info btn-sm">主题设置</a>
                         <?php }else{ ?>
                             <button  class="btn btn-outline-success btn-sm" onclick="activationTheme('<?php echo $theme['dirname']; ?>')" type="button">启用主题</button>
                         <?php } ?>

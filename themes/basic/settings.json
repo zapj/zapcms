@@ -1,0 +1,29 @@
+{
+  "title": "Basic 模版设置",
+  "items": [
+    {
+      "labelText": "首页幻灯图片",
+      "class": "col-12 col-md-12 mb-2"
+    },
+    {
+      "name": "basic.slide",
+      "value": [
+        "/themes/basic/img/banner1.png",
+        "/themes/basic/img/banner2.png",
+        "/themes/basic/img/banner3.png"
+      ],
+      "helpText": "",
+      "type": "imageSelect"
+    },
+    {
+      "labelText": "service",
+      "class": "col-12 col-md-12 mb-2"
+    },
+    {
+      "name": "basic.box1",
+      "value": "FIRST BOX TITLE",
+      "helpText": "",
+      "type": "text"
+    }
+  ]
+}

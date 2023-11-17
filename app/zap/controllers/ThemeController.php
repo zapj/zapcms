@@ -9,6 +9,7 @@ use zap\facades\Url;
 use zap\helpers\Pagination;
 use zap\http\Request;
 use zap\http\Response;
+use zap\Log;
 use zap\Option;
 use zap\Theme;
 use zap\User;
@@ -25,10 +26,6 @@ class ThemeController extends AdminController
         view('theme.index',['themes'=>$themes,'website_options'=>$website_options]);
     }
 
-    public function form(){
-
-        view('user.form',[]);
-    }
 
     public function activationTheme(){
         if(Request::isPost()){
@@ -45,25 +42,38 @@ class ThemeController extends AdminController
     }
 
 
-    function changePassword(){
-        if(Request::isPost()){
-            $curPassword = Request::post('cur_password');
-            $newPassword = Request::post('new_password');
-            $reNewPassword = Request::post('renew_password');
-            if($newPassword != $reNewPassword){
-                Response::json(['code'=>1,'msg'=>'新密码两次输入不一致']);
-            }
-            $admin = Auth::getProfile();
-            if(!Password::verify($curPassword,$admin['password'])){
-                Response::json(['code'=>1,'msg'=>'原密码输入错误，请重新输入！']);
-            }
-            DB::update('admin',['password'=>Password::hash($newPassword),'updated_at'=>time()],
-                ['id'=>Auth::user('id')]);
-            Auth::signOut();
-            Response::json(['code'=>0,'msg'=>'密码修改成功，请重新登录']);
+
+    public function settings(){
+        $theme = Option::get('website.theme','basic');
+        $settingFile = themes_path("{$theme}/settings.json");
+        if(!is_file($settingFile)){
+            Response::redirect(url_action('theme'),'当前主题不支持自定义',FLASH_INFO);
         }
-        $data = [];
-        View::render("user.change_password",$data);
+        $customSettings = file_get_contents($settingFile);
+        $themeSettings = Option::getKeys($theme,'REGEXP');
+        view('theme.settings',[
+            'customSettings'=>json_decode($customSettings,true),
+            'themeSettings'=>$themeSettings
+        ]);
+    }
+
+    public function saveSettings()
+    {
+        if(req()->isPost()){
+            $settings = req()->post('settings');
+            $theme = Option::get('website.theme','basic');
+            $themeSettingsKeys = Option::getKeys($theme,'REGEXP');
+            foreach ($settings as $key=>$value){
+                if(in_array($key, $themeSettingsKeys)){
+                    Option::update($key,$value);
+                }else{
+                    Option::add($key,$value);
+                }
+
+            }
+
+        }
+
     }
 
 }

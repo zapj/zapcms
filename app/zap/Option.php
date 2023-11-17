@@ -49,7 +49,7 @@ class Option
      * @throws \Exception
      */
     public static function get($option_name, $default = null){
-        $option_value = DB::scalar('select option_value from {options} where option_name=:option_name',
+        $option_value = DB::value('select option_value from {options} where option_name=:option_name',
             ['option_name'=>$option_name]);
         if(empty($option_value)){
             return $default;
@@ -78,6 +78,13 @@ class Option
 
     public static function getKeys($option_name,$type = '='): array
     {
+        if(is_array($option_name) && $type == 'REGEXP'){
+            $option_name = join('|',$option_name);
+            $option_name = "^({$option_name}).*";
+        }else if(is_string($option_name) && $type == 'REGEXP'){
+            $option_name = "^({$option_name}).*";
+        }
+
         $query = DB::table('options')->select('option_name')
             ->orderBy('sort_order desc');
 

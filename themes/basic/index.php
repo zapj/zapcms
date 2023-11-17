@@ -129,49 +129,22 @@ $this->extend('layout/default'); ?>
         <div class="home_content">
             <div class="container">
                 <div class="row">
-                    <div class="col-sm-12"><h2 class="sub_title">LATEST NEWS</h2></div>
+                    <div class="col-sm-12"><h2 class="sub_title">最新发布</h2></div>
                     <div class="home_list">
                         <ul>
+                            <?php foreach ($latestNews as $news){ ?>
                             <li class="col-md-3 col-sm-6 col-xs-12">
                                 <div class="thumbnail">
-                                    <img src="img/h1.jpeg" alt="Post">
+                                    <img src="<?php echo \zap\helpers\ThumbHelper::thumb($news['image'],200,200); ?>" alt="Post">
                                     <div class="caption">
-                                        <h3><a href="#">Post Title</a></h3>
-                                        <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus.</p>
-                                        <a href="#" class="btn btn-link" role="button">More</a>
+                                        <h3><a href="<?php echo site_url("/{$news['node_type']}/{$news['slug']}") ?>"><?php echo $news['title']; ?></a></h3>
+                                        <p><?php  echo \zap\util\Str::truncate(strip_tags($news['content']),100); ?></p>
+
                                     </div>
                                 </div>
                             </li>
-                            <li class="col-md-3 col-sm-6 col-xs-12">
-                                <div class="thumbnail">
-                                    <img src="img/h2.jpg" class="img-responsive" alt="Post">
-                                    <div class="caption">
-                                        <h3><a href="#">Post Title</a></h3>
-                                        <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus.</p>
-                                        <a href="#" class="btn btn-link" role="button">More</a>
-                                    </div>
-                                </div>
-                            </li>
-                            <li class="col-md-3 col-sm-6 col-xs-12">
-                                <div class="thumbnail">
-                                    <img src="img/h3.jpeg" class="img-responsive" alt="Post">
-                                    <div class="caption">
-                                        <h3><a href="#">Post Title</a></h3>
-                                        <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus.</p>
-                                        <a href="#" class="btn btn-link" role="button">More</a>
-                                    </div>
-                                </div>
-                            </li>
-                            <li class="col-md-3 col-sm-6 col-xs-12">
-                                <div class="thumbnail">
-                                    <img src="img/h4.jpeg" class="img-responsive" alt="Post">
-                                    <div class="caption">
-                                        <h3><a href="#">Post Title</a></h3>
-                                        <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus.</p>
-                                        <a href="#" class="btn btn-link" role="button">More</a>
-                                    </div>
-                                </div>
-                            </li>
+                            <?php } ?>
+
                         </ul>
                     </div>
 

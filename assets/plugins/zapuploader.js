@@ -64,6 +64,7 @@ function ZAPUploader(id,options){
             $$this.messageContainer.appendChild(strong)
         },
         addedfile:function(file,index){},
+        sending:function(file,xhr,formData){},
         addfile:function(file){},
         preview:function(file,index){}
     };
@@ -396,7 +397,7 @@ ZAPUploader.prototype.uploadFile = function(file, i , fullPath) {
     })
     xhr.addEventListener('readystatechange', function(e) {
         if (xhr.readyState === 4 && xhr.status === 200) {
-            $$this.updateProgress(i, 100);
+            // $$this.updateProgress(i, 100);
             $$this.handlerFileNumber++;
             $$this.options.success(i,xhr.responseText);
             if($$this.handlerFileNumber === $$this.fileNumber){
@@ -417,7 +418,9 @@ ZAPUploader.prototype.uploadFile = function(file, i , fullPath) {
     }
     for (const name in $$this.options.customFormData) {
         formData.append(name, $$this.options.customFormData[name]);
+        console.log(name, $$this.options.customFormData[name])
     }
+    $$this.options.sending(file,xhr,formData);
     xhr.send(formData)
     $$this.options.processing(file,i);
 }

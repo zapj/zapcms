@@ -5,7 +5,7 @@ echo $this->extend('layout/default'); ?>
     <div class="container">
         <div class="row">
             <div class="col-sm-12">
-                <?php echo BreadCrumb::instance()->display(); ?>
+                <?php BreadCrumb::instance()->display(); ?>
             </div>
         </div>
     </div>

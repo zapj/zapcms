@@ -5,7 +5,7 @@ echo $this->extend('layout/default'); ?>
     <div class="container">
         <div class="row">
             <div class="col-sm-12">
-                <?php echo BreadCrumb::instance()->display(); ?>
+                <?php BreadCrumb::instance()->display(); ?>
             </div>
         </div>
     </div>
@@ -42,8 +42,7 @@ echo $this->extend('layout/default'); ?>
                             <p class="text-muted"><?php echo \zap\util\Str::truncate(strip_tags($node['content']),200);?></p>
                             <aside class="meta category-meta">
                                 <div class="pull-left ">
-                                    <div class="arc-comment "><a href="#" title="Comment" class="text-muted"><i class="fa fa-comments"></i> <?php echo empty($node['comment_count']) ? 0 :$node['comment_count']; ?> 条回复</a></div>
-                                    <div class="arc-comment "><a href="#" title="Comment" class="text-muted"><i class="fa fa-eye"></i> 阅读量  <?php echo empty($node['hits']) ? 0 :$node['hits']; ?> </a></div>
+                                    <div class="arc-comment "><a href="#" title="阅读量" class="text-muted"><i class="fa fa-eye"></i> 阅读量  <?php echo empty($node['hits']) ? 0 :$node['hits']; ?> </a></div>
                                     <div class="arc-date text-muted"><?php echo date(Z_DATE,$node['pub_time']); ?></div>
                                 </div>
                                 <div class="pull-right">

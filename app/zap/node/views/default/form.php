@@ -12,7 +12,7 @@ register_scripts(base_url('/assets/plugins/zapuploader.js'));
 
 !IS_AJAX && $this->layout('layouts/common');
 ?>
-    <nav class="navbar bg-body-tertiary position-fixed w-100 shadow z-3 zap-top-bar">
+    <nav class="navbar bg-body-tertiary position-fixed w-100 shadow-sm z-3 zap-top-bar">
         <div class="container-fluid">
             <?php BreadCrumb::instance()->display() ; ?>
 

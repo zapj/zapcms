@@ -5,7 +5,7 @@ echo $this->extend('layout/default'); ?>
     <div class="container">
         <div class="row">
             <div class="col-sm-12">
-                <?php echo BreadCrumb::instance()->display(); ?>
+                <?php BreadCrumb::instance()->display(); ?>
             </div>
         </div>
     </div>
@@ -29,11 +29,11 @@ echo $this->extend('layout/default'); ?>
                 </div>
             </aside>
             <section class="page col-sm-9">
-                <div class="row mb-20px">
+                <div class="row mb-20px justify-content-start">
 
-                        <div class="col-md-6 col-6 mb-2">
+                        <div class="col-md-5 mb-2">
                             <div class="product-img">
-                                    <img  src="<?php echo theme_url(); ?>img/h1.jpeg" alt="Post" >
+                                    <img style="max-width: 300px" src="<?php echo \zap\helpers\ThumbHelper::thumb(pageState()->node['image'],300,300); ?>" alt="Post" >
 
                             </div>
 

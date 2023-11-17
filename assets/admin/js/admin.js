@@ -18,9 +18,14 @@ $(function(){
         })
     }
 
-    $('button[data-zap-toggle=\"image\"]').on('click',function(e){
+    $(document.body).on('click','button[data-zap-toggle=\"image\"]',function(e){
         e.preventDefault();
         Zap.finder({target:$(this).data('zap-target'),callback:$(this).data('zap-callback'),size:$(this).data('zap-size')});
+        window.zapFinder.target = e.target
+        if(typeof Finder_Show !== "undefined"){
+            Finder_Show(e)
+        }
+
     });
 
 });
@@ -229,9 +234,11 @@ function ZapDialog(settings){
         footerClass:'',
         url:null,
         buttons:[],
-        events:{}
+        events:{},
+        callback:function(){}
     };
     this.settings = Object.assign(defaultSettings,settings);
+    this.target = null;
     if(this.settings.id === null) this.settings.id = Zap.RandID();
     this.modalBody = function(body){
         if(this.settings.url !== null && this.settings.loading === true && body === ''){
@@ -296,7 +303,7 @@ function ZapDialog(settings){
             modalNode.addEventListener(eventKey,this.settings.events[eventKey]);
         }
         if(this.settings.url !== null){
-            $('#'+this.settings.id+' .modal-body').load(this.settings.url);
+            $('#'+this.settings.id+' .modal-body').load(this.settings.url,this.settings.callback);
         }
     }
     this.setContent = function (content){
