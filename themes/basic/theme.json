@@ -1,7 +1,20 @@
 {
-  "version" : "1.0.1",
+  "version": "1.0.1",
   "name": "basic",
   "title": "默认主题",
   "description": "ZapCMS 默认主题",
-  "screenshot": "screenshot.png"
+  "screenshot": "screenshot.png",
+  "settings": {
+    "option_keys": ["basic","basic_home"]
+  },
+  "options": {
+    "basic.slide": [
+      {
+        "img_path": "/themes/basic/img/banner1.png"
+      },
+      {
+        "img_path": "/themes/basic/img/banner2.png"
+      }
+    ]
+  }
 }

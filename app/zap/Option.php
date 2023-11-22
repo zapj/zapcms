@@ -45,9 +45,7 @@ class Option
         return DB::delete('options','option_name=:name',['name'=>$option_name]);
     }
 
-    /**
-     * @throws \Exception
-     */
+
     public static function get($option_name, $default = null){
         $option_value = DB::value('select option_value from {options} where option_name=:option_name',
             ['option_name'=>$option_name]);

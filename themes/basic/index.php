@@ -1,20 +1,20 @@
 <?php
 defined('IN_ZAP_CMS') or die('No permission to access');
-$this->extend('layout/default'); ?>
+$this->extend('layout/default');
+$banners = option_get_json('basic.slide',[],true);
+?>
 <main class="site-main">
     <!-- Slider main container -->
     <div class="swiper">
         <!-- Additional required wrapper -->
         <div class="swiper-wrapper">
-            <!-- Slides -->
+            <?php foreach($banners as $banner){ ?>
             <div class="swiper-slide " >
-                <a href="#"  style="background: url('/themes/basic/img/banner1.png') no-repeat center center;  ">
+                <a href="<?php echo $banner['link'];?>"  style="background: url('<?php echo $banner['img_path'];?>') no-repeat center center;  ">
                 </a>
             </div>
-            <div class="swiper-slide">
-                <a href="#"  style="background: url('/themes/basic/img/banner2.png') no-repeat center center; " >
-                </a>
-            </div>
+            <?php } ?>
+
 
         </div>
         <div class="swiper-pagination"></div>

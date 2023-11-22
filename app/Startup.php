@@ -62,8 +62,6 @@ class Startup implements Middleware
         }
 
 
-        require 'app/zap/helpers/theme_helpers.php';
-
         try {
             app()->controller = new $this->controllerClass();
 //            app()->make($this->controllerClass, [], 'controller');

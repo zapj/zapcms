@@ -16,6 +16,7 @@ class IndexController extends Controller
             ->where('node_type','article')
             ->limit(4)
             ->get(FETCH_ASSOC);
+
         view('index',['latestNews'=>$latestNews]);
     }
 }

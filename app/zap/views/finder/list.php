@@ -99,6 +99,7 @@
             echo "'", $t, "',";
         } ?>
         ];
+        const IMG_SIZE =  '<?php echo $size;?>';
         const zapFinderFileList = $('#finderContent');
         const progressBar = $('.progress-bar');
         function reloadFileList() {
@@ -168,7 +169,11 @@
                 TARGET_LIST.forEach((value) => {
                     $target = $(value);
                     if ($target[0] !== undefined && $target[0].nodeName === 'IMG') {
-                        $target.prop('src', $(this).find('img').attr('src'))
+                        if(IMG_SIZE === 'original'){
+                            $target.prop('src', $(this).data('original'))
+                        }else{
+                            $target.prop('src', $(this).find('img').attr('src'))
+                        }
                         $target.attr('data-original', $(this).data('original'))
                     } else if ($target[0] !== undefined && $target[0].nodeName === 'INPUT') {
                         $target.val($(this).data('original'))
