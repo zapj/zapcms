@@ -27,7 +27,7 @@ register_scripts(base_url('/assets/plugins/zapuploader.js'));
             success: function (data) {
                 if (data.code === 0) {
                     ZapToast.alert("主题设置成功", {bgColor: bgSuccess});
-                    Zap.reload();
+                    Zap.reload({callback: typeof PageReload === 'undefined' ? function(){} : PageReload  });
                 } else {
                     ZapToast.alert("主题设置失败: " + data.msg, {bgColor: bgDanger});
                 }

@@ -8,13 +8,36 @@
     "option_keys": ["basic","basic_home"]
   },
   "options": {
-    "basic.slide": [
+    "basic_home.slide": [
       {
         "img_path": "/themes/basic/img/banner1.png"
       },
       {
         "img_path": "/themes/basic/img/banner2.png"
       }
-    ]
+    ],
+
+    "basic_home.service_title": "服务项目",
+    "basic_home.service_subtitle": "SERVICES",
+
+    "basic_home.service1_title": "",
+    "basic_home.service1_content": "",
+    "basic_home.service1_icon": "",
+
+    "basic_home.service2_title": "",
+    "basic_home.service2_content": "",
+    "basic_home.service2_icon": "",
+
+    "basic_home.service3_title": "",
+    "basic_home.service3_content": "",
+    "basic_home.service4_icon": "",
+
+    "basic_home.service5_title": "",
+    "basic_home.service5_content": "",
+    "basic_home.service5_icon": "",
+
+    "basic_home.service6_title": "",
+    "basic_home.service6_content": "",
+    "basic_home.service6_icon": ""
   }
 }

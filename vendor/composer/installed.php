@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '21c4d979827424e3609669d2b3e50fd8a5caf2a6',
+        'reference' => 'c9a0fb6274877a975c0fef4f3224c2414f3e9cb9',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '21c4d979827424e3609669d2b3e50fd8a5caf2a6',
+            'reference' => 'c9a0fb6274877a975c0fef4f3224c2414f3e9cb9',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -42,6 +42,15 @@
             'provided' => array(
                 0 => '1.0.0 || 2.0.0 || 3.0.0',
             ),
+        ),
+        'symfony/deprecation-contracts' => array(
+            'pretty_version' => '2.5.x-dev',
+            'version' => '2.5.9999999.9999999-dev',
+            'reference' => '80d075412b557d41002320b96a096ca65aa2c98d',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../symfony/deprecation-contracts',
+            'aliases' => array(),
+            'dev_requirement' => false,
         ),
         'symfony/polyfill-ctype' => array(
             'pretty_version' => '1.x-dev',
@@ -73,7 +82,7 @@
         'twig/twig' => array(
             'pretty_version' => '3.x-dev',
             'version' => '3.9999999.9999999.9999999-dev',
-            'reference' => '9f42a763069e46a0911d0ca2ad0d2f558124af54',
+            'reference' => '804cb1b85b92d995cea958401adedb0f5ed37558',
             'type' => 'library',
             'install_path' => __DIR__ . '/../twig/twig',
             'aliases' => array(),
@@ -82,7 +91,7 @@
         'zapj/zap-php-framework' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'e3bf3f6e124dcdc3c0b83899acc9a5b249185068',
+            'reference' => 'd8bdcb47b11ea00a15d303085ed8154e0e4ce7bf',
             'type' => 'library',
             'install_path' => __DIR__ . '/../zapj/zap-php-framework',
             'aliases' => array(

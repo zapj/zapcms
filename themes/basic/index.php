@@ -1,7 +1,7 @@
 <?php
 defined('IN_ZAP_CMS') or die('No permission to access');
 $this->extend('layout/default');
-$banners = option_get_json('basic.slide',[],true);
+$banners = option_get_json('basic_home.slide','[]',true);
 ?>
 <main class="site-main">
     <!-- Slider main container -->
@@ -24,104 +24,43 @@ $banners = option_get_json('basic.slide',[],true);
 
     </div>
 
-    <section class="boxes_area">
+    <section class="services">
+        <h2 class="section-title">关于我们</h2>
+        <p class="desc">About US</p>
         <div class="container">
             <div class="row">
-                <div class="col-sm-4">
-                    <div class="box">
-                        <h3>FIRST BOX TITLE</h3>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin id pulvinar magna. Aenean accumsan iaculis lorem, nec sodales lectus auctor tempor.</p>
-                        <i class="fa fa-cogs"></i>
+
+                    <div class="col-md-12 col-sm-12 col-xs-12">
+                        <?php echo option("basic_home.about_us"); ?>
                     </div>
-                </div>
-                <div class="col-sm-4">
-                    <div class="box">
-                        <h3>SECOND BOX TITLE</h3>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin id pulvinar magna. Aenean accumsan iaculis lorem, nec sodales lectus auctor tempor.</p>
-                        <i class="fa fa-exclamation-triangle"></i>
-                    </div>
-                </div>
-                <div class="col-sm-4">
-                    <div class="box">
-                        <h3>THIRD BOX TITLE</h3>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin id pulvinar magna. Aenean accumsan iaculis lorem, nec sodales lectus auctor tempor.</p>
-                        <i class="fa fa-clipboard"></i>
-                    </div>
-                </div>
+
             </div>
         </div>
     </section>
+
+
     <section class="services">
-        <h2 class="section-title">SERVICES</h2>
-        <p class="desc">Praesent faucibus ipsum at sodales blandit</p>
+        <h2 class="section-title"><?php echo option('basic_home.service_title'); ?></h2>
+        <p class="desc"><?php echo option('basic_home.service_subtitle'); ?></p>
         <div class="container">
             <div class="row">
+                <?php for ($i = 1; $i < 7; $i++) { ?>
                 <div class="col-md-4 col-sm-6 col-xs-12">
                     <div class="media">
-                        <div class="media-left media-middle">
-                            <i class="fa fa-cogs"></i>
+                        <div class="media-left media-middle" style="width: 40px">
+                            <i class="<?php echo option("basic_home.service{$i}_icon"); ?>"></i>
                         </div>
                         <div class="media-body">
-                            <h4 class="media-heading">FIRST SERVICE TITLE</h4>
-                            <p>Lorem ipsum dolor amet,consectetur adipiscing elit. Proin id pulvinar magna. Aenean accumsan iaculis lorem, nec sodales lectus auctor tempor.</p>
+                            <h4 class="media-heading"><?php echo option("basic_home.service{$i}_title"); ?></h4>
+                            <p><?php echo option("basic_home.service{$i}_content"); ?></p>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 col-sm-6 col-xs-12">
-                    <div class="media">
-                        <div class="media-left media-middle">
-                            <i class="fa fa-user-md"></i>
-                        </div>
-                        <div class="media-body">
-                            <h4 class="media-heading">SECOND SERVICE TITLE</h4>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin id pulvinar magna. Aenean accumsan iaculis lorem, nec sodales lectus auctor tempor.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 col-sm-6 col-xs-12">
-                    <div class="media">
-                        <div class="media-left media-middle">
-                            <i class="fa fa-stethoscope"></i>
-                        </div>
-                        <div class="media-body">
-                            <h4 class="media-heading">THIRD SERVICE TITLE</h4>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin id pulvinar magna. Aenean accumsan iaculis lorem, nec sodales lectus auctor tempor.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 col-sm-6 col-xs-12">
-                    <div class="media">
-                        <div class="media-left media-middle">
-                            <i class="fa fa-graduation-cap"></i>
-                        </div>
-                        <div class="media-body">
-                            <h4 class="media-heading">FOURTH SERVICE TITLE</h4>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin id pulvinar magna. Aenean accumsan iaculis lorem, nec sodales lectus auctor tempor.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 col-sm-6 col-xs-12">
-                    <div class="media">
-                        <div class="media-left media-middle">
-                            <i class="fa fa-file-text-o"></i>
-                        </div>
-                        <div class="media-body">
-                            <h4 class="media-heading">FIFTH SERVICE TITLE</h4>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin id pulvinar magna. Aenean accumsan iaculis lorem, nec sodales lectus auctor tempor.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 col-sm-6 col-xs-12">
-                    <div class="media">
-                        <div class="media-left media-middle">
-                            <i class="fa fa-heartbeat"></i>
-                        </div>
-                        <div class="media-body">
-                            <h4 class="media-heading">SIXTH SERVICE TITLE</h4>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin id pulvinar magna. Aenean accumsan iaculis lorem, nec sodales lectus auctor tempor.</p>
-                        </div>
-                    </div>
-                </div>
+                <?php } ?>
+
+
+
+
             </div>
         </div>
     </section>
@@ -135,7 +74,7 @@ $banners = option_get_json('basic.slide',[],true);
                             <?php foreach ($latestNews as $news){ ?>
                             <li class="col-md-3 col-sm-6 col-xs-12">
                                 <div class="thumbnail">
-                                    <img src="<?php echo \zap\helpers\ThumbHelper::thumb($news['image'],200,200); ?>" alt="Post">
+                                    <img src="<?php echo \zap\helpers\ThumbHelper::thumb($news['image'],200,200); ?>" alt="<?php echo $news['image']; ?>">
                                     <div class="caption">
                                         <h3><a href="<?php echo site_url("/{$news['node_type']}/{$news['slug']}") ?>"><?php echo $news['title']; ?></a></h3>
                                         <p><?php  echo \zap\util\Str::truncate(strip_tags($news['content']),100); ?></p>

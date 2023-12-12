@@ -159,6 +159,76 @@
             "install-path": "../psr/log"
         },
         {
+            "name": "symfony/deprecation-contracts",
+            "version": "2.5.x-dev",
+            "version_normalized": "2.5.9999999.9999999-dev",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/deprecation-contracts.git",
+                "reference": "80d075412b557d41002320b96a096ca65aa2c98d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/80d075412b557d41002320b96a096ca65aa2c98d",
+                "reference": "80d075412b557d41002320b96a096ca65aa2c98d",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1"
+            },
+            "time": "2023-01-24T14:02:46+00:00",
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "2.5-dev"
+                },
+                "thanks": {
+                    "name": "symfony/contracts",
+                    "url": "https://github.com/symfony/contracts"
+                }
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "files": [
+                    "function.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "A generic function and convention to trigger deprecation notices",
+            "homepage": "https://symfony.com",
+            "support": {
+                "source": "https://github.com/symfony/deprecation-contracts/tree/2.5"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "install-path": "../symfony/deprecation-contracts"
+        },
+        {
             "name": "symfony/polyfill-ctype",
             "version": "1.x-dev",
             "version_normalized": "1.9999999.9999999.9999999-dev",
@@ -425,16 +495,17 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/twigphp/Twig.git",
-                "reference": "9f42a763069e46a0911d0ca2ad0d2f558124af54"
+                "reference": "804cb1b85b92d995cea958401adedb0f5ed37558"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/9f42a763069e46a0911d0ca2ad0d2f558124af54",
-                "reference": "9f42a763069e46a0911d0ca2ad0d2f558124af54",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/804cb1b85b92d995cea958401adedb0f5ed37558",
+                "reference": "804cb1b85b92d995cea958401adedb0f5ed37558",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.2.5",
+                "symfony/deprecation-contracts": "^2.5|^3",
                 "symfony/polyfill-ctype": "^1.8",
                 "symfony/polyfill-mbstring": "^1.3",
                 "symfony/polyfill-php80": "^1.22"
@@ -443,11 +514,17 @@
                 "psr/container": "^1.0|^2.0",
                 "symfony/phpunit-bridge": "^5.4.9|^6.3|^7.0"
             },
-            "time": "2023-10-27T00:56:31+00:00",
+            "time": "2023-12-10T19:42:55+00:00",
             "default-branch": true,
             "type": "library",
             "installation-source": "dist",
             "autoload": {
+                "files": [
+                    "src/Resources/core.php",
+                    "src/Resources/debug.php",
+                    "src/Resources/escaper.php",
+                    "src/Resources/string_loader.php"
+                ],
                 "psr-4": {
                     "Twig\\": "src/"
                 }
@@ -501,12 +578,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/zapj/zap-php-framework.git",
-                "reference": "e3bf3f6e124dcdc3c0b83899acc9a5b249185068"
+                "reference": "d8bdcb47b11ea00a15d303085ed8154e0e4ce7bf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/e3bf3f6e124dcdc3c0b83899acc9a5b249185068",
-                "reference": "e3bf3f6e124dcdc3c0b83899acc9a5b249185068",
+                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/d8bdcb47b11ea00a15d303085ed8154e0e4ce7bf",
+                "reference": "d8bdcb47b11ea00a15d303085ed8154e0e4ce7bf",
                 "shasum": ""
             },
             "require": {
@@ -519,7 +596,7 @@
                 "ext-simplexml": "*",
                 "php": ">=7.4.0"
             },
-            "time": "2023-11-09T04:11:22+00:00",
+            "time": "2023-12-11T13:40:42+00:00",
             "default-branch": true,
             "type": "library",
             "installation-source": "dist",

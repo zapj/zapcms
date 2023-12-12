@@ -22,7 +22,7 @@ class Args {
             if(Str::startsWith($current,'-')){
                 $next = array_shift($argv);
                 $nextIsFlag = Str::startsWith($next,'-');
-                $this->params[trim($current,' -')] = $nextIsFlag ? true : $next;
+                $this->params[trim($current,' -')] = $nextIsFlag ? true : ($next ?? true);
             }else{
                 $this->params[] = $current;
             }

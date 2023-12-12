@@ -13,6 +13,9 @@ class ThumbHelper
 {
     public static function thumb($file,$width,$height): string
     {
+        if(Str::startsWith($file,'/storage')){
+            $file = str_ireplace('/storage','',$file);
+        }
         $file = ltrim($file,'/\\');
         $path_parts = pathinfo($file);
         $path_parts['dirname'] = $path_parts['dirname'] == '.' ? '' : "{$path_parts['dirname']}/";
