@@ -13,39 +13,34 @@ class Query
      *
      * @var string (SELECT|DELETE|UPDATE)
      */
-    protected $sqlType = 'SELECT';
-    protected $query = array();
-    protected $select = array();
-    protected $fields = array();
+    protected string $sqlType = 'SELECT';
+    protected array $query = [];
+    protected array $select = [];
+    protected array $fields = [];
 
-    protected $from = array();
+    protected array $from = [];
 
-    protected $where = array();
+    protected array $where = [];
 
-    protected $having = array();
+    protected array $having = [];
 
 
-    protected $join = array();
+    protected array $join = [];
+    protected array $params = [];
+    protected array $orderBy = [];
+    protected array $groupBy = [];
+    protected int $limit = 0;
+    protected int $offset = 0;
+    protected bool $distinct = false;
 
-    protected $params = array();
-    protected $orderBy = array();
-    protected $groupBy = array();
-    protected $limit = 0;
-    protected $offset = 0;
-    protected $distinct = false;
-
-    protected $isClosureWhere = false;
+    protected bool $isClosureWhere = false;
 
     protected $fetchMode = null;
     protected $fetchClass = null;
 
-    /**
-     *
-     * @var ZPDO
-     */
-    protected $db;
+    protected ZPDO $db;
 
-    public $driver;
+    public string $driver;
 
     /**
      * @throws Exception
@@ -170,7 +165,19 @@ class Query
             case 'LIKE':
             case 'REGEXP':
             case 'NOT REGEXP':
-                $where .= ' ' . $operator . ' ' . $colName . ' ';
+                if($this->driver === 'pgsql' && $operator === 'REGEXP') {
+                    $where .= ' ~ ' . $colName . ' ';
+                }else if($this->driver === 'pgsql' && $operator === 'NOT REGEXP') {
+                    $where .= ' !~ ' . $colName . ' ';
+                }else{
+                    $where .= ' ' . $operator . ' ' . $colName . ' ';
+                }
+                break;
+            case 'REGEXP_LIKE':
+                $where .= " REGEXP_LIKE( {$colName},'{$value}') ";
+                break;
+            case 'REGEXP_LIKE BINARY':
+                $where .= " REGEXP_LIKE( {$colName},BINARY '{$value}') ";
                 break;
             case '=':
             case '!=':
@@ -195,6 +202,9 @@ class Query
                 $value = NULL;
                 $where .= ' ' . $operator;
                 break;
+            case 'BETWEEN':
+                $where .= " {$colName} BETWEEN {$value[0]} AND {$value[1]}";
+                break;
             default:
                 $value = $operator;
                 $where .= '=' . $colName;
@@ -212,7 +222,8 @@ class Query
      * @param array $params
      * @return Query $this
      */
-    function rawWhere($conditions, $params = array()) {
+    function rawWhere(string $conditions, array $params = array()): Query
+    {
         $this->where[] = $conditions;
         $this->addParams($params);
         return $this;
@@ -226,7 +237,8 @@ class Query
      *
      * @return Query
      */
-    public function whereIn($column, $params) {
+    public function whereIn(string $column, array $params): Query
+    {
         $this->prepareWhereInStatement($column, $params, false);
         return $this;
     }
@@ -238,7 +250,8 @@ class Query
      * @param $params
      * @return Query
      */
-    public function whereNotIn($column, $params) {
+    public function whereNotIn($column, $params): Query
+    {
         $this->prepareWhereInStatement($column, $params, true);
         return $this;
     }
@@ -255,16 +268,17 @@ class Query
     /**
      *
      * @param string $statement
-     * @param array $params
+     * @param array|null $params
      * @return Query
      */
-    public function having($statement, $params = null) {
+    public function having(string $statement, array $params = null) {
         $this->having[] = $statement;
         $this->addParams($params);
         return $this;
     }
 
-    private function _join($type, $table, $on, $params = array()) {
+    private function _join($type, $table, $on, $params = array()): void
+    {
         if(is_array($table) && count($table) == 2){
             $table = $this->db->quoteTable($table[0]) . ' AS '. $this->db->toSnakeCase($table[1]);
         }else{
@@ -274,47 +288,46 @@ class Query
         $type = strtoupper($type);
         $this->join[] = "$type $table ON $on";
         $this->addParams($params);
+    }
+
+    public function join($table, $on, $params = array()): Query
+    {
+        $this->_join('JOIN', $table, $on, $params);
         return $this;
     }
 
-    public function join($table, $on, $params = array()) {
-        if(is_array($table) && count($table) == 2){
-            $table = $this->db->quoteTable($table[0]) . ' AS '. $this->db->toSnakeCase($table[1]);
-        }else{
-            $table = $this->db->quoteTable($table) . ' AS ' . $this->db->toSnakeCase($table);
-        }
-
-        $this->join[] = "JOIN $table ON $on";
-        $this->addParams($params);
-        return $this;
-    }
-
-    public function leftJoin($table, $on, $params = array()) {
+    public function leftJoin($table, $on, $params = array()): Query
+    {
         $this->_join('LEFT JOIN', $table, $on, $params);
         return $this;
     }
 
-    public function rightJoin($table, $on, $params = array()) {
+    public function rightJoin($table, $on, $params = array()): Query
+    {
         $this->_join('RIGHT JOIN', $table, $on, $params);
         return $this;
     }
 
-    public function innerJoin($table, $on, $params = array()) {
+    public function innerJoin($table, $on, $params = array()): Query
+    {
         $this->_join('INNER JOIN', $table, $on, $params);
         return $this;
     }
 
-    public function crossJoin($table, $on, $params = array()) {
+    public function crossJoin($table, $on, $params = array()): Query
+    {
         $this->_join('CROSS JOIN', $table, $on, $params);
         return $this;
     }
 
-    public function groupBy($statement) {
+    public function groupBy($statement): Query
+    {
         $this->groupBy[] = $statement;
         return $this;
     }
 
-    public function orderBy($statement) {
+    public function orderBy($statement): Query
+    {
         $this->orderBy[] = $statement;
         return $this;
     }
@@ -324,7 +337,8 @@ class Query
      *
      * @return string
      */
-    public function getSQL() {
+    public function getSQL(): string
+    {
         $sql = '';
         switch ($this->sqlType) {
             case 'SELECT':
@@ -364,7 +378,7 @@ class Query
     }
 
     public function get($fetchMode = null,$fetch_argument = null,...$args) {
-        $stm = $this->db->prepare($this->db->prepareSQL($this->getSQL()));
+        $stm = $this->db->prepare($this->getSQL());
         $stm->execute($this->params);
         $this->db->rowCount = $stm->rowCount();
         if(!is_null($this->fetchMode) && is_null($fetchMode)){
@@ -380,9 +394,9 @@ class Query
     }
 
     /**
-     * @param $fetchMode
-     * @param $fetchClass
-     *
+     * @param null $fetchMode
+     * @param null $fetchClass
+     * @return mixed
      */
     public function first($fetchMode = null,$fetchClass = null)
     {
@@ -502,7 +516,8 @@ class Query
         return $this;
     }
 
-    public function getParams() {
+    public function getParams(): array
+    {
         return $this->params;
     }
 

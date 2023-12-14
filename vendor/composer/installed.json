@@ -560,12 +560,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/twigphp/Twig.git",
-                "reference": "804cb1b85b92d995cea958401adedb0f5ed37558"
+                "reference": "d2f493f67ce2f52e334ab846bf3ec86408ec0638"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/804cb1b85b92d995cea958401adedb0f5ed37558",
-                "reference": "804cb1b85b92d995cea958401adedb0f5ed37558",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/d2f493f67ce2f52e334ab846bf3ec86408ec0638",
+                "reference": "d2f493f67ce2f52e334ab846bf3ec86408ec0638",
                 "shasum": ""
             },
             "require": {
@@ -579,7 +579,7 @@
                 "psr/container": "^1.0|^2.0",
                 "symfony/phpunit-bridge": "^5.4.9|^6.3|^7.0"
             },
-            "time": "2023-12-10T19:42:55+00:00",
+            "time": "2023-12-14T07:17:08+00:00",
             "default-branch": true,
             "type": "library",
             "installation-source": "dist",
@@ -643,12 +643,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/zapj/zap-php-framework.git",
-                "reference": "2db07dd85911e14ff0a16727a796700eebbcd8a4"
+                "reference": "3d3e21fb5847c01ff175599b5b191801ae9d2d9d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/2db07dd85911e14ff0a16727a796700eebbcd8a4",
-                "reference": "2db07dd85911e14ff0a16727a796700eebbcd8a4",
+                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/3d3e21fb5847c01ff175599b5b191801ae9d2d9d",
+                "reference": "3d3e21fb5847c01ff175599b5b191801ae9d2d9d",
                 "shasum": ""
             },
             "require": {
@@ -661,7 +661,7 @@
                 "ext-simplexml": "*",
                 "php": ">=7.4.0"
             },
-            "time": "2023-12-13T10:06:31+00:00",
+            "time": "2023-12-14T09:08:48+00:00",
             "default-branch": true,
             "type": "library",
             "installation-source": "dist",

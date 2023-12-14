@@ -25,7 +25,7 @@ return [
         'sqlite'=>[
             'driver' => 'sqlite',
             'prefix' => 'zap_',
-            'dsn'=> sprintf('sqlite:%s', var_path('zap_cms.db')),
+            'dsn'=> sprintf('sqlite:%s', var_path('data/zap_cms.db')),
             'options' => []
         ],
         'my_test' => [

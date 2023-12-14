@@ -87,6 +87,7 @@ class TableSchema
             $constraint_name = "CONSTRAINT {$constraint_name} ";
         }
         $columnNames = join(',',$columns);
+
         $this->primaryKeys = ",\n    {$constraint_name}PRIMARY KEY({$columnNames})";
         return $this;
     }
@@ -94,10 +95,15 @@ class TableSchema
     public function addUnique($constraint_name,...$columns): TableSchema
     {
         $columnNames = join(',',$columns);
-        if($constraint_name !== null){
+        if($constraint_name !== null && $this->driver === 'mysql'){
             $constraint_name = "CONSTRAINT {$constraint_name} ";
         }
-        $this->uniqueKeys .= ",\n    {$constraint_name}UNIQUE({$columnNames})";
+
+        if($this->driver === 'mysql'){
+            $this->uniqueKeys .= ",\n    {$constraint_name}UNIQUE({$columnNames})";
+        }else if($this->driver === 'sqlite'){
+            $this->uniqueKeys .= "CREATE UNIQUE INDEX {$constraint_name}_index ON {$this->table} ({$columnNames});";
+        }
         return $this;
     }
 
@@ -110,10 +116,14 @@ class TableSchema
     public function addIndex(?string $constraint_name, ...$columns): TableSchema
     {
         $columnNames = join(',',$columns);
-        if($constraint_name !== null){
+        if($constraint_name !== null && $this->driver === 'mysql'){
             $constraint_name = "{$constraint_name} ";
         }
-        $this->indexKeys .= ",\n    INDEX {$constraint_name}({$columnNames})";
+        if($this->driver === 'mysql'){
+            $this->indexKeys .= ",\n    INDEX {$constraint_name}({$columnNames})";
+        }else if($this->driver === 'sqlite'){
+            $this->indexKeys .= "CREATE INDEX {$this->table}_{$constraint_name}_index ON {$this->table} ({$columnNames});";
+        }
         return $this;
     }
 
@@ -143,8 +153,10 @@ class TableSchema
         return <<<EOF
 {$dropTable}
 CREATE TABLE {$this->table} (
-    {$columns}{$this->primaryKeys}{$this->uniqueKeys}{$this->indexKeys}
-)
+    {$columns}{$this->primaryKeys}
+);
+{$this->uniqueKeys}
+{$this->indexKeys}
 EOF;
 
     }

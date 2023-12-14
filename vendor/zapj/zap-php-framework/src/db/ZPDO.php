@@ -29,13 +29,18 @@ class ZPDO extends PDO
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
             PDO::ATTR_EMULATE_PREPARES   => FALSE,
         );
-        if($this->driver == 'mysql'){
+        if($this->driver === 'mysql'){
             $db_charset = $config['charset'] ?? 'utf8';
             $db_collate = $config['collate'] ?? null;
             $options[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES {$db_charset} " . (is_null($db_collate) ?: " COLLATE $db_collate");
         }
         $options += Arr::get($config,'options',[]);
         parent::__construct($dsn, $username, $password, $options);
+        if($this->driver === 'sqlite'){
+            $this->sqliteCreateFunction('REGEXP',function($pattern, $subject) {
+                return preg_match("/{$pattern}/i", $subject);
+            },2);
+        }
         $this->setAttribute(PDO::ATTR_STATEMENT_CLASS,[Statement::class]);
     }
 
