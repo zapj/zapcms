@@ -7,17 +7,30 @@ namespace zap\db;
 
 
 use Exception;
+use zap\console\Output;
 use zap\DB;
-use zap\db\AlertTable;
 
 class Schema
 {
 
     protected static ?string $connection = null;
+    /**
+     * @var int v length
+     */
+    protected static int $verbose = 0;
 
     public static function connection($connection = null)
     {
         static::$connection = $connection;
+    }
+
+    public static function verbose($flag = null): int
+    {
+        if($flag === null) {
+            return static::$verbose;
+        }
+        static::$verbose = $flag;
+        return static::$verbose;
     }
 
     public static function create($table,\Closure $closure)
@@ -25,8 +38,16 @@ class Schema
         $tableSchema = new TableSchema($table,static::$connection);
         $closure($tableSchema);
         $sqlText = $tableSchema->toSql();
-        echo $sqlText,"\r\n";
-        return DB::getPDO(static::$connection)->rawExec($sqlText);
+        if(static::$verbose === 2){
+            echo $sqlText,"\r\n";
+        }
+        $ret = DB::getPDO(static::$connection)->rawExec($sqlText);
+        if($ret !== false){
+            echo "Table {$table} : CREATE SUCCESS \r\n";
+            return true;
+        }
+        echo "Table {$table} : CREATE FAILED \r\n";
+        return false;
     }
 
     /**
@@ -41,7 +62,12 @@ class Schema
         $alertTable = new AlertTable($table,static::$connection);
         $closure($alertTable);
         $sqlText = $alertTable->toSql();
-        echo $sqlText,"\r\n";
+        if($sqlText === null){
+            return false;
+        }
+        if(static::$verbose === true){
+            echo $sqlText,"\r\n";
+        }
         return DB::getPDO(static::$connection)->rawExec($sqlText);
 
     }

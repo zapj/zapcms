@@ -33,7 +33,7 @@ register_scripts(base_url('/assets/plugins/zapuploader.js'));
         <main class="container-fluid zap-main">
             <div class="row">
                 <div class="col-md-9 mb-3">
-                    <div class="card  shadow">
+                    <div class="card  shadow-sm">
 
                         <div class="card-header">
                             <ul class="nav nav-tabs card-header-tabs">

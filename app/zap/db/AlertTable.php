@@ -13,8 +13,13 @@ class AlertTable
     protected string $tableName;
     protected string $driver;
     protected array $sqlScripts = [];
+    protected array $data = [];
+    protected array $columns;
+    protected string $connection;
+
     public function __construct($table,$connection = null)
     {
+        $this->connection = $connection;
         $this->table = DB::getPDO($connection)->quoteTable($table);
         $this->tableName = $table;
         $this->driver = DB::getPDO($connection)->driver;
@@ -149,8 +154,64 @@ class AlertTable
         }
     }
 
-    public function toSql(): string
+    public function insert($data,$stripslashes = false)
     {
+        if($stripslashes){
+            $this->data[] = array_map('stripslashes',$data);
+        }else{
+            $this->data[] = $data;
+        }
+    }
+
+    public function batchInert($data,$stripslashes = false)
+    {
+        if($stripslashes){
+            foreach ($data as $row){
+                $this->data[] = array_map('stripslashes',$row);
+            }
+        }else{
+            $this->data = $data;
+        }
+    }
+
+    public function setColumns($columns)
+    {
+        $this->columns = $columns;
+    }
+
+    public function toSql(): ?string
+    {
+        if(empty($this->sqlScripts) && !empty($this->data)){
+            $pdo = DB::getPDO($this->connection);
+
+
+            if(isset($this->columns)){
+                $column_names = $this->columns;
+                $columns_placeholder = str_repeat('?,', count($this->columns) - 1) . '?';
+            }else{
+                $column_names = array_keys($this->data[0]);
+                $columns_placeholder = array_map(function ($val) use ($pdo) {
+                    return ':'.$val;
+                },$column_names);
+                $columns_placeholder = join(',',$columns_placeholder);
+            }
+            $columns = array_filter($column_names,function ($val) use ($pdo) {
+                return $pdo->quoteColumn($val);
+            });
+            $columns = join(',',$columns);
+            try {
+                $stm = $pdo->prepare("INSERT INTO {$this->table} ({$columns}) values ({$columns_placeholder})");
+                foreach ($this->data as $row){
+                    $stm->execute($row);
+                }
+            }catch (\PDOException $e){
+                echo "Table {$this->table} : DATA CREATE FAILED , ERROR: {$e->getMessage()} \r\n";
+            }
+            echo "Table {$this->table} : DATA CREATE SUCCESS \r\n";
+            return null;
+        }else if(empty($this->sqlScripts)){
+            return null;
+        }
         return join("\r\n",$this->sqlScripts);
     }
 }

@@ -8,15 +8,34 @@ use zap\DB;
 use zap\util\Str;
 
 class Console{
-    protected $app;
-    protected $input;
+    protected App $app;
+    protected Input $input;
+    protected string $defaultCommand = '\zap\console\DefaultCommand';
+    protected array $commands = [];
     public function __construct($appPath)
     {
         $this->app = new App($appPath);
-        $this->input = new Args();
+        $this->input = new Input();
         set_exception_handler(null);
         set_error_handler(null);
         register_shutdown_function(function(){return false;});
+    }
+
+    public function setDefaultCommand($command): Console
+    {
+        $this->defaultCommand = $command;
+        return $this;
+    }
+
+    public function addCommand($path,$namespace): Console
+    {
+        $this->commands[$path] = $namespace;
+        return $this;
+    }
+
+    public function getCommands(): array
+    {
+        return $this->commands;
     }
 
 
@@ -24,7 +43,7 @@ class Console{
     {
         $command = $this->input->getParam(1);
         if($command === null){
-            return 0;
+            return $this->callCommand($this->defaultCommand);
         }
         $namespace = '\\app\\commands\\';
         if(stristr($command,':') !== false){
@@ -32,17 +51,32 @@ class Console{
             $namespace = "\\{$namespace}\\commands\\";
         }
         $command = $namespace . $command;
+        return $this->callCommand($command);
+    }
+
+    protected function callCommand($command,$callDefault = false) : int
+    {
         try{
-            $reflact = new \ReflectionClass($command);
-            if(!$reflact->isSubclassOf(Command::class)){
+            $reflect = new \ReflectionClass($command);
+            if(!$reflect->isSubclassOf(Command::class)){
                 exit("A {$command} does not extend the \\zap\\console\\Command");
             }
-            $cmd = $reflact->newInstance();
+            $cmd = $reflect->newInstance();
+            $cmd->setConsole($this);
+            $cmd->setInput($this->input);
+            $cmd->setOutput(new Output($this->input));
             $cmd->init();
-            return $cmd->execute($this->input,new Output());
+            if($this->input->hasParam('h') || $this->input->hasParam('help')){
+                return $cmd->help();
+            }
+            return $cmd->execute();
         }catch (\ReflectionException $e){
-            echo "Command Not found : {$command}";
+            if(!empty($this->defaultCommand) && $callDefault === false){
+                return $this->callCommand($this->defaultCommand,true);
+            }else{
+                echo "Command Not found : {$command}";
+            }
         }
-        return 0;
+        return Command::FAILURE;
     }
 }

@@ -2,6 +2,8 @@
 
 namespace zap\util;
 
+use FilesystemIterator;
+
 class FileUtils {
 
     public static function copy($from , $to){
@@ -46,12 +48,14 @@ class FileUtils {
         return file($filename, $flags);
     }
 
-    public static function delete($filename){
+    public static function delete($filename): bool
+    {
         return unlink($filename);
     }
 
-    public static function deleteDir($dir){
-        $iterator = new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS);
+    public static function deleteDir($dir): bool
+    {
+        $iterator = new \RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS);
         $files = new \RecursiveIteratorIterator($iterator,
             \RecursiveIteratorIterator::CHILD_FIRST);
         foreach($files as $file) {
@@ -63,5 +67,7 @@ class FileUtils {
         }
         return rmdir($dir);
     }
+
+
 
 }

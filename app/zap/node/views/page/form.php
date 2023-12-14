@@ -9,7 +9,7 @@ Asset::library('datetimepicker');
 Asset::library('jqueryvalidation');
 !IS_AJAX && $this->extend('layouts/common');
 ?>
-    <nav class="navbar bg-body-tertiary position-fixed w-100 shadow z-3 zap-top-bar">
+    <nav class="navbar bg-body-tertiary position-fixed w-100 shadow-sm z-3 zap-top-bar">
         <div class="container-fluid">
             <?php BreadCrumb::instance()->display('<li class="d-block d-md-none d-lg-none"><i class="fa fa-bars me-1" onclick="$(\'#nodeleftsidebar\').toggleClass(\'d-none\');"></i> </li>') ; ?>
             <div class=" text-end">
@@ -34,7 +34,7 @@ Asset::library('jqueryvalidation');
                 echo $this->block('left_menu');
                 ?>
                 <div class="col-md-9 mb-3">
-                    <div class="card  shadow">
+                    <div class="card  shadow-sm">
                         <div class="card-header">
                             <ul class="nav nav-tabs card-header-tabs">
                                 <li class="nav-item">

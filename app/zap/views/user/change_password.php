@@ -4,7 +4,7 @@ use zap\facades\Url;
 $this->layout('layouts/common');
 ?>
 
-<nav class="navbar bg-body-tertiary position-fixed w-100 shadow z-3 zap-top-bar">
+<nav class="navbar bg-body-tertiary position-fixed w-100 shadow-sm z-3 zap-top-bar">
     <div class="container-fluid">
         <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);"
              aria-label="breadcrumb">
@@ -23,7 +23,7 @@ $this->layout('layouts/common');
 <main class="container zap-main">
 
 
-    <div class="card shadow">
+    <div class="card shadow-sm">
         <div class="card-header">修改密码</div>
         <div class="card-body">
             <div class="row mb-3">

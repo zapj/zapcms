@@ -5,6 +5,7 @@ namespace zap\node;
 use zap\Auth;
 use zap\BreadCrumb;
 use zap\Catalog;
+use zap\core\HtmlXss;
 use zap\DB;
 use zap\db\Query;
 use zap\exception\ViewNotFoundException;
@@ -73,6 +74,7 @@ class AbstractNodeType
             $catalogArray = Request::post('catalog',[]);
             $node['update_time'] = time();
             $node['pub_time'] = strtotime($node['pub_time']) ?: time();
+            $node['content'] = HtmlXss::clean($node['content']);
 //            $node['slug'] = Str::slug($node['title']);
             NodeRelation::delete(['node_id'=>$id]);
             foreach ($catalogArray as $catalog_id=>$level){
@@ -99,6 +101,7 @@ class AbstractNodeType
             $node['add_time'] = time();
             $node['slug'] = Str::slug($node['title']);
             $node['update_time'] = time();
+            $node['content'] = HtmlXss::clean($node['content']);
             $node['pub_time']  = strtotime($node['pub_time']) ?: time();
             $node = apply_filters('node_add',$node);
             $nodeModel = Node::create($node);

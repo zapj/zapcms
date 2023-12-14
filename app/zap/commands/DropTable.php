@@ -6,7 +6,6 @@
 namespace zap\commands;
 
 use zap\db\Schema;
-use zap\console\Args;
 use zap\console\Command;
 use zap\console\Output;
 
@@ -15,22 +14,20 @@ use zap\console\Output;
  */
 class DropTable extends Command
 {
-    function execute(Args $input, Output $out): int
+    function execute(): int
     {
-        if($input->hasParam('h')){
-            $this->help($out);
-        }
-        $connection = $input->getParam('c');
+        Schema::verbose($this->input->hasParam('v'));
+        $connection = $this->input->getParam('c');
         Schema::connection($connection);
-        $out->writeln(Schema::drop('user'));
+        $this->out->writeln(Schema::drop('user'));
         return self::SUCCESS;
     }
 
-    public function help(Output $out)
+    public function help(): int
     {
-        $out->writeln("Help:");
-        $out->writeln("-c \tdatabase.php connection name, If not set, defaults to database.default");
-        exit(self::SUCCESS);
+        $this->out->writeln("Help:");
+        $this->out->writeln("-c \tdatabase.php connection name, If not set, defaults to database.default");
+        return self::SUCCESS;
     }
 
 }

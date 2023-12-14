@@ -6,7 +6,8 @@
     "ext-gd": "*",
     "monolog/monolog": "^2.9",
     "ext-json": "*",
-    "twig/twig": "^3.0"
+    "twig/twig": "^3.0",
+    "ezyang/htmlpurifier": "dev-master"
   },
   "autoload": {
     "files":[

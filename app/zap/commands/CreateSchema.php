@@ -5,26 +5,40 @@
 
 namespace zap\commands;
 
-use zap\cmschema\CreateTables;
+use zap\cms\CreateTables;
 use zap\db\Schema;
-use zap\db\TableSchema;
-use zap\console\Args;
 use zap\console\Command;
-use zap\console\Output;
 
 /**
  * php console zap:CreateSchema -c sqlite
  */
 class CreateSchema extends Command
 {
-    function execute(Args $input, Output $out): int
+    function execute(): int
     {
-        $connection = $input->getParam('c','my_test');
+        $connection = $this->input->getParam('c','my_test');
         Schema::connection($connection);
-        $schema = new CreateTables();
+        Schema::verbose($this->out->getVerbose());
+        $schema = new CreateTables($this->out->getVerbose());
         $schema->createSchema();
 
+        if($this->input->getParam('b')){
+            $schema->installBaseData();
+        }
 
+        if($this->input->getParam('d')){
+            $schema->installDemoData();
+        }
+
+        return self::SUCCESS;
+    }
+
+    public function help() : int
+    {
+        $this->out->writeln("ZapCMS 创建表结构");
+        $this->out->writeln("Help:");
+        $this->out->writeln("-b\t基础数据");
+        $this->out->writeln("-v\t显示创建脚本");
         return self::SUCCESS;
     }
 

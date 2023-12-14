@@ -10,5 +10,7 @@ define("APP_PATH", dirname(__DIR__));
 require APP_PATH . '/vendor/autoload.php';
 
 $console = new \zap\console\Console(APP_PATH);
+$console->addCommand('app/zap/commands','zap');
+$console->addCommand('app/commands','app');
 $code = $console->execute();
 exit($code);
