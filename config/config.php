@@ -1,4 +1,5 @@
 <?php
+const ADMIN_PREFIX = "/z-admin/";
 
 return [
 

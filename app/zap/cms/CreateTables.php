@@ -348,13 +348,13 @@ class CreateTables
         Schema::table('admin_menu',function (AlertTable $table){
             $table->setColumns(['id', 'title', 'pid', 'path', 'level', 'icon', 'link_to', 'link_target', 'link_type', 'active_rule', 'show_position', 'sort_order', 'updated_at', 'created_at']);
             $table->batchInert([
-                [1, '内容管理', 0, '1,', 1, 'fa fa-cube', 'Node', '_self', 'action', '[node/.*]', '1', 1, 1697786443, 1694683755],
+                [1, '内容管理', 0, '1,', 1, 'fa fa-cube', 'Node', '_self', 'action', '(node/.*)', '1', 1, 1697786443, 1694683755],
                 [2, '栏目', 0, '2,', 1, 'fa fa-square-poll-horizontal', 'Catalog', '_self', 'action', 'catalog/.*', '1', 2, 1694684638, 1694684638],
-                [3, '系统管理', 0, '3,', 1, 'fa fa-gear', '', '_self', 'action', '[admin-menu/.*|system/.*|user/.*]', '1', 4, 1694684685, 1694684685],
-                [4, '基础设置', 3, '3,4,', 2, 'fa-solid fa-angle-right', 'System@settings', '_self', 'action', '[system/.*]', '1,2', 0, 1694684704, 1694684704],
-                [5, '系统菜单设置', 3, '3,5,', 2, 'fa-solid fa-angle-right', 'AdminMenu', '_self', 'action', '[admin-menu/.*|system/.*]', '1,2', 1, 1694684714, 1694684714],
-                [7, '主题', 0, '7,', 1, 'fa-solid fa-wand-magic-sparkles', 'Theme', '_self', 'action', '[theme/.*]', '1', 3, 1697790328, 1697700805],
-                [8, '用户管理', 3, '38,', 2, 'fa-solid fa-chevron-right', 'User', '_self', 'action', '[user/.*]', '1', 2, 1697700876, 1697700876]
+                [3, '系统管理', 0, '3,', 1, 'fa fa-gear', '', '_self', 'action', '(admin-menu/.*|system/.*|user/.*)', '1', 4, 1694684685, 1694684685],
+                [4, '基础设置', 3, '3,4,', 2, 'fa-solid fa-angle-right', 'System@settings', '_self', 'action', '(system/.*)', '1,2', 0, 1694684704, 1694684704],
+                [5, '系统菜单设置', 3, '3,5,', 2, 'fa-solid fa-angle-right', 'AdminMenu', '_self', 'action', '(admin-menu/.*|system/.*)', '1,2', 1, 1694684714, 1694684714],
+                [7, '主题', 0, '7,', 1, 'fa-solid fa-wand-magic-sparkles', 'Theme', '_self', 'action', '(theme/.*)', '1', 3, 1697790328, 1697700805],
+                [8, '用户管理', 3, '38,', 2, 'fa-solid fa-chevron-right', 'User', '_self', 'action', '(user/.*)', '1', 2, 1697700876, 1697700876]
             ]);
         });
 
@@ -473,7 +473,8 @@ class CreateTables
                 [21, 'website.theme', 'basic', 0, 1],
                 [22, 'website.route', '0', 0, 0],
                 [23, 'website.route_rule', NULL, 0, 0],
-                [24, 'cache.ttl', '10000', 0, 0],
+                [24, 'website.email', 'admin@yourdomain.com', 0, 1],
+                [33, 'cache.ttl', '10000', 0, 0],
                 [34, 'basic_home.slide', '[{\"img_path\":\"\\/themes\\/basic\\/img\\/banner1.png\",\"link\":\"https:\\/\\/zap.cn\"},{\"img_path\":\"\\/themes\\/basic\\/img\\/banner2.png\",\"link\":\"https:\\/\\/zap.cn\"}]', 0, 0],
                 [36, 'basic_home.service_title', '服务项目', 0, 0],
                 [37, 'basic_home.service_subtitle', 'SERVICES', 0, 0],

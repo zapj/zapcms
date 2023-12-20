@@ -129,6 +129,9 @@ class Startup implements Middleware
                     $pageState->tag = true;
                     $this->resetRoute('node', 'tag');
                     return;
+                case preg_match('/^sitemap([A-Za-z0-9_-]+)?.xml$/i',$segment) === 1:
+                    $this->resetRoute('Sitemap', 'generate');
+                    return;
             }
         }
         $slug  = end($this->router->params);

@@ -2,8 +2,8 @@
 
 const ZAP_CMS_VERSION = '1.0.0';
 
-if (version_compare(phpversion(), '7.4.0', '<')) {
-    exit('PHP7.4+ Required');
+if (PHP_VERSION_ID < 70400) {
+    exit('ZAP CMS requires PHP 7.4.0+.');
 }
 
 // Install

@@ -2,15 +2,8 @@
 $this->layout('layout');
 ?>
 
-<div class="container">
-    <main>
-        <div class="py-5 text-center">
-            <img class="d-block mx-auto mb-4" src="../assets/admin/img/zap_logo_green.svg" alt="" width="150" >
-            <h6>ZAP CMS安装向导</h6>
 
-        </div>
-
-        <div class="row g-5 justify-content-center">
+<div class="row g-5 justify-content-center">
 
             <div class="col-md-7 col-lg-8 ">
                 <div class="card">
@@ -71,7 +64,7 @@ $this->layout('layout');
 
                                 <tr>
                                     <td>storage</td>
-                                    <th><?php if ((is_dir(base_path('/storage')) && is_writeable(base_path('/storage')))) {
+                                    <th><?php if ((is_dir(base_path('storage')) && is_writeable(base_path('storage')))) {
                                             echo '<strong class="fw-bold fs-5 text-success">√</strong>';
                                         } else {
                                             echo '<strong class="fw-bold fs-5 text-danger">╳ </strong>';
@@ -81,7 +74,7 @@ $this->layout('layout');
 
                                 <tr>
                                     <td>var</td>
-                                    <th><?php if ((is_dir(base_path('/var')) && is_writeable(base_path('/var')))) {
+                                    <th><?php if ((is_dir(base_path('var')) && is_writeable(base_path('var')))) {
                                             echo '<strong class="fw-bold fs-5 text-success">√</strong>';
                                         } else {
                                             echo '<strong class="fw-bold fs-5 text-danger">╳ </strong>';
@@ -91,7 +84,27 @@ $this->layout('layout');
 
                                 <tr>
                                     <td>themes</td>
-                                    <th><?php if ((is_dir(base_path('/themes')) && is_writeable(base_path('/themes')))) {
+                                    <th><?php if ((is_dir(base_path('themes')) && is_writeable(base_path('themes')))) {
+                                            echo '<strong class="fw-bold fs-5 text-success">√</strong>';
+                                        } else {
+                                            echo '<strong class="fw-bold fs-5 text-danger">╳ </strong>';
+                                        } ?></th>
+
+                                </tr>
+
+                                <tr>
+                                    <td>config/database.php</td>
+                                    <th><?php if ((is_file(base_path('config/database.php')) && is_writeable(base_path('config/database.php')))) {
+                                            echo '<strong class="fw-bold fs-5 text-success">√</strong>';
+                                        } else {
+                                            echo '<strong class="fw-bold fs-5 text-danger">╳ </strong>';
+                                        } ?></th>
+
+                                </tr>
+
+                                <tr>
+                                    <td>config/config.php</td>
+                                    <th><?php if ((is_file(base_path('config/config.php')) && is_writeable(base_path('config/config.php')))) {
                                             echo '<strong class="fw-bold fs-5 text-success">√</strong>';
                                         } else {
                                             echo '<strong class="fw-bold fs-5 text-danger">╳ </strong>';
@@ -112,14 +125,3 @@ $this->layout('layout');
                 </div>
             </div>
         </div>
-    </main>
-
-    <footer class="my-5 pt-5 text-body-secondary text-center text-small">
-        <p class="mb-1">&copy; 2023 Zap.CN</p>
-        <ul class="list-inline">
-            <li class="list-inline-item"><a href="#">Privacy</a></li>
-            <li class="list-inline-item"><a href="#">Terms</a></li>
-            <li class="list-inline-item"><a href="#">Support</a></li>
-        </ul>
-    </footer>
-</div>

@@ -112,3 +112,19 @@ function theme_file_is_exists($file,$extList = null): bool
     }
     return false;
 }
+
+
+function zap_var_export($expression, $return=FALSE) {
+    $export = var_export($expression, TRUE);
+    $patterns = [
+        "/array \(/" => '[',
+        "/^([ ]*)\)(,?)$/m" => '$1]$2',
+        "/=>[ ]?\n[ ]+\[/" => '=> [',
+        "/([ ]*)(\'[^\']+\') => ([\[\'])/" => '$1$2 => $3',
+    ];
+    $export = preg_replace(array_keys($patterns), array_values($patterns), $export);
+    if (!$return){
+        echo $export;
+    }
+    return $export;
+}
