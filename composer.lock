@@ -544,12 +544,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/twigphp/Twig.git",
-                "reference": "d2f493f67ce2f52e334ab846bf3ec86408ec0638"
+                "reference": "7072a7256ebcda52869e0e38e5ca732744c0a1a1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/d2f493f67ce2f52e334ab846bf3ec86408ec0638",
-                "reference": "d2f493f67ce2f52e334ab846bf3ec86408ec0638",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/7072a7256ebcda52869e0e38e5ca732744c0a1a1",
+                "reference": "7072a7256ebcda52869e0e38e5ca732744c0a1a1",
                 "shasum": ""
             },
             "require": {
@@ -616,7 +616,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-12-14T07:17:08+00:00"
+            "time": "2023-12-20T19:46:37+00:00"
         },
         {
             "name": "zapj/zap-php-framework",
@@ -624,12 +624,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/zapj/zap-php-framework.git",
-                "reference": "3d3e21fb5847c01ff175599b5b191801ae9d2d9d"
+                "reference": "6973245fa7d6eba3d2a05f3ea01015b0cda3b191"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/3d3e21fb5847c01ff175599b5b191801ae9d2d9d",
-                "reference": "3d3e21fb5847c01ff175599b5b191801ae9d2d9d",
+                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/6973245fa7d6eba3d2a05f3ea01015b0cda3b191",
+                "reference": "6973245fa7d6eba3d2a05f3ea01015b0cda3b191",
                 "shasum": ""
             },
             "require": {
@@ -665,9 +665,9 @@
             "description": "zap php framework",
             "support": {
                 "issues": "https://github.com/zapj/zap-php-framework/issues",
-                "source": "https://github.com/zapj/zap-php-framework/tree/main"
+                "source": "https://github.com/zapj/zap-php-framework/tree/v1.0.3"
             },
-            "time": "2023-12-14T09:08:48+00:00"
+            "time": "2023-12-21T01:56:32+00:00"
         }
     ],
     "packages-dev": [],

@@ -7,9 +7,6 @@ use zap\db\Query;
 
 class Node extends Model
 {
-    protected $table = 'node';
-
-    protected $primaryKey = 'id';
 
     const STATUS_PUBLISH = 'publish'; //已发布
     const STATUS_DRAFT = 'draft'; //草稿
@@ -19,6 +16,11 @@ class Node extends Model
     public static function tableName(): string
     {
         return 'node';
+    }
+
+    public static function primaryKey()
+    {
+        return 'id';
     }
 
     public function getPubTimeToDate(){

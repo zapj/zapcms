@@ -6,10 +6,6 @@ use zap\db\Model;
 
 class Admin extends Model
 {
-    protected $table = 'admin';
-
-    protected $primaryKey = 'id';
-
     const STATUS_ACTIVATED = 'activated';
     const STATUS_DISABLED = 'disabled';
 
@@ -40,6 +36,14 @@ class Admin extends Model
     public static function getProfile($id = null){
         $id = $id ?? Auth::user('id');
         return DB::table(static::tableName())->where('id',$id)->fetch(FETCH_ASSOC);
+    }
+
+    /**
+     * @return string
+     */
+    public function getPrimaryKey(): string
+    {
+        return 'id';
     }
 
 }

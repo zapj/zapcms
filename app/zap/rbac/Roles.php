@@ -6,12 +6,14 @@ use zap\db\Model;
 
 class Roles extends Model
 {
-    protected $table = 'roles';
-
-    protected $primaryKey = 'role_id';
 
     public static function tableName(): string
     {
         return 'roles';
+    }
+
+    public static function primaryKey(): string
+    {
+        return 'role_id';
     }
 }

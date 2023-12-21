@@ -15,7 +15,7 @@ class AlertTable
     protected array $sqlScripts = [];
     protected array $data = [];
     protected array $columns;
-    protected string $connection;
+    protected ?string $connection;
 
     public function __construct($table,$connection = null)
     {

@@ -132,7 +132,7 @@ function createDBSchemaBaseDataAction()
 
     try {
         ob_start();
-        \zap\db\Schema::connection('default');
+//        \zap\db\Schema::connection('default');
         $schema = new \zap\cms\CreateTables();
         $schema->createSchema();
         $schema->installBaseData();

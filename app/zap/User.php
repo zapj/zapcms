@@ -7,10 +7,6 @@ use zap\db\Model;
 class User extends Model
 {
 
-    protected $table = 'admin';
-
-    protected $primaryKey = 'id';
-
     const STATUS_ACTIVATED = 'activated';
     const STATUS_DISABLED = 'disabled';
 
@@ -18,6 +14,11 @@ class User extends Model
     public static function tableName(): string
     {
         return 'admin';
+    }
+
+    public static function primaryKey()
+    {
+        return 'id';
     }
 
     public static function getStatusTitle($status): string

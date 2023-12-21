@@ -6,5 +6,14 @@ use zap\db\Model;
 
 class AdminLogs extends Model
 {
-    protected $table = 'admin_logs';
+
+    public static function tableName(): string
+    {
+        return 'admin_logs';
+    }
+
+    public static function primaryKey()
+    {
+        return 'id';
+    }
 }

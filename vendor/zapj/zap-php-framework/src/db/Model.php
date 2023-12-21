@@ -238,7 +238,7 @@ abstract class Model implements \ArrayAccess
     }
 
     public static function updateAll($data = array(),$condition = []) {
-        $query = static::createQuery($condition);
+        $query = static::find($condition);
         $query->set($data);
         return $query->update();
     }

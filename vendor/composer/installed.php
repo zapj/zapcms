@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '3895fa05df2c7a57f886c4a0e8dcc192f16e9699',
+        'reference' => '9c5d84a96cf93d113450325ce90995e09c184c62',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '3895fa05df2c7a57f886c4a0e8dcc192f16e9699',
+            'reference' => '9c5d84a96cf93d113450325ce90995e09c184c62',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -93,7 +93,7 @@
         'twig/twig' => array(
             'pretty_version' => '3.x-dev',
             'version' => '3.9999999.9999999.9999999-dev',
-            'reference' => 'd2f493f67ce2f52e334ab846bf3ec86408ec0638',
+            'reference' => '7072a7256ebcda52869e0e38e5ca732744c0a1a1',
             'type' => 'library',
             'install_path' => __DIR__ . '/../twig/twig',
             'aliases' => array(),
@@ -102,7 +102,7 @@
         'zapj/zap-php-framework' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '3d3e21fb5847c01ff175599b5b191801ae9d2d9d',
+            'reference' => '6973245fa7d6eba3d2a05f3ea01015b0cda3b191',
             'type' => 'library',
             'install_path' => __DIR__ . '/../zapj/zap-php-framework',
             'aliases' => array(

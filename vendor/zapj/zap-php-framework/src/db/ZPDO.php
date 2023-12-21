@@ -32,7 +32,7 @@ class ZPDO extends PDO
         if($this->driver === 'mysql'){
             $db_charset = $config['charset'] ?? 'utf8';
             $db_collate = $config['collate'] ?? null;
-            $options[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES {$db_charset} " . (is_null($db_collate) ?: " COLLATE $db_collate");
+            $options[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES '{$db_charset}' " . (is_null($db_collate) ?'': " COLLATE '{$db_collate}'");
         }
         $options += Arr::get($config,'options',[]);
         parent::__construct($dsn, $username, $password, $options);
@@ -452,11 +452,12 @@ class ZPDO extends PDO
      * 获取两列，第一列为key，第二列为value
      * @param string $table 表名
      * @param string|array $columns 列名
-     * @param string $conditions 条件
+     * @param string|array $conditions 条件
      * @param array $params 参数
-     * @return array
+     * @return array|false
      */
-    public function keyPair(string $table, $columns, $conditions = '', $params = array()) {
+    public function keyPair(string $table, $columns, $conditions = '', array $params = array()): array
+    {
         if (is_array($columns)) {
             $columns = join(',', array_map(function ($value) {
                 return $this->quoteColumn($value);
@@ -473,7 +474,8 @@ class ZPDO extends PDO
         return $statement->fetchAll(PDO::FETCH_KEY_PAIR);
     }
 
-    private function prepareConditions($conditions, $params, &$input_params) {
+    private function prepareConditions($conditions, $params, &$input_params): string
+    {
         if (is_array($conditions)) {
             $lines = array();
             $i = 0;

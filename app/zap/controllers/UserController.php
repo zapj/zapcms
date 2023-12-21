@@ -195,9 +195,13 @@ class UserController extends AdminController
         if($id){
             $permission = Permissions::instance()->get($id);
         }
+        $extras = !isset($permission['extras']) ? [] : json_decode($permission['extras'],true);
+        if(json_last_error() !== JSON_ERROR_NONE){
+            $extras = [];
+        }
         view('user.permissions_form',[
             'data'=>$permission ?? [],
-            'extras'=> $permission['extras'] ? json_decode($permission['extras'],true) : [],
+            'extras'=> $extras,
             'pid'=>$pid
         ]);
     }
