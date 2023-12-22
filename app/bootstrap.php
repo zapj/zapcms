@@ -8,7 +8,7 @@ if (PHP_VERSION_ID < 70400) {
 
 // Install
 
-if (!is_file('var/install.lock')) {
+if (!is_file('config/config.php') ) {
     header('Location: install/index.php');
     exit();
 }

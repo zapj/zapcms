@@ -90,7 +90,7 @@ class CreateTables
         });
 
         Schema::create('admin_roles',function(TableSchema $table){
-            $table->integer('admin_id')->autoIncrement();
+            $table->integer('admin_id');
             $table->integer('role_id');
             $table->integer('assignment_time')->nullable()->default(null);
 
@@ -191,7 +191,7 @@ class CreateTables
         });
 
         Schema::create('node_relation',function(TableSchema $table){
-            $table->integer('catalog_id')->autoIncrement();
+            $table->integer('catalog_id');
             $table->integer('node_id');
             $table->integer('level')->nullable()->default(0);
 
@@ -273,7 +273,7 @@ class CreateTables
         });
 
         Schema::create('permissions_path',function (TableSchema $table){
-            $table->integer('perm_id')->autoIncrement();
+            $table->integer('perm_id');
             $table->integer('path_id');
             $table->integer('level')->nullable();
 
@@ -298,7 +298,7 @@ class CreateTables
         });
 
         Schema::create('roles_permissions',function (TableSchema $table){
-            $table->integer('role_id')->autoIncrement();
+            $table->integer('role_id');
             $table->varchar('perm_key',255);
             $table->text('extras')->nullable();
             $table->integer('assignment_time')->nullable()->default(null);
@@ -412,8 +412,8 @@ class CreateTables
                 [44, 1, 'product', 'HUAWEI MateBook', 'huawei-matebook', NULL, '<p>HUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBookHUAWEI MateBook<br></p>', '', '', '/storage/images/013d407166ec4fa56eb1e1f8cbe183b9.jpg', 3, 0, NULL, 0, NULL, 'publish', 1698653141, 1699845753, 1698653159],
                 [45, 1, 'product', '这是一篇中文产品测试超长标题', '这是一篇中文产品测试超长标题', NULL, '<p>这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题这是一篇中文产品测试超长标题<br></p>', '', '', NULL, 27, 0, NULL, 0, NULL, 'publish', 1698718369, 1698718387, 1698718387],
                 [46, 0, 'catalog', '常见问题', 'faq', NULL, NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 'faq', 'publish', 1698723044, 1702455386, 1698723044],
-                [47, 1, 'faq', 'ZapCMS 的系统要求', 'zapcms-的系统要求', NULL, '<p>ZapCMS 需要以下服务器配置才能运行：</p><p><br /></p><p>需求配置</p><p>Web服务器Apache Web server 2.4或任何更高版本。（Apache Web Server 2.2 在2018年已经停止维护，因此不建议使用它）。</p><p>PHP我们推荐使用PHP 7.4+。</p><p>MySQL最低版本为5.6，建议使用最新版本。</p><p>服务器RAM越多越好。我们建议将每个脚本的内存分配（memory_limit）设置为至少128M+。</p><p><span>ZapCMS </span>可以运行在大多数操作系统，Linux （CentOS、Debian、Ubuntu）、Unix（FreeBSD、MacOS）、Windows</p>', '', '', '/storage/d1f491a404d6854880943e5c3cd9ca25.jpg', 4, 0, NULL, 0, NULL, 'publish', 1698731746, 1702522094, 1698732845],
-                [48, 1, 'faq', 'ZAPCMS 可以用于商业网站吗？', 'zapcms-可以用于商业网站吗', NULL, '<p>您可以用ZAPCMS搭建任何站点，未获得商业授权的客户，必须保留网站底部 【Powered by ZapCMS】 版权标识。\r\n</p><p>\r\n禁止使用ZAPCMS搭建任何违法国家法律法规的站点，已经发现立即举报至相关部门。</p>', '', '', '', 0, 0, NULL, 0, NULL, 'publish', 1698733712, 1702521319, 1698733978],
+                [47, 1, 'faq', 'Zap CMS 的系统要求', 'zapcms-的系统要求', NULL, '<p>ZapCMS 需要以下服务器配置才能运行：</p><p><br /></p><p>需求配置</p><p>Web服务器Apache Web server 2.4或任何更高版本。（Apache Web Server 2.2 在2018年已经停止维护，因此不建议使用它）。</p><p>PHP我们推荐使用PHP 7.4+。</p><p>MySQL最低版本为5.6，建议使用最新版本。</p><p>服务器RAM越多越好。我们建议将每个脚本的内存分配（memory_limit）设置为至少128M+。</p><p><span>ZapCMS </span>可以运行在大多数操作系统，Linux （CentOS、Debian、Ubuntu）、Unix（FreeBSD、MacOS）、Windows</p>', '', '', '/storage/d1f491a404d6854880943e5c3cd9ca25.jpg', 4, 0, NULL, 0, NULL, 'publish', 1698731746, 1702522094, 1698732845],
+                [48, 1, 'faq', 'Zap CMS 可以用于商业网站吗？', 'zapcms-可以用于商业网站吗', NULL, '<p>您可以用ZAPCMS搭建任何站点，未获得商业授权的客户，必须保留网站底部 【Powered by ZapCMS】 版权标识。\r\n</p><p>\r\n禁止使用ZAPCMS搭建任何违法国家法律法规的站点，已经发现立即举报至相关部门。</p>', '', '', '', 0, 0, NULL, 0, NULL, 'publish', 1698733712, 1702521319, 1698733978],
                 [49, 1, 'faq', '支持什么数据库?', '支持什么数据库', NULL, '<p>推荐使用MySQL、MariaDB</p><p>SQLite3、PostgreSQL还未完全适配。</p>', '', '', '', 0, 0, NULL, 0, NULL, 'publish', 1698734821, 1699613196, 1698734905]
 
             ],true);
@@ -475,28 +475,39 @@ class CreateTables
                 [23, 'website.route_rule', NULL, 0, 0],
                 [24, 'website.email', 'admin@yourdomain.com', 0, 1],
                 [33, 'cache.ttl', '10000', 0, 0],
-                [34, 'basic_home.slide', '[{\"img_path\":\"\\/themes\\/basic\\/img\\/banner1.png\",\"link\":\"https:\\/\\/zap.cn\"},{\"img_path\":\"\\/themes\\/basic\\/img\\/banner2.png\",\"link\":\"https:\\/\\/zap.cn\"}]', 0, 0],
-                [36, 'basic_home.service_title', '服务项目', 0, 0],
-                [37, 'basic_home.service_subtitle', 'SERVICES', 0, 0],
-                [38, 'basic_home.service1_title', '软件开发与定制服务', 0, 0],
-                [39, 'basic_home.service1_content', '根据客户的具体需求进行软件设计和开发，以满足客户的个性化需求。', 0, 0],
-                [40, 'basic_home.service1_icon', 'fa fa-code', 0, 0],
-                [41, 'basic_home.service2_title', '移动应用开发', 0, 0],
-                [42, 'basic_home.service2_content', '提供移动应用开发服务，帮助他们将业务拓展到移动设备上。无论是为iOS、Android还是跨平台开发，软件公司都能够提供专业的技术支持和解决方案。', 0, 0],
-                [43, 'basic_home.service2_icon', 'fa fa-cubes', 0, 0],
-                [44, 'basic_home.service3_title', '网站设计与开发', 0, 0],
-                [45, 'basic_home.service3_content', '网站是企业展示形象、传递信息的重要渠道。软件公司为客户提供网站设计与开发服务，帮助他们建立专业、易用的网站。从网站的规划、设计到开发和测试，软件公司都能够提供全方位的支持，确保网站能够满足客户的需求并具有良好的用户体验。', 0, 0],
-                [46, 'basic_home.service3_icon', 'fa fa-television', 0, 0],
-                [47, 'basic_home.service4_title', '云计算与数据管理', 0, 0],
-                [48, 'basic_home.service4_content', '随着数据量的不断增长，数据管理和存储成为了一个重要的问题。软件公司提供云计算和数据管理服务，帮助客户有效地管理和分析数据。通过使用云计算技术，客户可以将数据存储在云端，实现数据的高效管理和共享。同时，软件公司还提供数据分析和挖掘服务，帮助客户从数据中获取有价值的信息和洞察。', 0, 0],
-                [49, 'basic_home.service4_icon', 'fa fa-cloud', 0, 0],
-                [50, 'basic_home.service5_title', '人工智能与机器学习', 0, 0],
-                [51, 'basic_home.service5_content', '人工智能和机器学习是当前科技领域的热门话题。软件公司利用先进的技术和算法，为客户提供人工智能和机器学习解决方案。这些解决方案可以帮助客户实现自动化、智能化的业务处理，提高工作效率和准确性。无论是自然语言处理、图像识别还是智能推荐系统，软件公司都能够提供专业的技术支持和解决方案。', 0, 0],
-                [52, 'basic_home.service5_icon', 'fa fa-graduation-cap', 0, 0],
-                [53, 'basic_home.service6_title', '安全与隐私保护', 0, 0],
-                [54, 'basic_home.service6_content', '随着网络攻击和数据泄露事件的不断增多，安全与隐私保护成为了一个紧迫的问题。软件公司提供安全与隐私保护服务，帮助客户保护其数据和系统的安全。通过使用先进的安全技术和策略，软件公司可以有效地防止黑客攻击和数据泄露，确保客户的数据和系统的安全性。', 0, 0],
-                [55, 'basic_home.service6_icon', 'fa fa-diamond', 0, 0],
-                [56, 'basic_home.about_us', '<p style="margin-right: 0px; margin-bottom: 0px; margin-left: 0px; outline: none; padding: 0px; line-height: 26px; word-break: break-word;"><img src="http://zapcms.local/themes/basic/img/aboutus.png" class="note-float-right" style="float: right;"><span >&nbsp; &nbsp; &nbsp; &nbsp;作为一家专业从事软件开发、SSL证书申请以及网站建设的公司，嘉兴领格信息技术有限公司以其专业的技术实力和丰富的经验，为客户提供优质的一站式服务。在当今数字化时代，软件开发和网站建设已经成为企业必不可少的一部分。而SSL证书的申请和应用也变得愈发重要，为保障用户数据安全和网络安全提供了有力支持。嘉兴领格信息技术有限公司正是在这一背景下应运而生，致力于为客户解决各种软件开发、SSL证书申请和网站建设的难题。</span><span >首先，让我们来看看嘉兴领格信息技术有限公司的专业软件开发能力。公司拥有一支高素质的开发团队，他们具备丰富的编程经验和深厚的技术功底。无论是定制化的软件项目还是标准化的软件解决方案，嘉兴领格信息技术有限公司都能提供最佳的解决方案。他们深入了解客户的需求，并根据不同行业的特点，为其量身定制适合的软件产品。通过持续的技术创新和严格的质量控制，嘉兴领格信息技术有限公司的软件产品在市场上赢得了良好的口碑。</span><span >其次，嘉兴领格信息技术有限公司在SSL证书申请方面也有着丰富的经验。随着网络攻击的不断增加，保护用户数据安全的重要性日益凸显。SSL证书作为一种加密传输协议，能够有效防止用户数据的泄露和篡改。嘉兴领格信息技术有限公司为客户提供全方位的SSL证书申请服务，从证书的申请到安装配置，全程为客户保驾护航。他们与多家知名的SSL证书颁发机构建立了良好的合作关系，确保客户能够获得最权威、最可靠的SSL证书。<br></span></p><p ><span >&nbsp; &nbsp; &nbsp; &nbsp;最后，让我们来了解一下嘉兴领格信息技术有限公司的网站建设能力。作为一个专业的网站建设公司，嘉兴领格信息技术有限公司拥有一支富有创造力和执行力的团队。他们能够为客户提供高质量、创新性的网站设计和开发服务。无论是企业官网、电子商务平台还是社交媒体网站，嘉兴领格信息技术有限公司都能够提供一站式解决方案。他们的设计团队注重用户体验和界面美观性，同时结合搜索引擎优化（SEO）的原则，使客户的网站能够在搜索结果中排名更靠前。</span></p>', 0, 0]
+                // zap cms install info
+                [50, 'zap_cms.install_date', time(), 0, 0],
+
+                // mail settings
+                [60, 'mail.engine', 'mail', 0, 0],
+                [61, 'mail.host', 'localhost', 0, 0],
+                [62, 'mail.username', '', 0, 0],
+                [63, 'mail.password', '', 0, 0],
+                [64, 'mail.port', '25', 0, 0],
+                [65, 'mail.timeout', '5', 0, 0],
+
+                [1034, 'basic_home.slide', '[{\"img_path\":\"\\/themes\\/basic\\/img\\/banner1.png\",\"link\":\"https:\\/\\/zap.cn\"},{\"img_path\":\"\\/themes\\/basic\\/img\\/banner2.png\",\"link\":\"https:\\/\\/zap.cn\"}]', 0, 0],
+                [1036, 'basic_home.service_title', '服务项目', 0, 0],
+                [1037, 'basic_home.service_subtitle', 'SERVICES', 0, 0],
+                [1038, 'basic_home.service1_title', '软件开发与定制服务', 0, 0],
+                [1039, 'basic_home.service1_content', '根据客户的具体需求进行软件设计和开发，以满足客户的个性化需求。', 0, 0],
+                [1040, 'basic_home.service1_icon', 'fa fa-code', 0, 0],
+                [1041, 'basic_home.service2_title', '移动应用开发', 0, 0],
+                [1042, 'basic_home.service2_content', '提供移动应用开发服务，帮助他们将业务拓展到移动设备上。无论是为iOS、Android还是跨平台开发，软件公司都能够提供专业的技术支持和解决方案。', 0, 0],
+                [1043, 'basic_home.service2_icon', 'fa fa-cubes', 0, 0],
+                [1044, 'basic_home.service3_title', '网站设计与开发', 0, 0],
+                [1045, 'basic_home.service3_content', '网站是企业展示形象、传递信息的重要渠道。软件公司为客户提供网站设计与开发服务，帮助他们建立专业、易用的网站。从网站的规划、设计到开发和测试，软件公司都能够提供全方位的支持，确保网站能够满足客户的需求并具有良好的用户体验。', 0, 0],
+                [1046, 'basic_home.service3_icon', 'fa fa-television', 0, 0],
+                [1047, 'basic_home.service4_title', '云计算与数据管理', 0, 0],
+                [1048, 'basic_home.service4_content', '随着数据量的不断增长，数据管理和存储成为了一个重要的问题。软件公司提供云计算和数据管理服务，帮助客户有效地管理和分析数据。通过使用云计算技术，客户可以将数据存储在云端，实现数据的高效管理和共享。同时，软件公司还提供数据分析和挖掘服务，帮助客户从数据中获取有价值的信息和洞察。', 0, 0],
+                [1049, 'basic_home.service4_icon', 'fa fa-cloud', 0, 0],
+                [1050, 'basic_home.service5_title', '人工智能与机器学习', 0, 0],
+                [1051, 'basic_home.service5_content', '人工智能和机器学习是当前科技领域的热门话题。软件公司利用先进的技术和算法，为客户提供人工智能和机器学习解决方案。这些解决方案可以帮助客户实现自动化、智能化的业务处理，提高工作效率和准确性。无论是自然语言处理、图像识别还是智能推荐系统，软件公司都能够提供专业的技术支持和解决方案。', 0, 0],
+                [1052, 'basic_home.service5_icon', 'fa fa-graduation-cap', 0, 0],
+                [1053, 'basic_home.service6_title', '安全与隐私保护', 0, 0],
+                [1054, 'basic_home.service6_content', '随着网络攻击和数据泄露事件的不断增多，安全与隐私保护成为了一个紧迫的问题。软件公司提供安全与隐私保护服务，帮助客户保护其数据和系统的安全。通过使用先进的安全技术和策略，软件公司可以有效地防止黑客攻击和数据泄露，确保客户的数据和系统的安全性。', 0, 0],
+                [1055, 'basic_home.service6_icon', 'fa fa-diamond', 0, 0],
+                [1056, 'basic_home.about_us', '<p style="margin-right: 0px; margin-bottom: 0px; margin-left: 0px; outline: none; padding: 0px; line-height: 26px; word-break: break-word;"><img src="http://zapcms.local/themes/basic/img/aboutus.png" class="note-float-right" style="float: right;"><span >&nbsp; &nbsp; &nbsp; &nbsp;作为一家专业从事软件开发、SSL证书申请以及网站建设的公司，嘉兴领格信息技术有限公司以其专业的技术实力和丰富的经验，为客户提供优质的一站式服务。在当今数字化时代，软件开发和网站建设已经成为企业必不可少的一部分。而SSL证书的申请和应用也变得愈发重要，为保障用户数据安全和网络安全提供了有力支持。嘉兴领格信息技术有限公司正是在这一背景下应运而生，致力于为客户解决各种软件开发、SSL证书申请和网站建设的难题。</span><span >首先，让我们来看看嘉兴领格信息技术有限公司的专业软件开发能力。公司拥有一支高素质的开发团队，他们具备丰富的编程经验和深厚的技术功底。无论是定制化的软件项目还是标准化的软件解决方案，嘉兴领格信息技术有限公司都能提供最佳的解决方案。他们深入了解客户的需求，并根据不同行业的特点，为其量身定制适合的软件产品。通过持续的技术创新和严格的质量控制，嘉兴领格信息技术有限公司的软件产品在市场上赢得了良好的口碑。</span><span >其次，嘉兴领格信息技术有限公司在SSL证书申请方面也有着丰富的经验。随着网络攻击的不断增加，保护用户数据安全的重要性日益凸显。SSL证书作为一种加密传输协议，能够有效防止用户数据的泄露和篡改。嘉兴领格信息技术有限公司为客户提供全方位的SSL证书申请服务，从证书的申请到安装配置，全程为客户保驾护航。他们与多家知名的SSL证书颁发机构建立了良好的合作关系，确保客户能够获得最权威、最可靠的SSL证书。<br></span></p><p ><span >&nbsp; &nbsp; &nbsp; &nbsp;最后，让我们来了解一下嘉兴领格信息技术有限公司的网站建设能力。作为一个专业的网站建设公司，嘉兴领格信息技术有限公司拥有一支富有创造力和执行力的团队。他们能够为客户提供高质量、创新性的网站设计和开发服务。无论是企业官网、电子商务平台还是社交媒体网站，嘉兴领格信息技术有限公司都能够提供一站式解决方案。他们的设计团队注重用户体验和界面美观性，同时结合搜索引擎优化（SEO）的原则，使客户的网站能够在搜索结果中排名更靠前。</span></p>', 0, 0]
 
             ],true);
         });

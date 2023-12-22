@@ -157,6 +157,7 @@ $this->extend('layout');
             myConsole.prepend(createDiv("安装失败!!!",'red',true));
             return false;
         }
+        location.href='index.php?action=done';
 
     }
 

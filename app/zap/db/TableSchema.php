@@ -83,7 +83,12 @@ class TableSchema
 
     public function addPrimary($constraint_name,...$columns): TableSchema
     {
-        if($constraint_name !== null){
+        if($this->driver === 'sqlite' && $this->resetAutoIncrementColumn(count($columns))){
+            return $this;
+        }
+        if($constraint_name !== null && $this->driver === 'sqlite'){
+            $constraint_name = "constraint \"{$constraint_name}\" ";
+        } else if($constraint_name !== null && $this->driver !== 'sqlite'){
             $constraint_name = "CONSTRAINT {$constraint_name} ";
         }
         $columnNames = join(',',$columns);
@@ -183,6 +188,23 @@ CREATE TABLE {$this->table} (
 )
 EOF;
 
+    }
+
+    private function resetAutoIncrementColumn($primaryKeyCount): bool
+    {
+        $exists = false;
+        foreach ($this->columns as $column){
+            $autoincrement = $column->getAUTOINCREMENT();
+            if($autoincrement !== '' ){
+                if($primaryKeyCount > 1){
+                    $column->setAUTOINCREMENT('AUTOINCREMENT');
+                }else{
+                    $exists = true;
+                }
+                break;
+            }
+        }
+        return $exists;
     }
 
 }

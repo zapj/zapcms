@@ -3,12 +3,13 @@
  * Copyright (c) 2023.  ZAP.CN  - ZAP CMS
  */
 
-namespace zap\mail;
+namespace zap\cms;
+
 
 class Mailer
 {
     public static function configure()
     {
-        
+
     }
 }

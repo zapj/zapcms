@@ -25,6 +25,22 @@ class ColumnSchema
         $this->type = $type;
     }
 
+    /**
+     * @return string
+     */
+    public function getAUTOINCREMENT(): string
+    {
+        return $this->AUTO_INCREMENT;
+    }
+
+    /**
+     * @param string $AUTO_INCREMENT
+     */
+    public function setAUTOINCREMENT(string $AUTO_INCREMENT): void
+    {
+        $this->AUTO_INCREMENT = " {$AUTO_INCREMENT}";
+    }
+
     public function nullable(): ColumnSchema
     {
         $this->nullable = true;
@@ -34,6 +50,9 @@ class ColumnSchema
     public function autoIncrement(): ColumnSchema
     {
         switch ($this->driver){
+            case 'sqlite':
+                $this->AUTO_INCREMENT = ' PRIMARY KEY AUTOINCREMENT';
+                break;
             case 'mysql':
             default:
                 $this->AUTO_INCREMENT = ' AUTO_INCREMENT';
@@ -57,19 +76,19 @@ class ColumnSchema
     public function __toString()
     {
         $nullable = $this->nullable ? '' : ' NOT NULL ';
-        $this->type = $this->columnDataType($this->type);
+        $this->type = $this->columnDataType();
 
         switch ($this->driver){
             case 'pgsql':
                 return "{$this->columnName} {$this->type}{$nullable}{$this->default} ";
             case 'sqlite':
-                return "{$this->columnName} {$this->type}{$nullable}{$this->default}";
+                return "{$this->columnName} {$this->type}{$nullable}{$this->default}{$this->AUTO_INCREMENT}";
         }
         return "{$this->columnName} {$this->type}{$nullable}{$this->default}";
 
     }
 
-    public function columnDataType($type): string
+    public function columnDataType(): string
     {
         switch ($this->driver){
             case 'sqlite':

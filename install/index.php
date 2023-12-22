@@ -36,7 +36,11 @@ function databaseAction()
 
 function doneAction()
 {
-    $data = [];
+    $data = [
+        'url'=>session()->get('install_url'),
+        'username'=>session()->get('install_username'),
+        'password'=>session()->get('install_password'),
+    ];
     view("done", $data);
 }
 
@@ -127,6 +131,7 @@ function createDBSchemaBaseDataAction()
             'charset' => 'utf8',
             'collate' => 'utf8_general_ci',
         ]);
+        config_set('db.dbpath',"data/{$dbname}.db");
     }
 
 
@@ -149,9 +154,11 @@ function createDBSchemaBaseDataAction()
         //更新站点名称
         \zap\Option::update('website.title', $website['title'] ?? 'ZAP CMS');
         \zap\Option::update('website.slogan', $website['slogan'] ?? 'OpenSource CMS');
-        \zap\Option::update('website.email',$website['email'] ?? '');
+        \zap\Option::update('website.email',$website['email'] ?? 'admin@'. $_SERVER['HTTP_HOST'] ?? 'localhost');
         \zap\DB::update('admin', ['username' => $website_username, 'password' => \zap\util\Password::hash($website_password)], ['id' => 1]);
-
+        session()->set('install_url','http://'.$_SERVER['HTTP_HOST']. Z_ADMIN_PREFIX);
+        session()->set('install_username',$website_username);
+        session()->set('install_password',$website_password);
         response()->withJson(['code' => 0, 'msg' => "<br/><strong>安装完成</strong><br/>" . nl2br($output)]);
 
     } catch (PDOException $e) {
