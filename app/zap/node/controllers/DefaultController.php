@@ -3,9 +3,7 @@
 namespace zap\node\controllers;
 
 
-use zap\BreadCrumb;
 use zap\node\AbstractNodeType;
-use zap\NodeType;
 
 class DefaultController extends AbstractNodeType
 {

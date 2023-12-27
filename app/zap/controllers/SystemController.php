@@ -2,12 +2,10 @@
 
 namespace app\zap\controllers;
 
-use zap\AdminController;
-use zap\facades\Url;
+use zap\cms\AdminController;
+use zap\cms\Option;
 use zap\http\Request;
 use zap\http\Response;
-use zap\Option;
-use zap\util\Password;
 use zap\view\View;
 
 class SystemController extends AdminController
@@ -30,6 +28,11 @@ class SystemController extends AdminController
             'options'=> Option::getArray($keyPrefix,'REGEXP')
         ];
         View::render("system.settings",$data);
+    }
+
+    public function sysInfo()
+    {
+        View::render("system.sysinfo",[]);
     }
 
 

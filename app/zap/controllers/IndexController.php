@@ -2,10 +2,8 @@
 
 namespace app\zap\controllers;
 
-use zap\AdminController;
-use zap\facades\Url;
-use zap\Node;
-use zap\util\Password;
+use zap\cms\AdminController;
+use zap\cms\models\Node;
 use zap\view\View;
 
 class IndexController extends AdminController

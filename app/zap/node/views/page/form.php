@@ -1,7 +1,7 @@
 <?php
 
-use zap\Asset;
-use zap\BreadCrumb;
+use zap\cms\Asset;
+use zap\cms\BreadCrumb;
 use zap\facades\Url;
 
 Asset::library('summernote');
@@ -24,8 +24,8 @@ Asset::library('jqueryvalidation');
     <form id="zapForm">
         <input type="hidden" value="<?php echo $node->id; ?>" name="node_id">
         <input type="hidden" name="node[pub_time]" value="<?php echo $node->getPubTimeToDate(); ?>" />
-        <input name="node[status]" id="node_status" type="hidden" value="<?php echo $node->status ?: \zap\Node::STATUS_PUBLISH;?>" />
-        <input type="hidden" id="node_author_id" name="node[author_id]" value="<?php echo \zap\Auth::user('id') ?>">
+        <input name="node[status]" id="node_status" type="hidden" value="<?php echo $node->status ?: \zap\cms\models\Node::STATUS_PUBLISH;?>" />
+        <input type="hidden" id="node_author_id" name="node[author_id]" value="<?php echo \zap\cms\Auth::user('id') ?>">
         <input type="hidden" name="catalog[<?php echo $catalogId;?>]" value="<?php echo $catalog['level'];?>"  />
         <main class="container-fluid zap-main">
             <div class="row">
@@ -165,7 +165,7 @@ Asset::library('jqueryvalidation');
 
     </script>
 <?php
-!IS_AJAX && \zap\Editor::instance()->create('.summernote', [
+!IS_AJAX && \zap\cms\Editor::instance()->create('.summernote', [
     'image_upload' => 'zapSendFile',
     'upload_url' => url_action('Upload@image')
 ]);

@@ -2,12 +2,11 @@
 
 namespace app\zap\controllers;
 
-use zap\AdminController;
+use zap\cms\AdminController;
+use zap\cms\NodeType;
 use zap\http\Response;
 use zap\http\Router;
-use zap\Node;
 use zap\node\AbstractNodeType;
-use zap\NodeType;
 use zap\view\View;
 
 class NodeController extends AdminController

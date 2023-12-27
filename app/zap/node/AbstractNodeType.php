@@ -2,10 +2,11 @@
 
 namespace zap\node;
 
-use zap\Auth;
-use zap\BreadCrumb;
-use zap\Catalog;
-use zap\core\HtmlXss;
+use zap\cms\BreadCrumb;
+use zap\cms\Catalog;
+use zap\cms\HtmlXss;
+use zap\cms\models\Node;
+use zap\cms\models\NodeRelation;
 use zap\DB;
 use zap\db\Query;
 use zap\exception\ViewNotFoundException;
@@ -13,9 +14,6 @@ use zap\helpers\Pagination;
 use zap\http\Request;
 use zap\http\Response;
 use zap\http\Router;
-use zap\Node;
-use zap\NodeRelation;
-use zap\NodeType;
 use zap\util\Arr;
 use zap\util\Str;
 use zap\view\View;

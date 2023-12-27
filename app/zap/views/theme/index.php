@@ -1,5 +1,4 @@
 <?php
-use zap\NodeType;
 
 !IS_AJAX && $this->layout('layouts/common');
 ?>

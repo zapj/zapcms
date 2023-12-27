@@ -6,7 +6,7 @@ function mod_path($mod_name){
 
 function get_option($option_name, $default = null,$ttl = null){
     return \zap\facades\Cache::get($option_name,function() use ($option_name,$default){
-        return \zap\Option::get($option_name,$default);
+        return \zap\cms\Option::get($option_name,$default);
     },$ttl);
 }
 
@@ -15,7 +15,7 @@ function get_options($option_name,$type = '=' , $ttl = 10000){
         $option_name = join('|',$option_name);
     }
     return \zap\facades\Cache::get($option_name,function() use ($option_name,$type){
-        return \zap\Option::getArray($option_name,$type);
+        return \zap\cms\Option::getArray($option_name,$type);
     },$ttl);
 }
 
@@ -51,7 +51,8 @@ function pageState() : \app\PageState {
     return app()->page_state;
 }
 
-function url_slug(...$args){
+function url_slug(...$args): string
+{
     $uri = [];
     foreach ($args as $arg){
         if(empty($arg)){
@@ -127,4 +128,28 @@ function zap_var_export($expression, $return=FALSE) {
         echo $export;
     }
     return $export;
+}
+
+function if_echo($expr,$str)
+{
+    if($expr){
+        echo $str;
+    }
+}
+
+function if_else_echo($expr,$str,$str2)
+{
+    if($expr){
+        echo $str;
+    }else{
+        echo $str2;
+    }
+}
+
+function if_return($expr,$str)
+{
+    if($expr){
+        return $str;
+    }
+    return null;
 }

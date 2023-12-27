@@ -100,7 +100,7 @@
 <script src="<?php echo base_url();?>/assets/admin/js/admin.js"></script></body>
 <script>
     <?php
-    \zap\AdminPage::instance()->showFlashMessages();
+    \zap\cms\AdminPage::instance()->showFlashMessages();
     ?>
 </script>
 </html>

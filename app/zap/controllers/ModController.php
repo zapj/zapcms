@@ -2,7 +2,7 @@
 
 namespace app\zap\controllers;
 
-use zap\AdminController;
+use zap\cms\AdminController;
 use zap\view\View;
 
 class ModController extends AdminController

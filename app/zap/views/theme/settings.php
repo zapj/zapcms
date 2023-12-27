@@ -3,8 +3,6 @@
  * Copyright (c) 2023.  ZAP.CN  - ZAP CMS
  */
 
-use zap\NodeType;
-
 register_scripts(base_url('/assets/plugins/zapuploader.js'));
 !IS_AJAX && $this->layout('layouts/common');
 ?>

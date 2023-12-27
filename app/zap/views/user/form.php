@@ -44,7 +44,7 @@
         <div class="col-sm-6">
             <label for="data_status" class="form-label">状态</label>
             <select class="form-select" id="data_status" name="data[status]" >
-                <?php foreach (\zap\User::getStatus() as $key => $title):
+                <?php foreach (\zap\cms\models\User::getStatus() as $key => $title):
                     ?>
                     <option value="<?php echo $key;?>"  <?php echo $key == $user['status'] ?'selected':null;  ?> ><?php echo $title;?></option>
                 <?php endforeach; ?>

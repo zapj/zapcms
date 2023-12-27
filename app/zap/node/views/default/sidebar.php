@@ -7,8 +7,10 @@
 
                 <tbody >
                 <?php
-                use zap\Catalog;
+
+                use zap\cms\Catalog;
                 use zap\facades\Url;
+
                 if($catalogId===0){
                     $catalogId = $node->id;
                 }

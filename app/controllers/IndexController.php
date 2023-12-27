@@ -5,8 +5,8 @@
 
 namespace app\controllers;
 
+use zap\cms\models\Node;
 use zap\http\Controller;
-use zap\Node;
 
 class IndexController extends Controller
 {

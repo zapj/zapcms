@@ -1,5 +1,4 @@
 <?php
-
 use zap\facades\Url;
 $catalogMenu = pageState()->getCatalogList();
 $footerCatalogMenu = $catalogMenu;

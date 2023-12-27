@@ -1,9 +1,6 @@
 <?php
 
-use zap\BreadCrumb;
-use zap\Catalog;
-use zap\facades\Url;
-use zap\NodeType;
+use zap\cms\BreadCrumb;
 
 $this->layout('layouts/common');
 ?>
@@ -59,7 +56,7 @@ $this->layout('layouts/common');
                             </td>
 
                             <td class="text-black-50"><?php echo date(Z_DATE_TIME,$row['pub_time']); ?></td>
-                            <td><?php echo \zap\Node::getStatusTitle($row['status']); ?></td>
+                            <td><?php echo \zap\cms\models\Node::getStatusTitle($row['status']); ?></td>
                             <td>
                                 <a href="<?php echo url_action("Node@{$_controller}/edit/{$row['id']}",$_GET);?>" class="btn btn-sm btn-outline-success"><i class="fa fa-edit"></i> 编辑</a>
 

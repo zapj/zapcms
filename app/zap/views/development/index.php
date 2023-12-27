@@ -1,5 +1,5 @@
 <?php
-\zap\Asset::library('ace');
+\zap\cms\Asset::library('ace');
 //\zap\Asset::library('codemirror');
 //register_scripts(base_url('/assets/admin/js/util.js'),ASSETS_BODY);
 //register_scripts(base_url('/assets/admin/js/main.js'),ASSETS_BODY);

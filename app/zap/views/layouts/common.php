@@ -11,7 +11,7 @@
     <script src="<?php echo base_url();?>/assets/admin/js/admin.js"></script>
     <script>
         window.ZAP_BASE_URL = '<?php echo \zap\facades\Url::home(); ?>';
-        window.ZAP_ = '<?php echo \zap\facades\Url::home(); ?>';
+        window.ZAP_ASSETS_URL = '<?php echo \zap\facades\Url::home(); ?>/assets';
     </script>
     <?php
     print_styles();
@@ -46,7 +46,7 @@
         ?>
         <script>
             <?php
-            \zap\AdminPage::instance()->showFlashMessages();
+            \zap\cms\AdminPage::instance()->showFlashMessages();
             ?>
         </script>
     </body>

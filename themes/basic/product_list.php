@@ -1,4 +1,7 @@
-<?php use zap\BreadCrumb;
+<?php
+defined('IN_ZAP_CMS') or die('No permission to access');
+
+use zap\cms\BreadCrumb;
 
 echo $this->extend('layout/default'); ?>
 <div class="bread_area">
@@ -33,7 +36,7 @@ echo $this->extend('layout/default'); ?>
                         <div class="col-md-3 col-xs-6 mb-2 product">
                             <div class="product-img">
                                 <a href="<?php echo site_url("/product/{$node['slug']}") ?>" title="Post">
-                                    <img  src="<?php echo \zap\helpers\ThumbHelper::thumb($node['image'],200,200); ?>" alt="Post" >
+                                    <img src="<?php echo \zap\cms\helpers\ThumbHelper::thumb($node['image'],200,200); ?>" alt="Post" >
                                 </a>
                             </div>
 

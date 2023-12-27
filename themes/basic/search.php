@@ -1,4 +1,7 @@
-<?php use zap\BreadCrumb;
+<?php
+defined('IN_ZAP_CMS') or die('No permission to access');
+
+use zap\cms\BreadCrumb;
 
 echo $this->extend('layout/default'); ?>
 <div class="bread_area">

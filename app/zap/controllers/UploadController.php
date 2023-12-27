@@ -3,12 +3,9 @@
 namespace app\zap\controllers;
 
 
-use zap\AdminController;
-use zap\facades\Url;
+use zap\cms\AdminController;
 use zap\http\Request;
 use zap\http\Response;
-use zap\util\Password;
-use zap\view\View;
 
 class UploadController extends AdminController
 {

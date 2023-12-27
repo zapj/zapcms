@@ -1,6 +1,8 @@
 <?php
-use zap\Asset;
+
+use zap\cms\Asset;
 use zap\facades\Url;
+
 Asset::library('jqueryvalidation');
 $this->layout('layouts/common');
 ?>

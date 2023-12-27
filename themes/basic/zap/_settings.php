@@ -107,7 +107,7 @@ defined('IN_ZAP_ADMIN') or die('No permission');
         </div>
     </div>
 
-<?php \zap\Editor::instance()->create('#about-us-editor'); ?>
+<?php \zap\cms\Editor::instance()->create('#about-us-editor'); ?>
 
 
 </div>

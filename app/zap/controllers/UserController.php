@@ -2,21 +2,18 @@
 
 namespace app\zap\controllers;
 
-use zap\Admin;
-use zap\AdminController;
-use zap\AdminMenu;
-use zap\Auth;
+use zap\cms\AdminController;
+use zap\cms\AdminMenu;
+use zap\cms\Auth;
+use zap\cms\models\Admin;
+use zap\cms\rbac\AdminRoles;
+use zap\cms\rbac\Permissions;
+use zap\cms\rbac\Roles;
+use zap\cms\rbac\RolesPermissions;
 use zap\DB;
-use zap\facades\Url;
 use zap\helpers\Pagination;
 use zap\http\Request;
 use zap\http\Response;
-use zap\Log;
-use zap\rbac\AdminRoles;
-use zap\rbac\Permissions;
-use zap\rbac\Roles;
-use zap\rbac\RolesPermissions;
-use zap\User;
 use zap\util\Password;
 use zap\view\View;
 

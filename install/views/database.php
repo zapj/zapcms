@@ -26,7 +26,7 @@ $this->extend('layout');
 
                             <div class="col-12">
                                 <label for="website-email" class="form-label">邮箱 <span class="text-body-secondary">(可选)</span></label>
-                                <input type="email" class="form-control form-control-sm" id="website-email" name="website[email]" placeholder="you@example.com">
+                                <input type="email" class="form-control form-control-sm" id="website-email" name="website[email]" placeholder="you@example.com" value="admin@<?php echo $_SERVER['HTTP_HOST']; ?>">
                             </div>
 
                             <div class="col-6">

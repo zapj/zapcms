@@ -111,10 +111,15 @@ class ColumnSchema
                 return 'LONGTEXT';
             case 'text':
             case 'varchar':
+            case 'char':
+            case 'tinytext':
+            case 'mediumtext':
                 return 'TEXT';
             case 'blob':
                 return 'BLOB';
             case 'integer':
+            case 'tinyint':
+            case 'smallint':
                 return 'INTEGER';
             default:
                 return 'INT';
@@ -147,6 +152,10 @@ class ColumnSchema
                 return 'TEXT';
             case 'varchar':
                 return "VARCHAR({$this->length})";
+            case 'tinyint':
+                return "TINYINT";
+            case 'smallint':
+                return "SMALLINT";
             case 'bigint':
                 return "BIGINT({$this->length}){$this->AUTO_INCREMENT}";
             case 'integer':

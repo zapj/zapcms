@@ -5,14 +5,12 @@
 
 namespace app\controllers;
 
-use zap\BreadCrumb;
-use zap\Catalog;
+use zap\cms\BreadCrumb;
+use zap\cms\Catalog;
 use zap\DB;
 use zap\exception\ViewNotFoundException;
 use zap\helpers\Pagination;
 use zap\http\Controller;
-use zap\Node;
-use zap\NodeRelation;
 use zap\view\View;
 
 class CatalogController extends Controller

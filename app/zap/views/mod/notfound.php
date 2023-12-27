@@ -1,8 +1,6 @@
 <?php
 
 use zap\facades\Url;
-use zap\Catalog;
-use zap\NodeType;
 
 $this->layout('layouts/common');
 ?>

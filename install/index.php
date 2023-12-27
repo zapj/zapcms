@@ -104,8 +104,8 @@ function createDBSchemaBaseDataAction()
     $driver = $db['driver'] ?? 'mysql';
     $prefix = $db['prefix'] ?? '';
 
-    $website_username = $website['username'];
-    $website_password = $website['password'];
+    $website_username = $website['username'] ?? 'admin';
+    $website_password = $website['password'] ?? '';
 
     config_set('database', [
         'default' => 'default',
@@ -152,9 +152,9 @@ function createDBSchemaBaseDataAction()
         $database = config('database');
         \zap\cms\ZapConfig::createConfig($database, config_path('database.php'));
         //更新站点名称
-        \zap\Option::update('website.title', $website['title'] ?? 'ZAP CMS');
-        \zap\Option::update('website.slogan', $website['slogan'] ?? 'OpenSource CMS');
-        \zap\Option::update('website.email',$website['email'] ?? 'admin@'. $_SERVER['HTTP_HOST'] ?? 'localhost');
+        \zap\cms\Option::update('website.title', $website['title'] ?? 'ZAP CMS');
+        \zap\cms\Option::update('website.slogan', $website['slogan'] ?? 'OpenSource CMS');
+        \zap\cms\Option::update('website.email',$website['email'] ?? 'admin@'. $_SERVER['HTTP_HOST'] ?? 'localhost');
         \zap\DB::update('admin', ['username' => $website_username, 'password' => \zap\util\Password::hash($website_password)], ['id' => 1]);
         session()->set('install_url','http://'.$_SERVER['HTTP_HOST']. Z_ADMIN_PREFIX);
         session()->set('install_username',$website_username);

@@ -167,10 +167,8 @@ use zap\facades\Url;
                     data:$('#adminMenu form').serialize(),
                     success:function (data){
                         m.hide();
-                        ZapToast.alert(data.msg,{bgColor:data.code===0?bgSuccess:bgDanger,position:Toast_Pos_Center,delay:1500,callback:function(){
-                            Zap.reload()
-                            }
-                        });
+                        ZapToast.alert(data.msg,{bgColor:data.code===0?bgSuccess:bgDanger});
+                        Zap.reload();
                     }
                 })
             }

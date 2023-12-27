@@ -1,6 +1,4 @@
 <?php
-use zap\Catalog;
-use zap\NodeType;
 ?>
 <form>
     <input type="hidden" name="perm_id" value="<?php echo $data['perm_id'] ?? 0; ?>" />

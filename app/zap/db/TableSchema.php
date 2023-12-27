@@ -36,6 +36,13 @@ class TableSchema
         $this->tableEngine = $engine;
     }
 
+    public function tinyint($name): ColumnSchema
+    {
+        $column = new ColumnSchema($name,'tinyint',$this->driver);
+        $this->columns[] = $column;
+        return $column;
+    }
+
     public function integer($name,$length = 11): ColumnSchema
     {
         $column = new ColumnSchema($name,'integer',$this->driver);
@@ -47,6 +54,14 @@ class TableSchema
     public function bigint($name,$length = 11): ColumnSchema
     {
         $column = new ColumnSchema($name,'bigint',$this->driver);
+        $this->columns[] = $column;
+        $column->length($length);
+        return $column;
+    }
+
+    public function char($name,$length): ColumnSchema
+    {
+        $column = new ColumnSchema($name,'char',$this->driver);
         $this->columns[] = $column;
         $column->length($length);
         return $column;

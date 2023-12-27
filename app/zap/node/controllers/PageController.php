@@ -2,17 +2,10 @@
 
 namespace zap\node\controllers;
 
-use zap\BreadCrumb;
-use zap\Catalog;
-use zap\component\Hooks;
+use zap\cms\models\Node;
 use zap\db\Query;
 use zap\helpers\Pagination;
-use zap\http\Request;
-use zap\http\Response;
-use zap\http\Session;
-use zap\Node;
 use zap\node\AbstractNodeType;
-use zap\NodeRelation;
 use zap\view\View;
 
 class PageController extends AbstractNodeType

@@ -1,6 +1,4 @@
 <?php
-use zap\Catalog;
-use zap\NodeType;
 ?>
 <form>
     <input type="hidden" name="role_id" value="<?php echo $data['role_id'] ?? 0; ?>" />

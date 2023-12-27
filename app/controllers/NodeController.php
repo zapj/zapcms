@@ -5,10 +5,10 @@
 
 namespace app\controllers;
 
-use zap\BreadCrumb;
-use zap\Catalog;
+use zap\cms\BreadCrumb;
+use zap\cms\Catalog;
+use zap\cms\models\NodeRelation;
 use zap\http\Controller;
-use zap\NodeRelation;
 
 class NodeController extends Controller
 {

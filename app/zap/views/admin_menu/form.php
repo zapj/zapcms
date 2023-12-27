@@ -1,5 +1,7 @@
 <?php
-use zap\AdminMenu;
+
+use zap\cms\AdminMenu;
+
 ?>
 <form class="row g-3">
     <input name="menu_id" value="<?php echo $menu['id']; ?>" type="hidden" />
@@ -25,7 +27,7 @@ use zap\AdminMenu;
             AdminMenu::instance()->forEachAll(function($row) use ($menu){
                 ?>
                 <option value="<?php echo $row['id'];?>"  <?php echo $menu['pid']==$row['id'] ?'selected':''; ?>
-                <?php echo \zap\util\Str::startsWith($row['path'],$menu['path']) ? 'disabled':null;  ?>
+                <?php echo !empty($menu['path']) && \zap\util\Str::startsWith($row['path'],$menu['path']) ? 'disabled':null;  ?>
                 >
                     <?php echo  str_repeat("&nbsp;&nbsp;",$row['level']-1) ?><?php echo $row['title'];?></option>
                 <?php

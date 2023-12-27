@@ -30,7 +30,7 @@ $banners = option_get_json('basic_home.slide','[]',true);
         <div class="container">
             <div class="row">
 
-                    <div class="col-md-12 col-sm-12 col-xs-12">
+                    <div class="col-md-12 col-sm-12 col-xs-12 about-us-img-mlr-10px">
                         <?php echo option("basic_home.about_us"); ?>
                     </div>
 
@@ -74,7 +74,7 @@ $banners = option_get_json('basic_home.slide','[]',true);
                             <?php foreach ($latestNews as $news){ ?>
                             <li class="col-md-3 col-sm-6 col-xs-12">
                                 <div class="thumbnail">
-                                    <img src="<?php echo \zap\helpers\ThumbHelper::thumb($news['image'],200,200); ?>" alt="<?php echo $news['image']; ?>">
+                                    <img src="<?php echo \zap\cms\helpers\ThumbHelper::thumb($news['image'],200,200); ?>" alt="<?php echo $news['image']; ?>">
                                     <div class="caption">
                                         <h3><a href="<?php echo site_url("/{$news['node_type']}/{$news['slug']}") ?>"><?php echo $news['title']; ?></a></h3>
                                         <p><?php  echo \zap\util\Str::truncate(strip_tags($news['content']),100); ?></p>

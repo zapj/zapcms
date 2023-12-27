@@ -5,10 +5,9 @@
 
 namespace app\controllers;
 
-use zap\BreadCrumb;
-use zap\Catalog;
+use zap\cms\BreadCrumb;
+use zap\cms\models\Node;
 use zap\http\Controller;
-use zap\Node;
 
 class SearchController extends Controller
 {

@@ -1,6 +1,8 @@
 <?php
+
+use zap\cms\AdminMenu;
 use zap\facades\Url;
-use zap\AdminMenu;
+
 ?>
 <nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-primary" aria-label="Main navigation">
     <div class="container-fluid">

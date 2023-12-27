@@ -3,7 +3,7 @@
 namespace app\zap\controllers;
 
 
-use zap\Auth;
+use zap\cms\Auth;
 use zap\DB;
 use zap\facades\Url;
 use zap\http\Controller;

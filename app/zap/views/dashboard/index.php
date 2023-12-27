@@ -1,6 +1,6 @@
 <?php
 
-use zap\NodeType;
+use zap\cms\NodeType;
 
 $this->layout('layouts/common');
 ?>
@@ -64,7 +64,7 @@ $this->layout('layouts/common');
                         <tbody>
                         <tr>
                             <td >Zap CMS 版本</td>
-                            <td>v<?php echo ZAP_CMS_VERSION; ?></td>
+                            <td>v<?php echo ZAP_CMS_VERSION,'-',ZAP_CMS_RELEASE_DATE; ?></td>
                             <td>PHP 版本</td>
                             <td><?php echo PHP_VERSION , '(' , php_sapi_name() , ')'; ?></td>
                         </tr>
@@ -88,8 +88,7 @@ $this->layout('layouts/common');
                             </td>
                             <td >PDO 驱动</td>
                             <td  >
-                                <?php   echo join('/',PDO::getAvailableDrivers());
-                                ?>
+                                <?php   echo join('/',PDO::getAvailableDrivers());?>
                             </td>
                         </tr>
                         <tr>

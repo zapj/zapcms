@@ -2,21 +2,13 @@
 
 namespace app\zap\controllers;
 
-use zap\AdminController;
-use zap\Auth;
-use zap\core\IOUtils;
-use zap\DB;
+use zap\cms\AdminController;
+use zap\cms\IOUtils;
+use zap\cms\Option;
+use zap\cms\Theme;
 use zap\facades\Cache;
-use zap\facades\Url;
-use zap\helpers\Pagination;
 use zap\http\Request;
 use zap\http\Response;
-use zap\Log;
-use zap\Option;
-use zap\Theme;
-use zap\User;
-use zap\util\Password;
-use zap\view\View;
 
 class ThemeController extends AdminController
 {
@@ -39,7 +31,7 @@ class ThemeController extends AdminController
                 Response::json(['code'=>1,'msg'=>'主题不存在']);
             }
             Option::update('website.theme',$theme);
-            (new \zap\core\Theme())->saveThemeOptions($theme);
+            Theme::instance()->saveThemeOptions($theme);
             Cache::delete('options_website');
             Cache::delete('options_'.$theme);
             Response::json(['code'=>0,'msg'=>'主题设置成功']);

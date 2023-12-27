@@ -1,7 +1,7 @@
 <?php
 
-use zap\Asset;
-use zap\BreadCrumb;
+use zap\cms\Asset;
+use zap\cms\BreadCrumb;
 use zap\facades\Url;
 
 Asset::library('summernote');
@@ -120,7 +120,7 @@ register_scripts(base_url('/assets/plugins/zapuploader.js'));
                                 <label for="node_status" class="form-label">状态 <i class="text-danger">*</i></label>
                                 <select class="form-select " name="node[status]" id="node_status">
                                     <?php foreach($node->getStatus() as $id => $title){
-                                        if($id == \zap\Node::STATUS_SOFT_DELETE or $id == \zap\Node::STATUS_TRASH){
+                                        if($id == \zap\cms\models\Node::STATUS_SOFT_DELETE or $id == \zap\cms\models\Node::STATUS_TRASH){
                                             continue;
                                         }
                                         ?>
@@ -136,8 +136,8 @@ register_scripts(base_url('/assets/plugins/zapuploader.js'));
                             </div>
                             <div class="mb-3">
                                 <label for="node_author_id" class="form-label">发布人</label>
-                                <input type="hidden" id="node_author_id" name="node[author_id]" value="<?php echo \zap\Auth::user('id') ?>">
-                                <input type="text" class="form-control-plaintext text-black-50" id="node_author_name" readonly  placeholder="发布人" value="<?php echo \zap\Auth::user('full_name') ?>">
+                                <input type="hidden" id="node_author_id" name="node[author_id]" value="<?php echo \zap\cms\Auth::user('id') ?>">
+                                <input type="text" class="form-control-plaintext text-black-50" id="node_author_name" readonly  placeholder="发布人" value="<?php echo \zap\cms\Auth::user('full_name') ?>">
                             </div>
                             <?php if($node->update_time){ ?>
                                 <p class="text-black-50"><small>最后修改时间 :
@@ -188,7 +188,7 @@ register_scripts(base_url('/assets/plugins/zapuploader.js'));
                     <div class="card mt-2">
                         <div class="card-header">文章主图</div>
                         <div id="card">
-                            <img src="<?php echo \zap\helpers\ThumbHelper::thumb($node['image'],136,136); ?>" class="img-thumbnail rounded mx-auto d-block" id="node-image-thumb" style="max-height: 200px;" alt=""/>
+                            <img src="<?php echo \zap\cms\helpers\ThumbHelper::thumb($node['image'],136,136); ?>" class="img-thumbnail rounded mx-auto d-block" id="node-image-thumb" style="max-height: 200px;" alt=""/>
                             <input type="hidden" name="node[image]" id="node-image" value="<?php echo $node['image']; ?>" />
                             <div class="card-footer">
                                 <button class="btn btn-success" data-zap-toggle="image" data-zap-callback="" data-zap-target="#node-image|#node-image-thumb">选择图片</button>
@@ -257,7 +257,7 @@ register_scripts(base_url('/assets/plugins/zapuploader.js'));
 
     </script>
 <?php
-\zap\Editor::instance()->create('.summernote', [
+\zap\cms\Editor::instance()->create('.summernote', [
     'image_upload' => 'zapSendFile',
     'upload_url' => url_action('Upload@image')
 ]);

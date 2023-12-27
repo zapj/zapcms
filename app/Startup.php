@@ -1,19 +1,22 @@
 <?php
 /*
- * Copyright (c) 2023.  ZAP.CN  - ZAP CMS
+ * Copyright (c) 2023.  ZAP.CN  - ZAP CMS - All Rights Reserved
+ * @author Allen
+ * @email zapcms@zap.cn
+ * @date 2023/12/27 上午11:09
+ * @lastModified 2023/12/20 下午5:50
+ *
  */
 
 namespace app;
 
-use Exception;
 use Twig\Error\Error;
+use zap\cms\models\Node;
 use zap\DB;
 use zap\exception\NotFoundException;
 use zap\exception\ViewNotFoundException;
 use zap\http\Middleware;
 use zap\http\Router;
-use zap\Node;
-use zap\Option;
 use zap\view\View;
 
 class Startup implements Middleware

@@ -2,8 +2,8 @@
 
 namespace app\zap\controllers;
 
-use zap\AdminController;
-use zap\Catalog;
+use zap\cms\AdminController;
+use zap\cms\Catalog;
 use zap\DB;
 use zap\http\Request;
 use zap\http\Response;

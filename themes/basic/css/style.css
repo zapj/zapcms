@@ -983,3 +983,7 @@ p.text {
 .swiper-button-next, .swiper-button-prev {
     color: #ccc !important;
 }
+
+.about-us-img-mlr-10px img {
+    margin: 0 10px;
+}

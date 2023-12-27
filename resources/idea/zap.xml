@@ -1,0 +1,6 @@
+<component name="CopyrightManager">
+  <copyright>
+    <option name="notice" value="Copyright (c) &amp;#36;originalComment.match(&quot;Copyright \(c\) (\d+)&quot;, 1, &quot;-&quot;, &quot;&amp;#36;today.year&quot;)&amp;#36;today.year.  ZAP.CN  - ZAP CMS - All Rights Reserved &#10;@author Allen&#10;@email zapcms@zap.cn&#10;@date &amp;#36;today&#10;@lastModified &amp;#36;file.lastModified&#10;" />
+    <option name="myName" value="zap" />
+  </copyright>
+</component>
