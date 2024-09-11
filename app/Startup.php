@@ -52,6 +52,11 @@ class Startup implements Middleware
             View::paths(themes_path('basic'));
         }
 
+        $theme = $website['website.theme'] ?? 'basic';
+        if(is_file(themes_path("{$theme}/functions.php"))){
+            include themes_path("{$theme}/functions.php");
+        }
+
         $this->parseUrlPath();
         if(!isset($this->controllerClass) || $this->notFound){
 //            $website_route = $website['website.route'] ?? 1;
