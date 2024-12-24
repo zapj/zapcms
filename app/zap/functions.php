@@ -153,3 +153,34 @@ function if_return($expr,$str)
     }
     return null;
 }
+
+function get_theme_name(){
+    $theme = config('config.theme','basic');
+    if($theme === false){
+        return false;
+    }
+    return $theme;
+}
+
+
+function get_theme_path($path = null){
+    $theme = config('config.theme','basic');
+    if($theme === false){
+        return false;
+    }
+    if($path===null){
+        return base_path("themes/{$theme}");
+    }
+    return base_path("themes/{$theme}/{$path}");
+}
+
+function get_theme_url($path = null){
+    $theme = config('config.theme','basic');
+    if($theme === false){
+        return false;
+    }
+    if($path===null){
+        return base_url("themes/{$theme}");
+    }
+    return base_url("themes/{$theme}/{$path}");
+}
