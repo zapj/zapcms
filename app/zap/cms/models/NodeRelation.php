@@ -15,6 +15,8 @@ use zap\db\Model;
 class NodeRelation extends Model
 {
 
+    protected $autoincrement = false;
+
     public static function tableName(): string
     {
         return 'node_relation';
