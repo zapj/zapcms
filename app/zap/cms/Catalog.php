@@ -60,7 +60,7 @@ class Catalog extends Category
             'update_time'=>time(),
             'add_time'=>time(),
         ]);
-        if($node){
+        if($node->id){
             $data[$this->primaryKey] = $node->id;
         }
         $data['created_at'] = time();

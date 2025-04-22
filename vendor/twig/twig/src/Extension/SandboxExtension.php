@@ -26,7 +26,7 @@ final class SandboxExtension extends AbstractExtension
     private $policy;
     private $sourcePolicy;
 
-    public function __construct(SecurityPolicyInterface $policy, $sandboxed = false, SourcePolicyInterface $sourcePolicy = null)
+    public function __construct(SecurityPolicyInterface $policy, $sandboxed = false, ?SourcePolicyInterface $sourcePolicy = null)
     {
         $this->policy = $policy;
         $this->sandboxedGlobally = $sandboxed;
@@ -53,7 +53,7 @@ final class SandboxExtension extends AbstractExtension
         $this->sandboxed = false;
     }
 
-    public function isSandboxed(Source $source = null): bool
+    public function isSandboxed(?Source $source = null): bool
     {
         return $this->sandboxedGlobally || $this->sandboxed || $this->isSourceSandboxed($source);
     }
@@ -82,14 +82,14 @@ final class SandboxExtension extends AbstractExtension
         return $this->policy;
     }
 
-    public function checkSecurity($tags, $filters, $functions, Source $source = null): void
+    public function checkSecurity($tags, $filters, $functions, ?Source $source = null): void
     {
         if ($this->isSandboxed($source)) {
             $this->policy->checkSecurity($tags, $filters, $functions);
         }
     }
 
-    public function checkMethodAllowed($obj, $method, int $lineno = -1, Source $source = null): void
+    public function checkMethodAllowed($obj, $method, int $lineno = -1, ?Source $source = null): void
     {
         if ($this->isSandboxed($source)) {
             try {
@@ -103,7 +103,7 @@ final class SandboxExtension extends AbstractExtension
         }
     }
 
-    public function checkPropertyAllowed($obj, $property, int $lineno = -1, Source $source = null): void
+    public function checkPropertyAllowed($obj, $property, int $lineno = -1, ?Source $source = null): void
     {
         if ($this->isSandboxed($source)) {
             try {
@@ -117,8 +117,14 @@ final class SandboxExtension extends AbstractExtension
         }
     }
 
-    public function ensureToStringAllowed($obj, int $lineno = -1, Source $source = null)
+    public function ensureToStringAllowed($obj, int $lineno = -1, ?Source $source = null)
     {
+        if (\is_array($obj)) {
+            $this->ensureToStringAllowedForArray($obj, $lineno, $source);
+
+            return $obj;
+        }
+
         if ($this->isSandboxed($source) && \is_object($obj) && method_exists($obj, '__toString')) {
             try {
                 $this->policy->checkMethodAllowed($obj, '__toString');
@@ -131,5 +137,46 @@ final class SandboxExtension extends AbstractExtension
         }
 
         return $obj;
+    }
+
+    private function ensureToStringAllowedForArray(array $obj, int $lineno, ?Source $source, array &$stack = []): void
+    {
+        foreach ($obj as $k => $v) {
+            if (!$v) {
+                continue;
+            }
+
+            if (!\is_array($v)) {
+                $this->ensureToStringAllowed($v, $lineno, $source);
+                continue;
+            }
+
+            if (\PHP_VERSION_ID < 70400) {
+                static $cookie;
+
+                if ($v === $cookie ?? $cookie = new \stdClass()) {
+                    continue;
+                }
+
+                $obj[$k] = $cookie;
+                try {
+                    $this->ensureToStringAllowedForArray($v, $lineno, $source, $stack);
+                } finally {
+                    $obj[$k] = $v;
+                }
+
+                continue;
+            }
+
+            if ($r = \ReflectionReference::fromArrayElement($obj, $k)) {
+                if (isset($stack[$r->getId()])) {
+                    continue;
+                }
+
+                $stack[$r->getId()] = true;
+            }
+
+            $this->ensureToStringAllowedForArray($v, $lineno, $source, $stack);
+        }
     }
 }

@@ -72,10 +72,11 @@ abstract class Model implements \ArrayAccess
     public function save() {
         if (empty($this->getId())) {
             $this->db()->insert(static::tableName(), $this->getAttributes());
-            if($this->autoincrement){
+            if ($this->autoincrement) {
                 $this->setAttribute(static::primaryKey(), $this->db()->lastInsertId());
             }
-
+        }else if(!$this->autoincrement){
+                $this->db()->insert(static::tableName(), $this->getAttributes());
         } else {
             $query = DB::table(static::tableName())->set($this->getAttributes());
 

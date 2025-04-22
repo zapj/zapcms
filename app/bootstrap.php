@@ -8,8 +8,8 @@
  *
  */
 
-const ZAP_CMS_VERSION = '1.0.0';
-const ZAP_CMS_RELEASE_DATE = '2023-12-27';
+const ZAP_CMS_VERSION = '1.0.1';
+const ZAP_CMS_RELEASE_DATE = '2025-4-22';
 
 if (PHP_VERSION_ID < 70400) {
     exit('ZAP CMS requires PHP 7.4.0+.');

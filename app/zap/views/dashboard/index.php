@@ -75,7 +75,15 @@ $this->layout('layouts/common');
                                 if($driver == 'mysql'){
                                     echo \zap\DB::value("SELECT VERSION()");
                                 }else if($driver == 'sqlite'){
-                                    echo join(',',\SQLite3::version());
+                                    $dbh = new \PDO('sqlite:memory');
+                                    if($dbh){
+                                        echo $dbh->query('select sqlite_version()')->fetchColumn(0);
+//                                        print_r("SQLite version " . $dbh->query('select sqlite_version()')->fetch()[0]);
+                                        $dbh = null;
+                                    }else{
+                                        echo '当前环境不支持sqlite3';
+                                    }
+
                                 } ?></td>
                             <td>OpenSSL</td>
                             <td><?php echo constant("OPENSSL_VERSION_TEXT") ?? '不支持'; ?></td>

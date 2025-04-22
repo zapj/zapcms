@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '82d345babe8a0fb382af7728fc7da06ae8a35183',
+        'reference' => 'c65e420f3aeb13194e9c4047864e2a38caabfdc5',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '82d345babe8a0fb382af7728fc7da06ae8a35183',
+            'reference' => 'c65e420f3aeb13194e9c4047864e2a38caabfdc5',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -22,7 +22,7 @@
         'ezyang/htmlpurifier' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'bbc513d79acf6691fa9cf10f192c90dd2957f18c',
+            'reference' => 'c2bc3549a392722ab3b5aa4de973673db9e1708f',
             'type' => 'library',
             'install_path' => __DIR__ . '/../ezyang/htmlpurifier',
             'aliases' => array(
@@ -33,7 +33,7 @@
         'monolog/monolog' => array(
             'pretty_version' => '2.x-dev',
             'version' => '2.9999999.9999999.9999999-dev',
-            'reference' => '437cb3628f4cf6042cc10ae97fc2b8472e48ca1f',
+            'reference' => '5cf826f2991858b54d5c3809bee745560a1042a7',
             'type' => 'library',
             'install_path' => __DIR__ . '/../monolog/monolog',
             'aliases' => array(),
@@ -42,7 +42,7 @@
         'phpmailer/phpmailer' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => '5372c1694dea54e156443af9c888ccecfa52cb4d',
+            'reference' => 'ab8d4f87a492807812c04e8224710f923805cff2',
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpmailer/phpmailer',
             'aliases' => array(
@@ -68,7 +68,7 @@
         'symfony/deprecation-contracts' => array(
             'pretty_version' => '2.5.x-dev',
             'version' => '2.5.9999999.9999999-dev',
-            'reference' => '80d075412b557d41002320b96a096ca65aa2c98d',
+            'reference' => '605389f2a7e5625f273b53960dc46aeaf9c62918',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/deprecation-contracts',
             'aliases' => array(),
@@ -77,7 +77,7 @@
         'symfony/polyfill-ctype' => array(
             'pretty_version' => '1.x-dev',
             'version' => '1.9999999.9999999.9999999-dev',
-            'reference' => 'ea208ce43cbb04af6867b4fdddb1bdbf84cc28cb',
+            'reference' => 'a3cc8b044a6ea513310cbd48ef7333b384945638',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/polyfill-ctype',
             'aliases' => array(),
@@ -86,7 +86,7 @@
         'symfony/polyfill-mbstring' => array(
             'pretty_version' => '1.x-dev',
             'version' => '1.9999999.9999999.9999999-dev',
-            'reference' => '42292d99c55abe617799667f454222c54c60e229',
+            'reference' => '6d857f4d76bd4b343eac26d6b539585d2bc56493',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/polyfill-mbstring',
             'aliases' => array(),
@@ -95,16 +95,25 @@
         'symfony/polyfill-php80' => array(
             'pretty_version' => '1.x-dev',
             'version' => '1.9999999.9999999.9999999-dev',
-            'reference' => '6caa57379c4aec19c0a12a38b59b26487dcfe4b5',
+            'reference' => '0cc9dd0f17f61d8131e7df6b84bd344899fe2608',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/polyfill-php80',
             'aliases' => array(),
             'dev_requirement' => false,
         ),
+        'symfony/polyfill-php81' => array(
+            'pretty_version' => '1.x-dev',
+            'version' => '1.9999999.9999999.9999999-dev',
+            'reference' => '4a4cfc2d253c21a5ad0e53071df248ed48c6ce5c',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../symfony/polyfill-php81',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'twig/twig' => array(
-            'pretty_version' => '3.x-dev',
-            'version' => '3.9999999.9999999.9999999-dev',
-            'reference' => '7072a7256ebcda52869e0e38e5ca732744c0a1a1',
+            'pretty_version' => '3.11.x-dev',
+            'version' => '3.11.9999999.9999999-dev',
+            'reference' => '3b06600ff3abefaf8ff55d5c336cd1c4253f8c7e',
             'type' => 'library',
             'install_path' => __DIR__ . '/../twig/twig',
             'aliases' => array(),
@@ -113,7 +122,7 @@
         'zapj/zap-php-framework' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '6973245fa7d6eba3d2a05f3ea01015b0cda3b191',
+            'reference' => '82c1ea87ba629e920ecdd32eb5b4e81a1da771f9',
             'type' => 'library',
             'install_path' => __DIR__ . '/../zapj/zap-php-framework',
             'aliases' => array(

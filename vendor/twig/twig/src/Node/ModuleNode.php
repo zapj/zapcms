@@ -12,6 +12,7 @@
 
 namespace Twig\Node;
 
+use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Expression\AbstractExpression;
 use Twig\Node\Expression\ConstantExpression;
@@ -26,6 +27,7 @@ use Twig\Source;
  *
  * @author Fabien Potencier <fabien@symfony.com>
  */
+#[YieldReady]
 final class ModuleNode extends Node
 {
     public function __construct(Node $body, ?AbstractExpression $parent, Node $blocks, Node $macros, Node $traits, $embeddedTemplates, Source $source)
@@ -189,14 +191,14 @@ final class ModuleNode extends Node
 
                 $compiler
                     ->addDebugInfo($node)
-                    ->write(sprintf('$_trait_%s = $this->loadTemplate(', $i))
+                    ->write(\sprintf('$_trait_%s = $this->loadTemplate(', $i))
                     ->subcompile($node)
                     ->raw(', ')
                     ->repr($node->getTemplateName())
                     ->raw(', ')
                     ->repr($node->getTemplateLine())
                     ->raw(");\n")
-                    ->write(sprintf("if (!\$_trait_%s->isTraitable()) {\n", $i))
+                    ->write(\sprintf("if (!\$_trait_%s->unwrap()->isTraitable()) {\n", $i))
                     ->indent()
                     ->write("throw new RuntimeError('Template \"'.")
                     ->subcompile($trait->getNode('template'))
@@ -205,12 +207,12 @@ final class ModuleNode extends Node
                     ->raw(", \$this->source);\n")
                     ->outdent()
                     ->write("}\n")
-                    ->write(sprintf("\$_trait_%s_blocks = \$_trait_%s->getBlocks();\n\n", $i, $i))
+                    ->write(\sprintf("\$_trait_%s_blocks = \$_trait_%s->unwrap()->getBlocks();\n\n", $i, $i))
                 ;
 
                 foreach ($trait->getNode('targets') as $key => $value) {
                     $compiler
-                        ->write(sprintf('if (!isset($_trait_%s_blocks[', $i))
+                        ->write(\sprintf('if (!isset($_trait_%s_blocks[', $i))
                         ->string($key)
                         ->raw("])) {\n")
                         ->indent()
@@ -224,11 +226,11 @@ final class ModuleNode extends Node
                         ->outdent()
                         ->write("}\n\n")
 
-                        ->write(sprintf('$_trait_%s_blocks[', $i))
+                        ->write(\sprintf('$_trait_%s_blocks[', $i))
                         ->subcompile($value)
-                        ->raw(sprintf('] = $_trait_%s_blocks[', $i))
+                        ->raw(\sprintf('] = $_trait_%s_blocks[', $i))
                         ->string($key)
-                        ->raw(sprintf(']; unset($_trait_%s_blocks[', $i))
+                        ->raw(\sprintf(']; unset($_trait_%s_blocks[', $i))
                         ->string($key)
                         ->raw("]);\n\n")
                     ;
@@ -243,7 +245,7 @@ final class ModuleNode extends Node
 
                 for ($i = 0; $i < $countTraits; ++$i) {
                     $compiler
-                        ->write(sprintf('$_trait_%s_blocks'.($i == $countTraits - 1 ? '' : ',')."\n", $i))
+                        ->write(\sprintf('$_trait_%s_blocks'.($i == $countTraits - 1 ? '' : ',')."\n", $i))
                     ;
                 }
 
@@ -276,7 +278,7 @@ final class ModuleNode extends Node
 
         foreach ($this->getNode('blocks') as $name => $node) {
             $compiler
-                ->write(sprintf("'%s' => [\$this, 'block_%s'],\n", $name, $name))
+                ->write(\sprintf("'%s' => [\$this, 'block_%s'],\n", $name, $name))
             ;
         }
 
@@ -325,15 +327,24 @@ final class ModuleNode extends Node
                     ->repr($parent->getTemplateLine())
                     ->raw(");\n")
                 ;
-                $compiler->write('$this->parent');
-            } else {
-                $compiler->write('$this->getParent($context)');
             }
-            $compiler->raw("->display(\$context, array_merge(\$this->blocks, \$blocks));\n");
+            $compiler->write('yield from ');
+
+            if ($parent instanceof ConstantExpression) {
+                $compiler->raw('$this->parent');
+            } else {
+                $compiler->raw('$this->getParent($context)');
+            }
+            $compiler->raw("->unwrap()->yield(\$context, array_merge(\$this->blocks, \$blocks));\n");
+        }
+
+        $compiler->subcompile($this->getNode('display_end'));
+
+        if (!$this->hasNode('parent')) {
+            $compiler->write("return; yield '';\n"); // ensure at least one yield call even for templates with no output
         }
 
         $compiler
-            ->subcompile($this->getNode('display_end'))
             ->outdent()
             ->write("}\n\n")
         ;
@@ -381,7 +392,7 @@ final class ModuleNode extends Node
         $traitable = !$this->hasNode('parent') && 0 === \count($this->getNode('macros'));
         if ($traitable) {
             if ($this->getNode('body') instanceof BodyNode) {
-                $nodes = $this->getNode('body')->getNode(0);
+                $nodes = $this->getNode('body')->getNode('0');
             } else {
                 $nodes = $this->getNode('body');
             }
@@ -418,7 +429,7 @@ final class ModuleNode extends Node
             ->write(" */\n")
             ->write("public function isTraitable()\n", "{\n")
             ->indent()
-            ->write(sprintf("return %s;\n", $traitable ? 'true' : 'false'))
+            ->write("return false;\n")
             ->outdent()
             ->write("}\n\n")
         ;
@@ -432,7 +443,7 @@ final class ModuleNode extends Node
             ->write(" */\n")
             ->write("public function getDebugInfo()\n", "{\n")
             ->indent()
-            ->write(sprintf("return %s;\n", str_replace("\n", '', var_export(array_reverse($compiler->getDebugInfo(), true), true))))
+            ->write(\sprintf("return %s;\n", str_replace("\n", '', var_export(array_reverse($compiler->getDebugInfo(), true), true))))
             ->outdent()
             ->write("}\n\n")
         ;
@@ -459,7 +470,7 @@ final class ModuleNode extends Node
     {
         if ($node instanceof ConstantExpression) {
             $compiler
-                ->write(sprintf('%s = $this->loadTemplate(', $var))
+                ->write(\sprintf('%s = $this->loadTemplate(', $var))
                 ->subcompile($node)
                 ->raw(', ')
                 ->repr($node->getTemplateName())
@@ -470,5 +481,20 @@ final class ModuleNode extends Node
         } else {
             throw new \LogicException('Trait templates can only be constant nodes.');
         }
+    }
+
+    private function hasNodeOutputNodes(Node $node): bool
+    {
+        if ($node instanceof NodeOutputInterface) {
+            return true;
+        }
+
+        foreach ($node as $child) {
+            if ($this->hasNodeOutputNodes($child)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

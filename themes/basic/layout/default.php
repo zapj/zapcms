@@ -121,7 +121,7 @@ $footerCatalogMenu = $catalogMenu;
                             continue;
                         }
                         ?>
-                    <li><a href="#" title=""><?php echo $child['title'];?></a></li>
+                    <li><a href="<?php echo url_slug($childLastSlug,$menu['slug']==='--zap-link-url'?$menu['link_to']:$menu['slug']);?>" title=""><?php echo $child['title'];?></a></li>
                     <?php } ?>
 
                 </ul>

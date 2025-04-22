@@ -65,7 +65,10 @@ final class TemplateWrapper
 
     public function displayBlock(string $name, array $context = [])
     {
-        $this->template->displayBlock($name, $this->env->mergeGlobals($context));
+        $context = $this->env->mergeGlobals($context);
+        foreach ($this->template->yieldBlock($name, $context) as $data) {
+            echo $data;
+        }
     }
 
     public function getSourceContext(): Source
