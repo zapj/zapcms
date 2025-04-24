@@ -5,8 +5,11 @@
 
 namespace app\controllers;
 
+use app\PageState;
 use zap\cms\BreadCrumb;
+use zap\cms\Catalog;
 use zap\cms\models\Node;
+use zap\helpers\Pagination;
 use zap\http\Controller;
 
 class SearchController extends Controller
@@ -19,24 +22,19 @@ class SearchController extends Controller
 
     function index(){
         $keyword = trim(req()->get('q'));
-//        page()->catalogPaths = $this->getCatalogPathByNodeId(page()->nodeId);
-//        $slugs = [];
-//        foreach (page()->catalogPaths as $catalog){
-//            $slugs[] = $catalog['slug'];
-//            BreadCrumb::instance()->add($catalog['title'],site_url("/{$catalog['slug']}"));
-//        }
-//        $slug = page()->node['slug'];
-//        BreadCrumb::instance()->add(page()->node['title'],site_url("/{$slug}"),true);
 
-        //侧边栏菜单
-//        $topCatalog = current(page()->catalogPaths);
-//        page()->subCatalogList = Catalog::instance()->getSubCatalogList($topCatalog['id']);
-        $data_list = Node::where('title','LIKE',"%{$keyword}%")
+        $page = new Pagination(intval(req()->get('page',1)),12,req()->get());
+        pageState()->subCatalogList = PageState::getSearchSidebarMenu();
+        $query = Node::where('title','LIKE',"%{$keyword}%")
             ->where('status',Node::STATUS_PUBLISH)
-            ->get(FETCH_ASSOC);
-
+            ->where('node_type','IN',['product','article','faq']);
+        // set total
+        $page->setTotal($query->count());
+        // limit
+        $query->limit($page->getLimit(),$page->getOffset());
         view('search',[
-            'data_list'=>$data_list
+            'data_list'=> $query->get(FETCH_ASSOC),
+            'page' => $page,
         ]);
     }
 }

@@ -15,7 +15,8 @@ class Expr
      * @param mixed $value
      * @return Expr
      */
-    public static function make($value) {
+    public static function make($value): Expr
+    {
         return new static($value);
     }
 

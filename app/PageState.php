@@ -56,6 +56,12 @@ class PageState extends \ArrayObject
         return $this->catalogList;
     }
 
+    public function getSearchSidebarMenu(){
+        $types = ['article','product'];
+        $results = \zap\cms\Catalog::instance()->getTreeArray([['node_type','IN',$types]]);
+        return $results;
+    }
+
 
 
 

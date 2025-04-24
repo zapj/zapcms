@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'c65e420f3aeb13194e9c4047864e2a38caabfdc5',
+        'reference' => '50b28668e042c5031cd7312a1a4ca9079dcc0b79',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'c65e420f3aeb13194e9c4047864e2a38caabfdc5',
+            'reference' => '50b28668e042c5031cd7312a1a4ca9079dcc0b79',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -22,7 +22,7 @@
         'ezyang/htmlpurifier' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'c2bc3549a392722ab3b5aa4de973673db9e1708f',
+            'reference' => 'ff005f6edc4d55f03d756c2d25141c4278286137',
             'type' => 'library',
             'install_path' => __DIR__ . '/../ezyang/htmlpurifier',
             'aliases' => array(
@@ -33,7 +33,7 @@
         'monolog/monolog' => array(
             'pretty_version' => '2.x-dev',
             'version' => '2.9999999.9999999.9999999-dev',
-            'reference' => '5cf826f2991858b54d5c3809bee745560a1042a7',
+            'reference' => 'cd82b5069148dd811ef54b4b92ce1b3aad84209b',
             'type' => 'library',
             'install_path' => __DIR__ . '/../monolog/monolog',
             'aliases' => array(),
@@ -42,7 +42,7 @@
         'phpmailer/phpmailer' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'ab8d4f87a492807812c04e8224710f923805cff2',
+            'reference' => 'e7b1334cf21c4d0d36abcb34223efc4a4f65f86f',
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpmailer/phpmailer',
             'aliases' => array(
@@ -122,7 +122,7 @@
         'zapj/zap-php-framework' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '82c1ea87ba629e920ecdd32eb5b4e81a1da771f9',
+            'reference' => 'b012d113eccf63e9a96ea060cc99d61786c05a80',
             'type' => 'library',
             'install_path' => __DIR__ . '/../zapj/zap-php-framework',
             'aliases' => array(

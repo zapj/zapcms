@@ -25,5 +25,8 @@
       "zap\\": "src/"
     }
   },
-  "minimum-stability": "dev"
+  "minimum-stability": "dev",
+  "require-dev": {
+    "phpunit/phpunit": "9.6.x-dev"
+  }
 }

@@ -6,11 +6,15 @@ use zap\DB;
 use zap\util\Arr;
 use zap\util\Str;
 
+
+/**
+ * @method static select(string $tableName)
+ */
 abstract class Model implements \ArrayAccess
 {
     protected $autoincrement = true;
 
-    protected $attributes = array();
+    protected array $attributes = array();
 
     protected $connection;
 

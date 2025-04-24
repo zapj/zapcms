@@ -37,7 +37,7 @@ echo $this->extend('layout/default'); ?>
                     <li class="media">
                         <div class="media-left">
                             <a href="#" title="Post">
-                                <img class="media-object" src="<?php echo \zap\cms\helpers\ThumbHelper::thumb($node['image'],200,200); ?>" alt="Post">
+                                <img class="media-object" width="200" src="<?php echo \zap\cms\helpers\ThumbHelper::thumb($node['image'],200,200); ?>" alt="Post">
                             </a>
                         </div>
                         <div class="media-body">

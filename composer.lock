@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ezyang/htmlpurifier.git",
-                "reference": "c2bc3549a392722ab3b5aa4de973673db9e1708f"
+                "reference": "ff005f6edc4d55f03d756c2d25141c4278286137"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ezyang/htmlpurifier/zipball/c2bc3549a392722ab3b5aa4de973673db9e1708f",
-                "reference": "c2bc3549a392722ab3b5aa4de973673db9e1708f",
+                "url": "https://api.github.com/repos/ezyang/htmlpurifier/zipball/ff005f6edc4d55f03d756c2d25141c4278286137",
+                "reference": "ff005f6edc4d55f03d756c2d25141c4278286137",
                 "shasum": ""
             },
             "require": {
@@ -66,7 +66,7 @@
                 "issues": "https://github.com/ezyang/htmlpurifier/issues",
                 "source": "https://github.com/ezyang/htmlpurifier/tree/master"
             },
-            "time": "2025-01-14T21:31:27+00:00"
+            "time": "2025-03-19T17:25:28+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -74,12 +74,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "5cf826f2991858b54d5c3809bee745560a1042a7"
+                "reference": "cd82b5069148dd811ef54b4b92ce1b3aad84209b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/5cf826f2991858b54d5c3809bee745560a1042a7",
-                "reference": "5cf826f2991858b54d5c3809bee745560a1042a7",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/cd82b5069148dd811ef54b4b92ce1b3aad84209b",
+                "reference": "cd82b5069148dd811ef54b4b92ce1b3aad84209b",
                 "shasum": ""
             },
             "require": {
@@ -168,7 +168,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-11-12T12:43:37+00:00"
+            "time": "2025-03-20T09:26:28+00:00"
         },
         {
             "name": "phpmailer/phpmailer",
@@ -176,12 +176,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHPMailer/PHPMailer.git",
-                "reference": "ab8d4f87a492807812c04e8224710f923805cff2"
+                "reference": "e7b1334cf21c4d0d36abcb34223efc4a4f65f86f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/ab8d4f87a492807812c04e8224710f923805cff2",
-                "reference": "ab8d4f87a492807812c04e8224710f923805cff2",
+                "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/e7b1334cf21c4d0d36abcb34223efc4a4f65f86f",
+                "reference": "e7b1334cf21c4d0d36abcb34223efc4a4f65f86f",
                 "shasum": ""
             },
             "require": {
@@ -250,7 +250,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-03-04T18:11:22+00:00"
+            "time": "2025-04-01T08:08:58+00:00"
         },
         {
             "name": "psr/log",
@@ -775,12 +775,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/zapj/zap-php-framework.git",
-                "reference": "82c1ea87ba629e920ecdd32eb5b4e81a1da771f9"
+                "reference": "b012d113eccf63e9a96ea060cc99d61786c05a80"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/82c1ea87ba629e920ecdd32eb5b4e81a1da771f9",
-                "reference": "82c1ea87ba629e920ecdd32eb5b4e81a1da771f9",
+                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/b012d113eccf63e9a96ea060cc99d61786c05a80",
+                "reference": "b012d113eccf63e9a96ea060cc99d61786c05a80",
                 "shasum": ""
             },
             "require": {
@@ -792,6 +792,9 @@
                 "ext-pdo": "*",
                 "ext-simplexml": "*",
                 "php": ">=7.4.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "9.6.x-dev"
             },
             "default-branch": true,
             "type": "library",
@@ -818,7 +821,7 @@
                 "issues": "https://github.com/zapj/zap-php-framework/issues",
                 "source": "https://github.com/zapj/zap-php-framework/tree/main"
             },
-            "time": "2024-12-24T09:09:45+00:00"
+            "time": "2025-04-24T08:11:43+00:00"
         }
     ],
     "packages-dev": [],

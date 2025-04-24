@@ -8,7 +8,7 @@ class OpenSSL
     protected const DEFAULT_METHOD = 'aes-256-cbc';
 
 
-    public static function encrypt(string $plain, string $key, $method = null)
+    public static function encrypt(string $plain, string $key, $method = null): string
     {
         $method = is_null($method) ? static::DEFAULT_METHOD : $method;
         $ivSize = openssl_cipher_iv_length($method);
@@ -19,7 +19,7 @@ class OpenSSL
     }
 
 
-    public static function decrypt(string $cipher, string $key, $method = null)
+    public static function decrypt(string $cipher, string $key, $method = null): ?string
     {
         $method = is_null($method) ? static::DEFAULT_METHOD : $method;
         $ivSize = openssl_cipher_iv_length($method);

@@ -4,7 +4,7 @@ namespace zap\http;
 
 abstract class Controller
 {
-    protected $params = [];
+    protected array $params = [];
 
     /**
      * @return array
