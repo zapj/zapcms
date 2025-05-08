@@ -22,7 +22,7 @@ $error_status = '<span style="color:red">No</span>';
              aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item "><a href="<?php echo Url::action('System@settings') ?>">系统管理</a></li>
-                <li class="breadcrumb-item active"><a href="<?php echo Url::action('System@sysInfo') ?>">服务器信息</a></li>
+                <li class="breadcrumb-item active"><a href="<?php echo Url::action('System@sysInfo') ?>">数据库管理</a></li>
             </ol>
         </nav>
         <div class=" text-end" >
@@ -37,116 +37,84 @@ $error_status = '<span style="color:red">No</span>';
 
         <div class="card shadow-sm">
 
-
+            <?php
+            $driver = \zap\DB::getPDO()->driver;
+            $conn_name = config('database.default');
+            ?>
             <div class="card-body p-0" >
                 <table class="table table-hover table-bordered text-nowrap">
                     <thead>
                     <tr>
-                        <th colspan="2">服务器基本信息</th>
+                        <th colspan="2">数据库信息</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr>
-                        <th>ZapCMS</th>
-                        <td><?php echo ZAP_CMS_VERSION,'-',ZAP_CMS_RELEASE_DATE;?></td>
+                        <th>数据库类型</th>
+                        <td><?php echo $driver;?></td>
                     </tr>
+                    <?php if($driver === 'sqlite'): ?>
+                        <tr>
+                            <th>数据库路径</th>
+                            <td><?php echo config("database.connections.{$conn_name}.dsn");?></td>
+                        </tr>
+                        <tr>
+                            <th>数据库大小</th>
+                            <td><?php echo \zap\util\FileUtils::sizeOf(str_replace('sqlite:','',config("database.connections.{$conn_name}.dsn")),true); ?></td>
+                        </tr>
+                    <?php elseif($driver === 'mysql' || $driver === 'mariadb'): ?>
+                        <tr>
+                            <th>Host</th>
+                            <td><?php echo config("database.connections.{$conn_name}.host");?></td>
+                        </tr>
+                        <tr>
+                            <th>数据库名称</th>
+                            <td><?php echo config("database.connections.{$conn_name}.dbname");?></td>
+                        </tr>
 
-                    <tr>
-                        <th>主机系统</th>
-                        <td><?php echo PHP_OS;?></td>
-                    </tr>
-                    <tr>
-                        <th>访问地址</th>
-                        <td><?php echo $_SERVER['HTTP_HOST']; ?></td>
-                    </tr>
-                    <tr>
-                        <th>主机名称</th>
-                        <td><?php echo $_SERVER['SERVER_NAME']; ?></td>
-                    </tr>
+                    <?php endif; ?>
 
-                    <tr>
-                        <th>主机地址</th>
-                        <td><?php echo $_SERVER['SERVER_ADDR']; ?></td>
-                    </tr>
-                    <tr>
-                        <th>主机端口</th>
-                        <td><?php echo $_SERVER['SERVER_PORT']; ?></td>
-                    </tr>
-
-                    <tr>
-                        <th>WEB软件</th>
-                        <td><?php echo $_SERVER['SERVER_SOFTWARE']; ?></td>
-                    </tr>
-
-                    <tr>
-                        <th>PHP版</th>
-                        <td><?php echo PHP_VERSION; ?></td>
-                    </tr>
-
-                    <tr>
-                        <th>数据库驱动</th>
-                        <td>pdo_sqlite</td>
-                    </tr>
-
-                    <tr>
-                        <th>允许上传文件</th>
-                        <td><?php echo ini_get('file_uploads');?></td>
-                    </tr>
-                    <tr>
-                        <th>文件上传限制</th>
-                        <td><?php echo ini_get('upload_max_filesize');?></td>
-                    </tr>
-
-                    <tr>
-                        <th>表单提交限制</th>
-                        <td><?php echo ini_get('post_max_size');?></td>
-                    </tr>
-
-                    <tr>
-                        <th>最大提交数量</th>
-                        <td><?php echo ini_get('max_file_uploads');?></td>
-                    </tr>
-
-                    <tr>
-                        <th>分配内存限制</th>
-                        <td><?php echo ini_get('memory_limit');?></td>
-                    </tr>
-
-                    <tr>
-                        <th>GD库支持</th>
-                        <td><?php if_else_echo(function_exists('gd_info'),$success_status,$error_status); ?></td>
-                    </tr>
-
-                    <tr>
-                        <th>Curl支持</th>
-                        <td><?php if_else_echo(function_exists('curl_init'),$success_status,$error_status); ?></td>
-                    </tr>
-
-                    <tr>
-                        <th>缓存模块支持</th>
-                        <td>
-
-                            APC：<?php if_else_echo(function_exists('apc_add'),$success_status,$error_status); ?><br/>
-                            APCu：<?php if_else_echo(function_exists('apcu_add'),$success_status,$error_status); ?><br/>
-
-                            OPcache：<?php if_else_echo(function_exists('opcache_get_configuration'),$success_status,$error_status); ?><br/>
-                            Memcache： <?php if_else_echo(class_exists('Memcache'),$success_status,$error_status); ?><br/>
-                            Memcached：<?php if_else_echo(class_exists('Memcached'),$success_status,$error_status); ?>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th>已加载模块</th>
-                        <td><?php echo join('<br/>',get_loaded_extensions()); ?> </td>
-                    </tr>
                     </tbody>
                 </table>
 
 
             </div>
 
+
+
         </div>
 
+        <div class="card shadow-sm mt-3">
+            <div class="card-body p-0" >
+                <table class="table table-hover table-bordered text-nowrap">
+                    <thead>
+                    <tr>
+                        <th colspan="2">数据库表</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    <tr>
+                        <th>表名</th>
+                        <?php if($driver !== 'sqlite'): ?>
+                        <th>表大小</th>
+                        <?php endif; ?>
+                    </tr>
+                        <?php $tables = \app\zap\cms\system\SysInfo::getDatabaseTableNames(); ?>
+                        <?php foreach ($tables as $table): ?>
+                            <tr>
+                                <td><?php echo $table['name'];?></td>
+                                <?php if($driver !== 'sqlite'): ?>
+                                    <td></td>
+                                <?php endif; ?>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+
+
+            </div>
+        </div>
 
     </main>
 </form>

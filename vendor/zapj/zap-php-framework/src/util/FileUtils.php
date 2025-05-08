@@ -23,10 +23,13 @@ class FileUtils {
         fclose($fh);
     }
 
-    public static function sizeOf($filename){
+    public static function sizeOf($filename,$fmt = false){
         $size = filesize($filename);
         if($size === false){
             $size = 0;
+        }
+        if ($fmt){
+            return Fmt::ByteToHuman($size);
         }
         return $size;
     }

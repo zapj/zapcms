@@ -35,5 +35,9 @@ class SystemController extends AdminController
         View::render("system.sysinfo",[]);
     }
 
+    public function database(){
+        \view('system.database',[]);
+    }
+
 
 }

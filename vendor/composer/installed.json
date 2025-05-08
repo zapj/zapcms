@@ -177,12 +177,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHPMailer/PHPMailer.git",
-                "reference": "e7b1334cf21c4d0d36abcb34223efc4a4f65f86f"
+                "reference": "bf74d75a1fde6beaa34a0ddae2ec5fce0f72a144"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/e7b1334cf21c4d0d36abcb34223efc4a4f65f86f",
-                "reference": "e7b1334cf21c4d0d36abcb34223efc4a4f65f86f",
+                "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/bf74d75a1fde6beaa34a0ddae2ec5fce0f72a144",
+                "reference": "bf74d75a1fde6beaa34a0ddae2ec5fce0f72a144",
                 "shasum": ""
             },
             "require": {
@@ -212,7 +212,7 @@
                 "symfony/polyfill-mbstring": "To support UTF-8 if the Mbstring PHP extension is not enabled (^1.2)",
                 "thenetworg/oauth2-azure": "Needed for Microsoft XOAUTH2 authentication"
             },
-            "time": "2025-04-01T08:08:58+00:00",
+            "time": "2025-04-24T15:19:31+00:00",
             "default-branch": true,
             "type": "library",
             "installation-source": "dist",
@@ -245,7 +245,7 @@
             "description": "PHPMailer is a full-featured email creation and transfer class for PHP",
             "support": {
                 "issues": "https://github.com/PHPMailer/PHPMailer/issues",
-                "source": "https://github.com/PHPMailer/PHPMailer/tree/master"
+                "source": "https://github.com/PHPMailer/PHPMailer/tree/v6.10.0"
             },
             "funding": [
                 {
@@ -800,12 +800,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/zapj/zap-php-framework.git",
-                "reference": "b012d113eccf63e9a96ea060cc99d61786c05a80"
+                "reference": "72d0dcf1bfed05486b7f521cd9df563a26cc3b1c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/b012d113eccf63e9a96ea060cc99d61786c05a80",
-                "reference": "b012d113eccf63e9a96ea060cc99d61786c05a80",
+                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/72d0dcf1bfed05486b7f521cd9df563a26cc3b1c",
+                "reference": "72d0dcf1bfed05486b7f521cd9df563a26cc3b1c",
                 "shasum": ""
             },
             "require": {
@@ -821,7 +821,7 @@
             "require-dev": {
                 "phpunit/phpunit": "9.6.x-dev"
             },
-            "time": "2025-04-24T08:11:43+00:00",
+            "time": "2025-05-07T07:22:46+00:00",
             "default-branch": true,
             "type": "library",
             "installation-source": "dist",

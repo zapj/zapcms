@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '50b28668e042c5031cd7312a1a4ca9079dcc0b79',
+        'reference' => '2734b7d97252a30b4e7025fc8068e1b9297740b6',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '50b28668e042c5031cd7312a1a4ca9079dcc0b79',
+            'reference' => '2734b7d97252a30b4e7025fc8068e1b9297740b6',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -42,7 +42,7 @@
         'phpmailer/phpmailer' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'e7b1334cf21c4d0d36abcb34223efc4a4f65f86f',
+            'reference' => 'bf74d75a1fde6beaa34a0ddae2ec5fce0f72a144',
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpmailer/phpmailer',
             'aliases' => array(
@@ -122,7 +122,7 @@
         'zapj/zap-php-framework' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'b012d113eccf63e9a96ea060cc99d61786c05a80',
+            'reference' => '72d0dcf1bfed05486b7f521cd9df563a26cc3b1c',
             'type' => 'library',
             'install_path' => __DIR__ . '/../zapj/zap-php-framework',
             'aliases' => array(
