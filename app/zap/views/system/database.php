@@ -79,6 +79,9 @@ $error_status = '<span style="color:red">No</span>';
 
 
             </div>
+            <div class="card-footer">
+                <button onclick="backup()" type="button" class="btn btn-info" >备份</button>
+            </div>
 
 
 
@@ -120,23 +123,13 @@ $error_status = '<span style="color:red">No</span>';
 </form>
 <script>
 
-    $(function(){
-        $('#zapForm').validate({ignore:''});
 
-    })
 
-    function save(){
-        const zapForm = $('#zapForm');
-        if (!zapForm.valid()) {
-            ZapToast.alert('必填项不能为空', {bgColor: bgDanger, position: Toast_Pos_Center});
-            return false;
-        }
-        const load = Zap.loadding('正在保存，请稍后');
+    function backup(){
+        const load = Zap.loading('正在备份数据库，请稍后...');
         $.ajax({
-            url: '<?php echo Url::current();?>',
+            url: '<?php echo Url::action('System@backup');?>',
             method: 'post',
-            data: zapForm.serialize(),
-            dataType: 'json',
             success: function (data) {
                 if (data.code === 0) {
                     ZapToast.alert(data.msg, {bgColor: bgSuccess, position: Toast_Pos_Center});

@@ -2,6 +2,7 @@
 
 namespace app\zap\controllers;
 
+use app\zap\cms\backup\Database;
 use zap\cms\AdminController;
 use zap\cms\Option;
 use zap\http\Request;
@@ -37,6 +38,15 @@ class SystemController extends AdminController
 
     public function database(){
         \view('system.database',[]);
+    }
+
+    public function backup(){
+        if( Database::backup() === true){
+            Response::json(['code'=>0,'msg'=>'备份成功']);
+        }else{
+            Response::json(['code'=>1,'msg'=>'备份失败']);
+        }
+
     }
 
 

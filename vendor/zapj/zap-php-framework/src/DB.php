@@ -40,6 +40,8 @@ use zap\util\Arr;
  * @method static int rawExec($statement)
  * @method static mixed getAll(string $statement, array $params = [],$fetchMode = null)
  * @method static mixed get(string $statement, array $params = [],$fetchMode = null)
+ * @method static array getTables()
+ * @method static string getTableStructure(string $table)
  */
 class DB
 {

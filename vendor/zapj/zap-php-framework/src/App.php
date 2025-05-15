@@ -13,7 +13,7 @@ define('ZAP_SRC', realpath(__DIR__));
 class App implements \ArrayAccess
 {
 
-    public const VERSION = '1.0.4';
+    public const VERSION = '1.0.5';
 
     protected $rootPath;
 

@@ -75,10 +75,9 @@ $this->layout('layouts/common');
                                 if($driver == 'mysql'){
                                     echo \zap\DB::value("SELECT VERSION()");
                                 }else if($driver == 'sqlite'){
-                                    $dbh = new \PDO('sqlite:memory');
+                                    $dbh = new \PDO('sqlite:memory:');
                                     if($dbh){
                                         echo $dbh->query('select sqlite_version()')->fetchColumn(0);
-//                                        print_r("SQLite version " . $dbh->query('select sqlite_version()')->fetch()[0]);
                                         $dbh = null;
                                     }else{
                                         echo '当前环境不支持sqlite3';
