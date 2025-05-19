@@ -8,14 +8,14 @@ use zap\cache\FileCache;
 use zap\cache\RedisCache;
 
 /**
- * @method static get($key, $default = null, $ttl = null)
+ * @method static mixed get($key, $default = null, $ttl = null)
  * @method static set($key, $value, $ttl = null)
- * @method static delete(string $key)
+ * @method static bool delete(string $key)
  * @method static clear()
- * @method static getMultiple($keys, $default = null)
+ * @method static mixed getMultiple($keys, $default = null)
  * @method static setMultiple($values, $ttl = null)
  * @method static deleteMultiple($keys)
- * @method static has($key)
+ * @method static bool has($key)
  *
  */
 class Cache extends Facade

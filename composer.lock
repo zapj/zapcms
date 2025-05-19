@@ -775,12 +775,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/zapj/zap-php-framework.git",
-                "reference": "251f969fda8db71f90a835d5e288fd85584209c9"
+                "reference": "0dc3a2b627e19e5724f231a9b3515efd84449167"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/251f969fda8db71f90a835d5e288fd85584209c9",
-                "reference": "251f969fda8db71f90a835d5e288fd85584209c9",
+                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/0dc3a2b627e19e5724f231a9b3515efd84449167",
+                "reference": "0dc3a2b627e19e5724f231a9b3515efd84449167",
                 "shasum": ""
             },
             "require": {
@@ -821,7 +821,7 @@
                 "issues": "https://github.com/zapj/zap-php-framework/issues",
                 "source": "https://github.com/zapj/zap-php-framework/tree/main"
             },
-            "time": "2025-05-08T10:07:34+00:00"
+            "time": "2025-05-19T08:57:28+00:00"
         }
     ],
     "packages-dev": [],
