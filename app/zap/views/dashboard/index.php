@@ -63,7 +63,7 @@ $this->layout('layouts/common');
                     <table class="table table-bordered text-nowrap">
                         <tbody>
                         <tr>
-                            <td >Zap CMS 版本</td>
+                            <td >ZapCMS 版本</td>
                             <td>v<?php echo ZAP_CMS_VERSION,'-',ZAP_CMS_RELEASE_DATE; ?></td>
                             <td>PHP 版本</td>
                             <td><?php echo PHP_VERSION , '(' , php_sapi_name() , ')'; ?></td>
@@ -75,7 +75,7 @@ $this->layout('layouts/common');
                                 if($driver == 'mysql'){
                                     echo \zap\DB::value("SELECT VERSION()");
                                 }else if($driver == 'sqlite'){
-                                    $dbh = new \PDO('sqlite:memory:');
+                                    $dbh = new \PDO('sqlite::memory:');
                                     if($dbh){
                                         echo $dbh->query('select sqlite_version()')->fetchColumn(0);
                                         $dbh = null;
