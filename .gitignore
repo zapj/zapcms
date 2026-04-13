@@ -2,3 +2,4 @@
 var/cache/*
 var/logs/*
 var/tmp/*
+storage/*
