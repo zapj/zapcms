@@ -163,7 +163,27 @@ print_scripts(ASSETS_BODY_TEXT);
             e.stopPropagation();
             console.log($(e.target).closest('li').toggleClass('open'))
         });
+        
+        // Back to top button
+        $(window).scroll(function(){
+            if($(this).scrollTop() > 300){
+                $('.back-to-top').addClass('show');
+            }else{
+                $('.back-to-top').removeClass('show');
+            }
+        });
+        
+        $('.back-to-top').click(function(){
+            $('html, body').animate({scrollTop: 0}, 600);
+            return false;
+        });
     });
 </script>
+
+<!-- Back to Top Button -->
+<div class="back-to-top" style="display: none;">
+    <i class="fa fa-chevron-up"></i>
+</div>
+
 </body>
 </html>

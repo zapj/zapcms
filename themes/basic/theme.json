@@ -1,43 +1,51 @@
 {
-  "version": "1.0.1",
+  "version": "1.2.0",
   "name": "basic",
-  "title": "默认主题",
-  "description": "ZapCMS 默认主题",
+  "title": "商务简约模板",
+  "description": "ZapCMS 官方商务简约主题，采用现代化设计风格，简洁大气。支持响应式布局、自定义幻灯片、服务项目展示等功能。适用于企业官网、个人工作室、产品展示等各类网站。",
   "screenshot": "screenshot.png",
+  "author": "ZapCMS Team",
+  "features": [
+    "响应式设计",
+    "幻灯片轮播",
+    "服务项目展示",
+    "新闻动态",
+    "自定义配置",
+    "SEO友好"
+  ],
   "settings": {
     "option_keys": ["basic","basic_home"]
   },
   "options": {
     "basic_home.slide": [
       {
-        "img_path": "/themes/basic/img/banner1.png"
+        "img_path": "/themes/basic/img/banner1.png",
+        "link": "#"
       },
       {
-        "img_path": "/themes/basic/img/banner2.png"
+        "img_path": "/themes/basic/img/banner2.png",
+        "link": "#"
       }
     ],
-
-    "basic_home.service_title": "服务项目",
-    "basic_home.service_subtitle": "SERVICES",
-
-    "basic_home.service1_title": "",
-    "basic_home.service1_content": "",
-    "basic_home.service1_icon": "",
-
-    "basic_home.service2_title": "",
-    "basic_home.service2_content": "",
-    "basic_home.service2_icon": "",
-
-    "basic_home.service3_title": "",
-    "basic_home.service3_content": "",
-    "basic_home.service4_icon": "",
-
-    "basic_home.service5_title": "",
-    "basic_home.service5_content": "",
-    "basic_home.service5_icon": "",
-
-    "basic_home.service6_title": "",
-    "basic_home.service6_content": "",
-    "basic_home.service6_icon": ""
+    "basic_home.service_title": "我们的服务",
+    "basic_home.service_subtitle": "What We Offer",
+    "basic_home.service1_title": "专业定制开发",
+    "basic_home.service1_content": "根据您的需求量身打造专属解决方案，涵盖网站开发、系统定制、功能扩展等全方位技术服务。",
+    "basic_home.service1_icon": "fa fa-cogs",
+    "basic_home.service2_title": "UI/UX设计",
+    "basic_home.service2_content": "提供专业的界面设计与用户体验优化，让您的产品不仅功能强大，更拥有出色的视觉效果。",
+    "basic_home.service2_icon": "fa fa-paint-brush",
+    "basic_home.service3_title": "技术支持",
+    "basic_home.service3_content": "7x24小时技术支持服务，快速响应您的需求，确保系统稳定运行。",
+    "basic_home.service3_icon": "fa fa-headset",
+    "basic_home.service4_title": "运维托管",
+    "basic_home.service4_content": "提供服务器运维、网站托管、安全防护等专业服务，让您专注于核心业务。",
+    "basic_home.service4_icon": "fa fa-server",
+    "basic_home.service5_title": "培训咨询",
+    "basic_home.service5_content": "提供系统使用培训和技术咨询，帮助您的团队快速掌握工具，提升工作效率。",
+    "basic_home.service5_icon": "fa fa-graduation-cap",
+    "basic_home.service6_title": "持续迭代",
+    "basic_home.service6_content": "持续更新优化产品功能，紧跟技术发展趋势，为您提供最前沿的解决方案。",
+    "basic_home.service6_icon": "fa fa-sync-alt"
   }
 }
