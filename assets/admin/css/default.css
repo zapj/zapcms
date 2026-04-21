@@ -159,7 +159,6 @@ a:hover {
 /* Tables */
 .table {
     margin-bottom: 0;
-    font-size: 0.875rem;
 }
 
 .table thead th {
@@ -744,6 +743,23 @@ footer a:hover {
     .table-responsive {
         border: none;
         margin: 0 -1rem;
+    }
+
+    /* Mobile Table Actions - 按钮横向显示不换行 */
+    .table tbody td:last-child {
+        white-space: nowrap;
+        text-align: right;
+    }
+
+    .table tbody td:last-child .btn,
+    .table tbody td:last-child .btn-group {
+        display: inline-flex;
+        flex-shrink: 0;
+    }
+
+    /* Mobile Table Date - 日期不换行 */
+    .table td.date-cell {
+        white-space: nowrap;
     }
 
     /* Mobile Breadcrumb */

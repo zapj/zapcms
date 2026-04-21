@@ -61,7 +61,7 @@ $this->layout('layouts/common');
                                 <small class="text-muted ms-1">#<?php echo $row['id'];?></small>
                             </td>
 
-                            <td class="align-middle"><small><?php echo date('Y-m-d H:i',$row['pub_time']); ?></small></td>
+                            <td class="align-middle date-cell"><small><?php echo date('Y-m-d H:i',$row['pub_time']); ?></small></td>
                             <td class="align-middle">
                                 <?php 
                                 $statusClass = $row['status'] === 'published' ? 'bg-success' : 'bg-secondary';

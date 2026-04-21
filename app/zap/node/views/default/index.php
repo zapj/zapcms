@@ -27,12 +27,7 @@ $this->layout('layouts/common');
     <div class="col-md-9 col-lg-9 col-sm-12">
         <div class="card shadow-sm">
 
-            <div class="card-header d-flex align-items-center justify-content-between">
-                <span><?php echo $title; ?></span>
-                <a class="btn btn-success btn-sm" href="<?php echo url_action("Node@{$_controller}/add",$_GET);?>">
-                    <i class="fa fa-plus me-1"></i>添加
-                </a>
-            </div>
+      
 
             <div class="table-responsive card-body p-0">
                 <table class="table table-hover mb-0">
@@ -66,7 +61,7 @@ $this->layout('layouts/common');
                             </td>
 
                             <td class="align-middle text-center"><small><?php echo $row['hits']; ?></small></td>
-                            <td class="align-middle"><small><?php echo date('Y-m-d H:i',$row['pub_time']); ?></small></td>
+                            <td class="align-middle date-cell"><small><?php echo date('Y-m-d H:i',$row['pub_time']); ?></small></td>
                             <td class="align-middle">
                                 <?php 
                                 $statusClass = $row['status'] === 'published' ? 'bg-success' : 'bg-secondary';
