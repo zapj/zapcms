@@ -46,7 +46,7 @@ $this->layout('layouts/common');
             <div class="card">
                 <div class="card-header d-flex align-items-center justify-content-between">
                     <span><i class="fa fa-sitemap me-2"></i>网站信息</span>
-                    <span class="badge bg-secondary">共 <?php echo count($node_types_statistics); ?> 个分类</span>
+                    
                 </div>
                 <div class="card-body">
                     <div class="row g-2">
@@ -69,7 +69,7 @@ $this->layout('layouts/common');
                             'video' => 'danger',
                             'download' => 'secondary',
                             'job' => 'dark',
-                            'faq' => 'purple',
+                            'faq' => 'success',
                         ];
                         foreach($node_types_statistics as $type=>$count){ 
                             $icon = $typeIcons[$type] ?? 'fa-folder';

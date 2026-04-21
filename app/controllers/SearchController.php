@@ -24,7 +24,7 @@ class SearchController extends Controller
         $keyword = trim(req()->get('q'));
 
         $page = new Pagination(intval(req()->get('page',1)),12,req()->get());
-        pageState()->subCatalogList = PageState::getSearchSidebarMenu();
+        pageState()->subCatalogList = pageState()->getSearchSidebarMenu();
         $query = Node::where('title','LIKE',"%{$keyword}%")
             ->where('status',Node::STATUS_PUBLISH)
             ->where('node_type','IN',['product','article','faq']);

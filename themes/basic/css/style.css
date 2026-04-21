@@ -67,6 +67,11 @@ a.none:hover {
 ::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
+/* pagination */
+.pagination>.active>a, .pagination>.active>a:focus, .pagination>.active>a:hover, .pagination>.active>span, .pagination>.active>span:focus, .pagination>.active>span:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff !important;
+}
 
 /* Header */
 .top {
@@ -1170,7 +1175,8 @@ p.text {
     transition: all 0.3s;
 }
 
-.sidebar li.current a {
+.sidebar li.current a,
+.sidebar li.current a:hover {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: #FFFFFF;
 }
