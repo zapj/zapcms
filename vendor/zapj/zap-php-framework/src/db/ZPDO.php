@@ -9,7 +9,6 @@ use zap\exception\NotSupportedException;
 use zap\util\Arr;
 use zap\util\Random;
 
-
 class ZPDO extends PDO
 {
     protected $tablePrefix;
@@ -18,51 +17,72 @@ class ZPDO extends PDO
 
     public $rowCount = 0;
 
-    public function __construct($config) {
+    /** @var array Query log entries */
+    protected $queryLog = [];
+
+    /** @var bool Whether query logging is enabled */
+    protected $logging = false;
+
+    /** @var int Bind parameter counter (avoids collision with Random::rand) */
+    protected $bindCounter = 0;
+
+    public function __construct($config)
+    {
         $this->tablePrefix = $config['prefix'] ?? '';
-        $this->driver = $config['driver'] ?? 'mysql';
-        $dsn = $config['dsn'] ?? $this->buildDSN($config);
-        $username = $config['user'] ?? null;
-        $password = $config['password'] ?? null;
-        $options  = array(
+        $this->driver      = $config['driver'] ?? 'mysql';
+        $dsn               = $config['dsn'] ?? $this->buildDSN($config);
+        $username          = $config['username'] ?? $config['user'] ?? null;
+        $password          = $config['password'] ?? null;
+        $options           = [
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
-            PDO::ATTR_EMULATE_PREPARES   => FALSE,
-        );
-        if($this->driver === 'mysql'){
-            $db_charset = $config['charset'] ?? 'utf8';
-            $db_collate = $config['collate'] ?? null;
-            $options[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES '{$db_charset}' " . (is_null($db_collate) ?'': " COLLATE '{$db_collate}'");
+            PDO::ATTR_EMULATE_PREPARES   => false,
+        ];
+
+        if ($this->driver === 'mysql' || $this->driver === 'mariadb') {
+            $dbCharset = $config['charset'] ?? 'utf8';
+            $dbCollate = $config['collate'] ?? null;
+            $options[PDO::MYSQL_ATTR_INIT_COMMAND] =
+                "SET NAMES '{$dbCharset}' " . ($dbCollate ? " COLLATE '{$dbCollate}'" : '');
         }
-        $options += Arr::get($config,'options',[]);
+
+        $options += Arr::get($config, 'options', []);
         parent::__construct($dsn, $username, $password, $options);
-        if($this->driver === 'sqlite'){
-            $this->sqliteCreateFunction('REGEXP',function($pattern, $subject) {
+
+        if ($this->driver === 'sqlite') {
+            $this->sqliteCreateFunction('REGEXP', function ($pattern, $subject) {
                 return preg_match("/{$pattern}/i", $subject);
-            },2);
+            }, 2);
         }
-        $this->setAttribute(PDO::ATTR_STATEMENT_CLASS,[Statement::class]);
+
+        $this->setAttribute(PDO::ATTR_STATEMENT_CLASS, [Statement::class]);
     }
+
+    // ─── DSN ──────────────────────────────────────────────────
 
     private function buildDSN(&$config): string
     {
         $dsnElements = [];
-        switch ($this->driver){
+        switch ($this->driver) {
             case 'mysql':
             case 'mariadb':
-                $dsnElements = Arr::find($config,['host','port','dbname','unix_socket','charset']);
+                $dsnElements = Arr::find($config, ['host', 'port', 'dbname', 'unix_socket', 'charset']);
                 break;
             case 'pgsql':
-                $dsnElements = Arr::find($config,['host','port','dbname','user','password','sslmode']);
-                unset($config['user'],$config['password']);
+                $dsnElements = Arr::find($config, ['host', 'port', 'dbname', 'user', 'password', 'sslmode']);
+                unset($config['user'], $config['password']);
                 break;
             case 'sqlite':
-                trigger_error('Please directly set the DSN parameters',E_USER_ERROR);
+                trigger_error('Please directly set the DSN parameters', E_USER_ERROR);
+                break;
             default:
-                trigger_error("{$this->driver} driver not supported",E_USER_ERROR);
+                trigger_error("{$this->driver} driver not supported", E_USER_ERROR);
         }
-        return $this->driver . ':' . http_build_query($dsnElements,'',';');
+
+        return $this->driver . ':' . http_build_query($dsnElements, '', ';');
     }
+
+    // ─── Overrides (prefix-aware) ──────────────────────────────
 
     public function prepare($query, $options = [])
     {
@@ -71,33 +91,312 @@ class ZPDO extends PDO
 
     public function exec($statement)
     {
-        return parent::exec($this->prepareSQL($statement));
+        $this->logQuery($statement, []);
+        $result = parent::exec($this->prepareSQL($statement));
+        $this->rowCount = $result;
+        return $result;
     }
 
+    /**
+     * Execute an SQL statement and return the PDOStatement.
+     * FIXED: The original signature conflicted with PDO::query().
+     *
+     * When $params is empty, delegates to parent PDO::query() for direct execution.
+     * When $params is provided, prepares and executes with parameter binding.
+     *
+     * @param string $query SQL query
+     * @param array  $params Parameters for prepared statement
+     * @param mixed  ...$fetch_mode_args PDO fetch modes (only used when no params)
+     * @return PDOStatement|false
+     */
     public function query($query, $params = [], ...$fetch_mode_args)
     {
-        $stm = parent::query($this->prepareSQL($query), ...$fetch_mode_args);
-        $stm->execute($params);
+        $sql = $this->prepareSQL($query);
+
+        if (empty($params)) {
+            // No params → delegate to parent PDO::query for direct execution
+            if (empty($fetch_mode_args)) {
+                $stm = parent::query($sql);
+            } else {
+                $stm = parent::query($sql, ...$fetch_mode_args);
+            }
+        } else {
+            // With params → prepare + execute
+            $stm = $this->prepare($sql);
+            $stm->execute($params);
+            // Apply fetch mode if specified
+            if (!empty($fetch_mode_args)) {
+                $stm->setFetchMode(...$fetch_mode_args);
+            }
+        }
+
         $this->rowCount = $stm->rowCount();
+        $this->logQuery($sql, $params);
         return $stm;
     }
 
-    public function select($query, $params = [], ...$fetch_mode_args): array
+    /**
+     * Execute a SELECT and return all rows as array.
+     */
+    public function select(string $query, array $params = [], ...$fetch_mode_args): array
     {
-        $stm = parent::query($this->prepareSQL($query), ...$fetch_mode_args);
+        $stm = $this->prepare($query);
         $stm->execute($params);
         $this->rowCount = $stm->rowCount();
         return $stm->fetchAll();
     }
 
+    // ─── CRUD Operations ───────────────────────────────────────
+
     /**
-     * getAll
-     * @param string $statement
-     * @param array $params
-     * @param null $fetchMode
-     * @return array
+     * Insert a single row.
      */
-    public function getAll(string $statement, array $params = [],$fetchMode = null): array
+    public function insert(string $table, array $data)
+    {
+        $names        = [];
+        $placeholders = [];
+        $params       = [];
+
+        foreach ($data as $name => $value) {
+            $names[] = $this->quoteColumn($name);
+            if ($value instanceof Expr) {
+                $placeholders[] = $value->raw;
+            } else {
+                $bind = $this->nextBind();
+                $placeholders[] = ':' . $bind;
+                $params[$bind]  = $value;
+            }
+        }
+
+        $sql = 'INSERT INTO ' . $this->quoteTable($table)
+            . ' (' . implode(', ', $names) . ') VALUES ('
+            . implode(', ', $placeholders) . ')';
+
+        $this->logQuery($sql, $params);
+        $stm = $this->prepare($sql);
+        $stm->execute($params);
+        return $this->lastInsertId();
+    }
+
+    /**
+     * Batch insert multiple rows.
+     *
+     * @param string $table
+     * @param array  $rows  Array of associative arrays
+     * @return int   Number of affected rows
+     */
+    public function batchInsert(string $table, array $rows): int
+    {
+        if (empty($rows)) {
+            return 0;
+        }
+
+        $first    = reset($rows);
+        $columns  = array_keys($first);
+        $names    = array_map([$this, 'quoteColumn'], $columns);
+        $params   = [];
+        $allPlaceholders = [];
+
+        foreach ($rows as $rowIndex => $row) {
+            $rowPlaceholders = [];
+            foreach ($columns as $col) {
+                $bind = ':' . $this->nextBind();
+                $rowPlaceholders[] = $bind;
+                $params[$bind]     = $row[$col] ?? null;
+            }
+            $allPlaceholders[] = '(' . implode(', ', $rowPlaceholders) . ')';
+        }
+
+        $sql = 'INSERT INTO ' . $this->quoteTable($table)
+            . ' (' . implode(', ', $names) . ') VALUES '
+            . implode(', ', $allPlaceholders);
+
+        $stm = $this->prepare($sql);
+        $stm->execute($params);
+        $this->rowCount = $stm->rowCount();
+        return $stm->rowCount();
+    }
+
+    /**
+     * Upsert (INSERT ... ON DUPLICATE KEY UPDATE / ON CONFLICT).
+     */
+    public function upsert($table, $data, $duplicate = null, $primaryKeys = null)
+    {
+        $params       = [];
+        $names        = [];
+        $placeholders = [];
+
+        foreach ($data as $name => $value) {
+            $col = $this->quoteColumn($name);
+            $names[] = $col;
+            if ($value instanceof Expr) {
+                $placeholders[] = $value->raw;
+            } else {
+                $bind = $this->nextBind();
+                $placeholders[] = ':' . $bind;
+                $params[$bind]  = $value;
+            }
+        }
+
+        $dupSet = [];
+        if ($duplicate) {
+            foreach ($duplicate as $name => $value) {
+                $col = $this->quoteColumn($name);
+                if ($value instanceof Expr) {
+                    $dupSet[] = $col . '=' . $value->raw;
+                } else {
+                    $bind = $this->nextBind();
+                    $dupSet[] = $col . '=:' . $bind;
+                    $params[$bind] = $value;
+                }
+            }
+        }
+
+        $sql = 'INSERT INTO ' . $this->quoteTable($table)
+            . ' (' . implode(', ', $names) . ') VALUES ('
+            . implode(', ', $placeholders) . ')';
+
+        if (!empty($duplicate) && ($this->driver === 'mysql' || $this->driver === 'mariadb')) {
+            $sql .= ' ON DUPLICATE KEY UPDATE ' . implode(',', $dupSet);
+        } elseif (!empty($duplicate) && $this->driver === 'pgsql') {
+            if ($primaryKeys === null) {
+                reset($data);
+                $primaryKeys = $this->quoteColumn(key($data));
+            } elseif (is_array($primaryKeys)) {
+                $primaryKeys = implode(',', array_map([$this, 'quoteColumn'], $primaryKeys));
+            }
+            $sql .= ' ON CONFLICT (' . $primaryKeys . ') DO UPDATE SET ' . implode(',', $dupSet);
+        } elseif (!empty($duplicate)) {
+            throw new NotSupportedException('Upsert only supports MySQL/MariaDB and PostgreSQL');
+        }
+
+        $stm = $this->prepare($sql);
+        $stm->execute($params);
+        return $this->lastInsertId() ?: true;
+    }
+
+    /**
+     * REPLACE INTO operation.
+     */
+    public function replace(string $table, array $data): int
+    {
+        $params       = [];
+        $names        = [];
+        $placeholders = [];
+
+        foreach ($data as $name => $value) {
+            $names[] = $this->quoteColumn($name);
+            if ($value instanceof Expr) {
+                $placeholders[] = $value->raw;
+            } else {
+                $bind = $this->nextBind();
+                $placeholders[] = ':' . $bind;
+                $params[$bind]  = $value;
+            }
+        }
+
+        $sql = 'REPLACE INTO ' . $this->quoteTable($table)
+            . ' (' . implode(', ', $names) . ') VALUES ('
+            . implode(', ', $placeholders) . ')';
+
+        $stm = $this->prepare($sql);
+        $stm->execute($params);
+        $this->rowCount = $stm->rowCount();
+        return $stm->rowCount();
+    }
+
+    /**
+     * Update rows.
+     */
+    public function update(string $table, array $data, $conditions = '', array $params = []): int
+    {
+        $placeholders = [];
+        $inputParams  = [];
+
+        foreach ($data as $name => $value) {
+            if ($value instanceof Expr) {
+                $placeholders[] = $this->quoteColumn($name) . '=' . $value->raw;
+            } else {
+                $placeholders[] = $this->quoteColumn($name) . '=:' . $name;
+                $inputParams[$name] = $value;
+            }
+        }
+
+        $sql = 'UPDATE ' . $this->quoteTable($table) . ' SET ' . implode(', ', $placeholders);
+
+        if (($where = $this->prepareConditions($conditions, $params, $inputParams)) !== '') {
+            $sql .= ' WHERE ' . $where;
+        }
+
+        $stm = $this->prepare($sql);
+        $stm->execute($inputParams);
+        $this->rowCount = $stm->rowCount();
+        return $stm->rowCount();
+    }
+
+    /**
+     * Delete rows.
+     */
+    public function delete(string $table, $conditions = '', array $params = []): int
+    {
+        $sql         = 'DELETE FROM ' . $this->quoteTable($table);
+        $inputParams = [];
+
+        if (($where = $this->prepareConditions($conditions, $params, $inputParams)) !== '') {
+            $sql .= ' WHERE ' . $where;
+        }
+
+        $stm = $this->prepare($sql);
+        $stm->execute($inputParams);
+        $this->rowCount = $stm->rowCount();
+        return $stm->rowCount();
+    }
+
+    /**
+     * Count rows.
+     */
+    public function count(string $table, $conditions = '', array $params = [])
+    {
+        $sql         = 'SELECT COUNT(*) AS rowcount FROM ' . $this->quoteTable($table);
+        $inputParams = [];
+
+        if (($where = $this->prepareConditions($conditions, $params, $inputParams)) !== '') {
+            $sql .= ' WHERE ' . $where;
+        }
+
+        $stm = $this->prepare($sql);
+        $stm->execute($inputParams);
+        return $stm->fetchColumn();
+    }
+
+    /**
+     * Key-value pair query.
+     */
+    public function keyPair(string $table, $columns, $conditions = '', array $params = []): array
+    {
+        if (is_array($columns)) {
+            $columns = implode(',', array_map([$this, 'quoteColumn'], $columns));
+        }
+
+        $sql         = 'SELECT ' . $columns . ' FROM ' . $this->quoteTable($table);
+        $inputParams = [];
+
+        if (($where = $this->prepareConditions($conditions, $params, $inputParams)) !== '') {
+            $sql .= ' WHERE ' . $where;
+        }
+
+        $stm = $this->prepare($sql);
+        $stm->execute($inputParams);
+        $this->rowCount = $stm->rowCount();
+        return $stm->fetchAll(PDO::FETCH_KEY_PAIR);
+    }
+
+    // ─── Convenience Methods ───────────────────────────────────
+
+    /**
+     * Fetch all rows.
+     */
+    public function getAll(string $statement, array $params = [], $fetchMode = null): array
     {
         $stm = $this->prepare($statement);
         $stm->execute($params);
@@ -105,56 +404,182 @@ class ZPDO extends PDO
     }
 
     /**
-     * get
-     * @param string $statement
-     * @param array $params
-     * @param null $fetchMode
-     * @return mixed
+     * Fetch a single row.
      */
-    public function get(string $statement, array $params = [],$fetchMode = null)
+    public function get(string $statement, array $params = [], $fetchMode = null)
     {
         $stm = $this->prepare($statement);
         $stm->execute($params);
         return $stm->fetch($fetchMode);
     }
 
-
     /**
-     * table Query ActiveRecord
-     * @param string $table
-     * @param string|null $alias
-     * @return Query
-     * @throws \Exception
+     * Fetch a single column value.
      */
-    public function table(string $table, string $alias = null): Query
+    public function value(string $statement, array $params = [])
+    {
+        $stm = $this->prepare($statement);
+        $stm->execute($params);
+        return $stm->fetchColumn();
+    }
+
+    // ─── Query Builder Factory ─────────────────────────────────
+
+    public function table(string $table, ?string $alias = null): Query
     {
         $query = new Query($this);
-        return $query->from($table,$alias);
+        return $query->from($table, $alias ?? '');
     }
+
+    // ─── Schema / DDL ──────────────────────────────────────────
 
     public function rawExec($statement)
     {
         return parent::exec($statement);
     }
 
-
-    public function value(string $statement, array $params = []){
-        $stm = $this->prepare($statement);
-        $stm->execute($params);
-        return $stm->fetchColumn();
+    public function renameTable($oldName, $newName)
+    {
+        return $this->exec('RENAME TABLE ' . $this->quoteTable($oldName) . ' TO ' . $this->quoteTable($newName));
     }
 
+    public function dropTable($table)
+    {
+        return $this->exec('DROP TABLE ' . $this->quoteTable($table));
+    }
 
-    public function setTablePrefix($prefix){
+    public function truncateTable($table)
+    {
+        return $this->exec('TRUNCATE TABLE ' . $this->quoteTable($table));
+    }
+
+    public function getTables(): array
+    {
+        if ($this->driver === 'sqlite') {
+            return $this->query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
+                ->fetchAll(PDO::FETCH_COLUMN);
+        }
+        if ($this->driver === 'mysql' || $this->driver === 'mariadb') {
+            return $this->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
+        }
+        return [];
+    }
+
+    public function getTableStructure(string $table): string
+    {
+        $tbl = $this->quoteTable($table);
+        if ($this->driver === 'sqlite') {
+            return (string) $this->query(
+                "SELECT sql FROM sqlite_master WHERE name=?",
+                [$this->unPrefixTable($table)]
+            )->fetchColumn();
+        }
+        if ($this->driver === 'mysql' || $this->driver === 'mariadb') {
+            return (string) $this->query("SHOW CREATE TABLE {$tbl}")->fetchColumn(1);
+        }
+        return '';
+    }
+
+    public function getTableColumns(string $table): array
+    {
+        $tbl = $this->quoteTable($table);
+        if ($this->driver === 'sqlite') {
+            return $this->query("PRAGMA table_info({$tbl})")->fetchAll();
+        }
+        if ($this->driver === 'mysql' || $this->driver === 'mariadb') {
+            return $this->query("SHOW COLUMNS FROM {$tbl}")->fetchAll();
+        }
+        return [];
+    }
+
+    // ─── Transaction Helpers ───────────────────────────────────
+
+    /**
+     * Begin a transaction on this connection.
+     */
+    public function beginTrans(): bool
+    {
+        return $this->beginTransaction();
+    }
+
+    /**
+     * Commit the current transaction.
+     */
+    public function commitTrans(): bool
+    {
+        return $this->commit();
+    }
+
+    /**
+     * Rollback the current transaction.
+     */
+    public function rollbackTrans(): bool
+    {
+        return $this->rollBack();
+    }
+
+    /**
+     * Check if currently in a transaction.
+     */
+    public function inTransaction(): bool
+    {
+        return parent::inTransaction();
+    }
+
+    // ─── Query Logging ─────────────────────────────────────────
+
+    public function enableQueryLog(): void
+    {
+        $this->logging = true;
+    }
+
+    public function disableQueryLog(): void
+    {
+        $this->logging = false;
+    }
+
+    public function getQueryLog(): array
+    {
+        return $this->queryLog;
+    }
+
+    public function flushQueryLog(): void
+    {
+        $this->queryLog = [];
+    }
+
+    protected function logQuery(string $sql, array $params): void
+    {
+        if ($this->logging) {
+            $this->queryLog[] = [
+                'sql'    => $sql,
+                'params' => $params,
+                'time'   => microtime(true),
+            ];
+        }
+    }
+
+    // ─── Quote / Prefix ────────────────────────────────────────
+
+    public function setTablePrefix($prefix): void
+    {
         $this->tablePrefix = $prefix;
     }
 
-    public function prepareSQL($sql){
-        if($this->tablePrefix){
-            return preg_replace_callback('/\{([\w\-\. ]+)\}/',
-                function ($matches) {
-                    return $this->quoteTable($matches[1]);
-                }, $sql);
+    public function unPrefixTable($table): string
+    {
+        if ($this->tablePrefix && str_starts_with($table, $this->tablePrefix)) {
+            return substr($table, strlen($this->tablePrefix));
+        }
+        return $table;
+    }
+
+    public function prepareSQL($sql): string
+    {
+        if ($this->tablePrefix) {
+            return preg_replace_callback('/\{([\w\-\. ]+?)\}/', function ($matches) {
+                return $this->quoteTable($matches[1]);
+            }, $sql);
         }
         return $sql;
     }
@@ -162,16 +587,17 @@ class ZPDO extends PDO
     public function quoteColumn($columnName): string
     {
         $colAlias = explode('.', $columnName);
-        if (is_array($colAlias) && count($colAlias) == 2) {
+        if (count($colAlias) === 2) {
             return $this->quoteColumn($colAlias[0]) . '.' . $this->quoteColumn($colAlias[1]);
         }
+
         switch ($this->driver) {
             case 'mysql':
             case 'mariadb':
-                return "`$columnName`";
+                return "`{$columnName}`";
             case 'mssql':
-                return "[$columnName]";
-            case 'pssql':
+                return "[{$columnName}]";
+            case 'pgsql':
                 return '"' . $columnName . '"';
             default:
                 return $columnName;
@@ -181,12 +607,13 @@ class ZPDO extends PDO
     public function quoteTable($table): string
     {
         $table = $this->tablePrefix . $table;
+
         switch ($this->driver) {
             case 'mysql':
             case 'mariadb':
                 return '`' . $table . '`';
             case 'mssql':
-                return "[$table]";
+                return "[{$table}]";
             case 'pgsql':
                 return '"' . $table . '"';
             default:
@@ -194,9 +621,19 @@ class ZPDO extends PDO
         }
     }
 
+    public function quote($value, $type = PDO::PARAM_STR)
+    {
+        if (is_array($value)) {
+            return array_map(fn($v) => $this->quote($v), $value);
+        }
+        return parent::quote((string) $value, $type);
+    }
+
+    // ─── Info ──────────────────────────────────────────────────
+
     public function info(): array
     {
-        $key_names = [
+        $keyNames = [
             'server'     => PDO::ATTR_SERVER_INFO,
             'driver'     => PDO::ATTR_DRIVER_NAME,
             'client'     => PDO::ATTR_CLIENT_VERSION,
@@ -204,20 +641,20 @@ class ZPDO extends PDO
             'connection' => PDO::ATTR_CONNECTION_STATUS,
         ];
 
-        foreach ($key_names as $key => $value) {
+        foreach ($keyNames as $key => $value) {
             try {
-                $key_names[$key] = $this->getAttribute($value);
+                $keyNames[$key] = $this->getAttribute($value);
             } catch (PDOException $e) {
-                $key_names[$key] = $e->getMessage();
+                $keyNames[$key] = $e->getMessage();
             }
         }
 
-        return $key_names;
+        return $keyNames;
     }
 
     public function setFetchMode($mode): bool
     {
-        return $this->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE , $mode);
+        return $this->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, $mode);
     }
 
     public function setAutoCommit($value): bool
@@ -225,340 +662,98 @@ class ZPDO extends PDO
         return $this->setAttribute(PDO::ATTR_AUTOCOMMIT, $value);
     }
 
-    public function getAutoCommit() {
+    public function getAutoCommit()
+    {
         return $this->getAttribute(PDO::ATTR_AUTOCOMMIT);
     }
 
-    public function buildParams($array,$name): array
+    public function rowCount(): int
+    {
+        return $this->rowCount;
+    }
+
+    // ─── Helpers ───────────────────────────────────────────────
+
+    public function buildParams($array, $name): array
     {
         $params = [];
         $values = [];
-        list($name,$name1) = explode('.',$name);
-        $name = $name1 ?: $name;
-        for($i = 0;$i<count($array);$i++){
-            $params[$i] = ":{$name}{$i}";
+        $parts  = explode('.', $name);
+        $name   = $parts[1] ?? $parts[0];
+
+        for ($i = 0; $i < count($array); $i++) {
+            $params[$i]         = ":{$name}{$i}";
             $values[$params[$i]] = $array[$i];
         }
-        return [join(',',$params),$values];
+
+        return [implode(',', $params), $values];
     }
 
-    /**
-     * @param $statement
-     * @param array $params
-     * @return false|\PDOStatement
-     */
-    public function statement($statement, array $params = []) {
-        $stm = $this->prepare($this->prepareSQL($statement));
+    public function statement($statement, array $params = [])
+    {
+        $stm = $this->prepare($statement);
         $stm->execute($params);
         $this->rowCount = $stm->rowCount();
         return $stm;
     }
 
-    public function renameTable($oldName, $newName) {
-        return $this->exec('RENAME TABLE ' . $this->quoteTable($oldName) . ' TO ' . $this->quoteTable($newName));
+    public function toSnakeCase($name): string
+    {
+        $name = preg_replace('/([A-Z])/', '_$1', $name);
+        return strtolower(trim($name, '_'));
     }
 
-    public function dropTable($table) {
-        return $this->exec('DROP TABLE ' . $this->quoteTable($table));
-    }
-
-    public function truncateTable($table) {
-        return $this->exec('TRUNCATE TABLE ' . $this->quoteTable($table));
-    }
-
-    /**
-     * Db insert
-     * @param string $table 表名
-     * @param array $data 插入的数据
-     * @return false|string LastID
-     */
-    public function insert(string $table, array $data) {
-        $params = array();
-        $names = array();
-        $placeholders = array();
-        foreach ($data as $name => $value) {
-            $names[] = $this->quoteColumn($name);
-            if ($value instanceof Expr) {
-                $placeholders[] = $value->raw;
-            } else {
-                $bindName = Random::rand(Random::ALPHA);
-                $placeholders[] = ':' . $bindName;
-                $params[$bindName] = $value;
-            }
-        }
-        $sql = 'INSERT INTO ' . $this->quoteTable($table)
-            . ' (' . implode(', ', $names) . ') VALUES ('
-            . implode(', ', $placeholders) . ')';
-        $statement = $this->prepare($sql);
-        $statement->execute($params);
-        $this->rowCount = $this->lastInsertId();
+    public function lastId()
+    {
         return $this->lastInsertId();
     }
 
-    /**
-     * @throws NotSupportedException
-     */
-    public function upsert($table, $data, $duplicate = null , $primaryKeys = null ) {
-        $params = array();
-        $names = array();
-        $placeholders = array();
+    // ─── Internals ─────────────────────────────────────────────
 
-        foreach ($data as $name => $value) {
-            $name = $this->quoteColumn($name);
-            $names[] = $name;
-            if ($value instanceof Expr) {
-                $placeholders[] = $value->raw;
-            } else {
-                $bindName = Random::rand(Random::ALPHA);
-                $placeholders[] = ':' . $bindName;
-                $params[$bindName] = $value;
-            }
-        }
-        if($duplicate){
-            $dupSet = [];
-            foreach ($duplicate as $name => $value) {
-                if ($value instanceof Expr) {
-                    $dupSet[] = $this->quoteColumn($name) . '=' . $value->raw;
-                } else {
-                    $dupSet[] = $this->quoteColumn($name) . '=:' . $name;
-                    $params[$name] = $value;
-                }
-            }
-        }
-
-
-        $sql = 'INSERT INTO ' . $this->quoteTable($table)
-            . ' (' . implode(', ', $names) . ') VALUES ('
-            . implode(', ', $placeholders) . ')';
-
-        if(!empty($duplicate) && $this->driver == 'mysql'){
-            $sql .= ' ON DUPLICATE KEY UPDATE '.join(',',$dupSet);
-        }else if(!empty($duplicate) && $this->driver == 'pgsql'){
-            if(is_null($primaryKeys)){
-                reset($data);
-                $primaryKeys = key($data);
-            }else if(is_array($primaryKeys)){
-                $primaryKeys = join(',',$primaryKeys);
-            }
-            $sql .= ' ON CONFLICT ('.$primaryKeys.') DO UPDATE SET '.join(',',$dupSet);
-        }else{
-            throw new NotSupportedException('This method only supports mysql/pssql');
-        }
-        $statement = $this->prepare($sql);
-        $statement->execute($params);
-        $this->rowCount = $this->lastInsertId();
-        return $this->lastInsertId();
-    }
-
-    /**
-     * Db replace
-     * @param string $table 表名
-     * @param array $data 插入的数据
-     * @return int LastID
-     */
-    public function replace(string $table, array $data) {
-        $params = [];
-        $names = [];
-        $placeholders = [];
-        foreach ($data as $name => $value) {
-            $names[] = $this->quoteColumn($name);
-            if ($value instanceof Expr) {
-                $placeholders[] = $value->raw;
-            } else {
-                $bindName = Random::rand(Random::ALPHA);
-                $placeholders[] = ':' . $bindName;
-                $params[$bindName] = $value;
-            }
-        }
-        $sql = 'REPLACE INTO ' . $this->quoteTable($table)
-            . ' (' . implode(', ', $names) . ') VALUES ('
-            . implode(', ', $placeholders) . ')';
-        $statement = $this->prepare($sql);
-        $statement->execute($params);
-        $this->rowCount = $statement->rowCount();
-        return $statement->rowCount();
-    }
-
-    /**
-     * Db update
-     * @param string $table 表名
-     * @param array $data 修改的数据
-     * @param string|array $conditions 条件
-     * @param array $params 参数
-     * @return int
-     */
-    public function update(string $table, array $data, $conditions = '', array $params = array()): int
-    {
-        $placeholders = array();
-        $input_params = array();
-        foreach ($data as $name => $value) {
-            if ($value instanceof Expr) {
-                $placeholders[] = $this->quoteColumn($name) . '=' . $value->raw;
-            } else {
-                $placeholders[] = $this->quoteColumn($name) . '=:' . $name;
-                $input_params[$name] = $value;
-            }
-        }
-
-        $sql = 'UPDATE ' . $this->quoteTable($table) . ' SET ' . implode(', ', $placeholders);
-        if (($where = $this->prepareConditions($conditions, $params, $input_params)) != '') {
-            $sql .= ' WHERE ' . $where;
-        }
-        $statement = $this->prepare($sql);
-        $statement->execute($input_params);
-        $this->rowCount = $statement->rowCount();
-        return $statement->rowCount();
-    }
-
-    /**
-     * db delete
-     * @param string $table 表名
-     * @param string|array $conditions 条件
-     * @param array $params 参数
-     * @return int
-     */
-    public function delete(string $table, $conditions = '', array $params = array()): int
-    {
-        $sql = 'DELETE FROM ' . $this->quoteTable($table);
-        $input_params = array();
-        if (($where = $this->prepareConditions($conditions, $params, $input_params)) != '') {
-            $sql .= ' WHERE ' . $where;
-        }
-        $statement = $this->prepare($sql);
-        $statement->execute($input_params);
-        $this->rowCount = $statement->rowCount();
-        return $statement->rowCount();
-    }
-
-    /**
-     * db count
-     * @param string $table 表名
-     * @param string|array $conditions 条件
-     * @param array $params 参数
-     * @return mixed|int 返回行数
-     */
-    public function count(string $table, $conditions = '', array $params = array()) {
-        $sql = 'SELECT COUNT(*) as rowcount FROM ' . $this->quoteTable($table);
-        $input_params = array();
-        if (($where = $this->prepareConditions($conditions, $params, $input_params)) != '') {
-            $sql .= ' WHERE ' . $where;
-        }
-        $statement = $this->prepare($sql);
-        $statement->execute($input_params);
-        return $statement->fetchColumn();
-    }
-
-    /**
-     * Db key_pair
-     * 获取两列，第一列为key，第二列为value
-     * @param string $table 表名
-     * @param string|array $columns 列名
-     * @param string|array $conditions 条件
-     * @param array $params 参数
-     * @return array|false
-     */
-    public function keyPair(string $table, $columns, $conditions = '', array $params = array()): array
-    {
-        if (is_array($columns)) {
-            $columns = join(',', array_map(function ($value) {
-                return $this->quoteColumn($value);
-            }, $columns));
-        }
-        $sql = 'SELECT ' . $columns . ' FROM ' . $this->quoteTable($table);
-        $input_params = array();
-        if (($where = $this->prepareConditions($conditions, $params, $input_params)) != '') {
-            $sql .= ' WHERE ' . $where;
-        }
-        $statement = $this->prepare($sql);
-        $statement->execute($input_params);
-        $this->rowCount = $statement->rowCount();
-        return $statement->fetchAll(PDO::FETCH_KEY_PAIR);
-    }
-
-    private function prepareConditions($conditions, $params, &$input_params): string
+    private function prepareConditions($conditions, $params, &$inputParams): string
     {
         if (is_array($conditions)) {
-            $lines = array();
-            $i = 0;
+            $lines = [];
+            $i     = 0;
             foreach ($conditions as $name => $value) {
                 if ($value instanceof Expr) {
                     $lines[] = $this->quoteColumn($name) . '=' . $value->raw;
                 } else {
-                    $bindName = Random::rand(Random::ALPHA);
-                    $lines[] = $this->quoteColumn($name) . '=:' . $bindName . $i;
-                    $input_params[$bindName . $i] = $value;
+                    $bindName  = $this->nextBind() . $i;
+                    $lines[]  = $this->quoteColumn($name) . '=:' . $bindName;
+                    $inputParams[$bindName] = $value;
                 }
                 $i++;
             }
             return implode(' AND ', $lines);
-        } else if (is_string($conditions) && is_array($params) && is_assoc($params)) {
+        }
+
+        if (is_string($conditions) && is_array($params) && Arr::isAssoc($params)) {
             foreach ($params as $name => $value) {
-                if ($value instanceof Expr) {
-                    $input_params[$name] = $value->raw;
+                if (!($value instanceof Expr)) {
+                    $inputParams[$name] = $value;
                 }
-                $input_params[$name] = $value;
+                // Expr values are already embedded in the conditions string
             }
             return $conditions;
-        } else if (is_string($conditions) && ( is_scalar($params) || (is_array($params) && !is_assoc($params)))) {
+        }
+
+        if (is_string($conditions) && (is_scalar($params) || (is_array($params) && !Arr::isAssoc($params)))) {
             if (is_scalar($params)) {
-                $params = array($params);
+                $params = [$params];
             }
-            $input_params += $params;
+            $inputParams += $params;
             return $conditions;
         }
+
         return '';
     }
 
-    public function rowCount(){
-        return $this->rowCount;
-    }
-
-    public function toSnakeCase($name): string
+    /**
+     * Generate a unique bind parameter name for this instance.
+     */
+    protected function nextBind(): string
     {
-        $name = preg_replace('/([A-Z])/', '_$1', $name);
-        return strtolower(trim($name,'_'));
+        return '_b' . (++$this->bindCounter);
     }
-
-    public function quote($value, $type = PDO::PARAM_STR)
-    {
-        if(is_array($value)){
-            return array_map(function($value) {
-                return $this->quote($value);
-            },$value);
-        }
-        return parent::quote($value, $type);
-    }
-
-    public function getTables(): array
-    {
-        $tables = [];
-        if($this->driver === 'sqlite'){
-            $tables = $this->query("SELECT name FROM sqlite_master WHERE type='table' AND 
-    name NOT LIKE 'sqlite_%'")->fetchAll(FETCH_COLUMN);
-        }else if($this->driver === 'mysql'){
-            $tables = $this->query("SHOW TABLES")->fetchAll(FETCH_COLUMN);
-        }
-        return $tables;
-    }
-
-    public function getTableStructure(string $table){
-        if($this->driver === 'sqlite'){
-            return $this->query("SELECT sql FROM sqlite_master where name='$table'")->fetchColumn();
-        }else if($this->driver === 'mysql'){
-            $sql = 'SHOW CREATE TABLE ' . $table;
-            return $this->query($sql)->fetchColumn();
-        }
-        return '';
-    }
-
-    public function getTableColumns(string $table){
-        if($this->driver === 'sqlite'){
-            return $this->query("SELECT sql FROM sqlite_master where name='$table'")->fetchColumn();
-        }else if($this->driver === 'mysql'){
-            $sql = 'SHOW COLUMNS FROM ' . $table;
-            return $this->query($sql)->fetchColumn();
-        }
-        return '';
-    }
-
 }

@@ -7,7 +7,7 @@ class Regex extends \zap\validator\AbstractRule
 
     public function validate($name, $value)
     {
-        return preg_match($this->params,$value) !== false;
+        return preg_match($this->params, $value) === 1;
     }
 
 }

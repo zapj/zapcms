@@ -2,7 +2,6 @@
 
 namespace zap\exception;
 
-class NotSupportedException extends \Exception
+class NotSupportedException extends \RuntimeException
 {
-
 }

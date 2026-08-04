@@ -4,7 +4,7 @@
  * @author Allen
  * @email zapcms@zap.cn
  * @date 2023/12/27 上午11:09
- * @lastModified 2023/12/20 下午5:50
+ * @lastModified 2024/08/04
  *
  */
 
@@ -15,67 +15,97 @@ use zap\cms\models\Node;
 use zap\DB;
 use zap\exception\NotFoundException;
 use zap\exception\ViewNotFoundException;
-use zap\http\Middleware;
 use zap\http\Router;
 use zap\view\View;
 
-class Startup implements Middleware
+class Startup
 {
+    /** @var string 前端控制器命名空间 */
+    protected string $namespace = '\app\controllers';
 
-    protected $options;
-    public $router;
-    public $currentUri;
-    public $baseUrl;
-    private $controller;
+    public Router $router;
+    public string $currentUri;
+    public string $baseUrl;
+
+    private string $controller;
     private string $method;
     private string $controllerClass;
     private bool $notFound = false;
     private bool $hasParams;
 
-    public function __construct($options = [])
+    public function __construct()
     {
-        $this->options = $options;
-        $this->controller = $this->options['controller'] ?? 'index';
-        $this->method = $this->options['action'] ?? 'index';
+        $this->controller = 'index';
+        $this->method = 'index';
     }
 
-    public function handle()
+    /**
+     * 注册前台路由并初始化 CMS 环境
+     *
+     * @param Router $router 路由器实例
+     */
+    public function handle(Router $router): void
     {
-        define('IN_ZAP_CMS',true);
+        $this->router = $router;
 
-        $website = get_options('website','REGEXP');
-        //加载 配置
-        app()->set('options_website',$website);
+        // 计算当前请求 URI（去除查询参数）
+        $this->currentUri = strtok($_SERVER['REQUEST_URI'], '?') ?: '/';
+        $this->baseUrl = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
 
-        config_set('config.theme',$website['website.theme'] ?? 'basic');
-        if($website['website.theme'] !== 'basic'){
+        // ──── 注册前台兜底路由（匹配所有未被后台匹配的请求）────
+        $this->router->any('/{any:.*}', function ($any = '') {
+            $this->dispatchFrontend($any);
+        });
+
+        // 同时注册根路径
+        $this->router->any('/', function () {
+            $this->dispatchFrontend('');
+        });
+    }
+
+    /**
+     * 前台请求分发
+     */
+    protected function dispatchFrontend(string $path): void
+    {
+        define('IN_ZAP_CMS', true);
+
+        // ──── 加载站点配置 ────
+        $website = get_options('website', 'REGEXP');
+        app()->set('options_website', $website);
+
+        config_set('config.theme', $website['website.theme'] ?? 'basic');
+        if (($website['website.theme'] ?? 'basic') !== 'basic') {
             View::paths(themes_path('basic'));
         }
 
         $theme = $website['website.theme'] ?? 'basic';
-        if(is_file(themes_path("{$theme}/functions.php"))){
+        if (is_file(themes_path("{$theme}/functions.php"))) {
             include themes_path("{$theme}/functions.php");
         }
 
-        $this->parseUrlPath();
-        if(!isset($this->controllerClass) || $this->notFound){
-//            $website_route = $website['website.route'] ?? 1;
-//            $this->initRoute($website_route);
+        // ──── 解析 URL ────
+        $this->parseUrlPath($path);
+
+        if (!isset($this->controllerClass) || $this->notFound) {
             $this->initRoute();
         }
-        if ( !isset($this->controllerClass) || ! class_exists($this->controllerClass)) {
-            $this->router->trigger404();
 
-            return false;
+        if (!isset($this->controllerClass) || !class_exists($this->controllerClass)) {
+            $this->router->trigger404();
+            return;
         }
 
-
+        // ──── 调用控制器 ────
         try {
             app()->controller = new $this->controllerClass();
-//            app()->make($this->controllerClass, [], 'controller');
             call_user_func_array([app()->controller, 'setParams'], ['params' => $this->router->params]);
+
             if (method_exists(app()->controller, '_invoke')) {
-                call_user_func_array([app()->controller, '_invoke'],['method' => $this->method,'params' => $this->router->params]);
+                call_user_func_array([app()->controller, '_invoke'], [
+                    'method' => $this->method,
+                    'params' => $this->router->params
+                ]);
             } else {
                 if (method_exists(app()->controller, $this->method)) {
                     call_user_func_array([app()->controller, $this->method], $this->router->params);
@@ -83,52 +113,56 @@ class Startup implements Middleware
                     throw new NotFoundException('not found');
                 }
             }
-        }catch (NotFoundException $e) {
+        } catch (NotFoundException $e) {
             if (method_exists(app()->controller, '_notfound')) {
-                call_user_func_array([app()->controller, '_notfound'], ['method' => $this->method, 'params' => $this->router->params]);
+                call_user_func_array([app()->controller, '_notfound'], [
+                    'method' => $this->method,
+                    'params' => $this->router->params
+                ]);
             } else {
                 $this->router->trigger404();
             }
-        }catch (ViewNotFoundException $e){
+        } catch (ViewNotFoundException $e) {
             echo $e->getMessage();
-        } catch (Error $e){
+        } catch (Error $e) {
             echo $e->getMessage();
         }
-        return false;
     }
 
-    private function parseUrlPath()
+    /**
+     * 从 URL 路径解析控制器和方法
+     */
+    private function parseUrlPath(string $urlPath): void
     {
-        $namespace = $this->options['namespace'];
-        $routeBase = rtrim(app()->router->currentRoute['pattern'], '.*');
-        $url = trim(
-            preg_replace("#$routeBase#iu", '', $this->currentUri, 1), '/ '
-        );
-        $segments = preg_split('#/#', trim($url, '/'), -1, PREG_SPLIT_NO_EMPTY);
+        $segments = $urlPath === '' ? [] : preg_split('#/#', trim($urlPath, '/'), -1, PREG_SPLIT_NO_EMPTY);
 
         if (isset($segments[0]) && preg_match('/^[a-z]+[-_0-9a-z]+$/i', $segments[0])) {
-            $controllerClass = $namespace.'\\'. Router::convertToName($segments[0]) . 'Controller';
-            if(class_exists($controllerClass)){
+            $controllerClass = $this->namespace . '\\' . Router::convertToName($segments[0]) . 'Controller';
+            if (class_exists($controllerClass)) {
                 $this->controllerClass = $controllerClass;
                 unset($segments[0]);
-            }else{
+            } else {
                 $this->notFound = true;
             }
             if (!$this->notFound && isset($segments[1]) && preg_match('/^[a-z][a-z0-9-_]+$/i', $segments[1])) {
-                $this->method = Router::convertToName($segments[1]);
+                $this->method = lcfirst(Router::convertToName($segments[1]));
                 unset($segments[1]);
             }
         }
 
         $this->hasParams = !((count($segments) == 0));
-        $this->router->params = $segments;
+        $this->router->params = array_values($segments);
     }
 
+    /**
+     * 初始化 CMS 路由（根据参数确定控制器）
+     */
     private function initRoute(): void
     {
         $pageState = pageState();
-        if(($segment = current($this->router->params)) !== false){
-            switch ($segment){
+
+        if (($segment = current($this->router->params)) !== false) {
+            switch ($segment) {
                 case 'tags':
                     $pageState->tags = true;
                     $this->resetRoute('node', 'tags');
@@ -137,38 +171,47 @@ class Startup implements Middleware
                     $pageState->tag = true;
                     $this->resetRoute('node', 'tag');
                     return;
-                case preg_match('/^sitemap([A-Za-z0-9_-]+)?.xml$/i',$segment) === 1:
+                case preg_match('/^sitemap([A-Za-z0-9_-]+)?.xml$/i', $segment) === 1:
                     $this->resetRoute('Sitemap', 'generate');
                     return;
             }
         }
-        $slug  = end($this->router->params);
-        if($slug){
-            $node = Node::where('slug',$slug)->where('status',Node::STATUS_PUBLISH)
+
+        $slug = end($this->router->params);
+        if ($slug) {
+            $node = Node::where('slug', $slug)
+                ->where('status', Node::STATUS_PUBLISH)
                 ->fetch(FETCH_ASSOC);
+
             $node or $this->router->trigger404();
+
             $pageState->node = $node;
             $pageState->nodeId = $node['id'];
             $pageState->nodeType = $node['node_type'];
             $pageState->nodeMimeType = $node['mime_type'];
-            if(!$this->resetRoute($node['node_type'], empty($node['mime_type']) ?'index':$node['mime_type'])){
-                DB::update('node',['hits'=>DB::raw('hits+1')],['id'=>$node['id']]);
+
+            if (!$this->resetRoute($node['node_type'], empty($node['mime_type']) ? 'index' : $node['mime_type'])) {
+                DB::update('node', ['hits' => DB::raw('hits+1')], ['id' => $node['id']]);
                 $this->resetRoute('node', $node['node_type']);
             }
-            $pageState->isNode = $node['node_type']!=='catalog';
-            $pageState->isCatalog = $node['node_type']==='catalog';
+            $pageState->isNode = $node['node_type'] !== 'catalog';
+            $pageState->isCatalog = $node['node_type'] === 'catalog';
             return;
         }
+
+        // 首页
         $pageState->isHome = true;
         $this->resetRoute('index', 'index');
     }
 
-    private function resetRoute($controller,$action): bool
+    /**
+     * 根据控制器名和方法名构建完整的控制器类名
+     */
+    private function resetRoute(string $controller, string $action): bool
     {
-        $namespace = $this->options['namespace'];
         $this->controller = $controller;
         $this->method = $action;
-        $this->controllerClass = $namespace.'\\'. Router::convertToName($this->controller) . 'Controller';
+        $this->controllerClass = $this->namespace . '\\' . Router::convertToName($this->controller) . 'Controller';
         return class_exists($this->controllerClass);
     }
 }

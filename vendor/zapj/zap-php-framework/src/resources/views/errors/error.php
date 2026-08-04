@@ -1,30 +1,39 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="zh">
+<html lang="zh-CN">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>错误 - Zap PHP Framework</title>
     <style>
-        /*li::before{*/
-        /*    background-color: #C8E1FA; white-space: nowrap; width: 23px;   text-align: center; color: #3F85CA;*/
-        /*}*/
-        /*ol {list-style: none; counter-reset: li}*/
-
-        li::marker {
-            /*content: counter(li);*/
-            color: #b7b9bb;
-            display: inline-block;
-            width: 1em;
-            margin-left: -1em;
-            white-space: nowrap;
-            background-color: #f1f1f1;
-            text-align: center;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f5f7fa; color: #333; padding: 20px;
         }
-
-        /*li {counter-increment: li}*/
+        .header {
+            background: #fff; border: 1px solid #e1e4e8; border-radius: 8px; padding: 16px 20px;
+            margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .header h3 { font-size: 18px; color: #d73a49; }
+        .header p { font-size: 13px; color: #666; margin-top: 6px; }
+        .label {
+            display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;
+            margin-right: 6px;
+        }
+        .label-danger { background: #ffdce0; color: #86181d; }
+        .label-info { background: #dbedff; color: #0366d6; }
     </style>
 </head>
-
 <body>
-<?php echo $html;?>
+    <div class="header">
+        <h3>应用程序错误</h3>
+        <p>
+            <span class="label label-danger"><?= $status ?? 500 ?></span>
+            HTTP 状态码
+        </p>
+        <p style="margin-top:12px;font-size:14px;">Debug 模式已启用，以下为详细错误信息。</p>
+    </div>
+
+    <?= $html ?? '' ?>
 </body>
 </html>

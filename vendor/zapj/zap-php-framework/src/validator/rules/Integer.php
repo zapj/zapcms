@@ -2,12 +2,14 @@
 
 namespace zap\validator\rules;
 
-class Integer extends \zap\validator\AbstractRule
+use zap\validator\AbstractRule;
+
+class Integer extends AbstractRule
 {
 
     public function validate($name, $value)
     {
-        return is_int($value);
+        return filter_var($value, FILTER_VALIDATE_INT) !== false;
     }
 
 }

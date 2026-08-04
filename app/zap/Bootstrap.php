@@ -4,34 +4,119 @@
  * @author Allen
  * @email zapcms@zap.cn
  * @date 2023/12/27 上午11:38
- * @lastModified 2023/12/27 上午11:30
+ * @lastModified 2024/08/04
  *
  */
 
 namespace zap;
 
-use zap\http\Middleware;
+use zap\http\Router;
 use zap\http\Request;
 use zap\view\View;
 
-class Bootstrap implements Middleware
+class Bootstrap
 {
+    protected Router $router;
 
     public function __construct()
     {
 
     }
 
-    public function handle()
+    /**
+     * 处理后台路由注册
+     *
+     * @param Router $router 路由器实例
+     */
+    public function handle(Router $router = null)
     {
-        define('IN_ZAP_ADMIN',true);
-        config_set('config.theme',false);
-        define('IS_AJAX',Request::isAjax());
+        if ($router) {
+            $this->router = $router;
+        }
+
+        // ──── 注册后台自动路由 ────
+        $prefix = Z_ADMIN_PREFIX;
+        // 根路径: /z-admin 或 /z-admin/
+        $this->router->any("/{$prefix}", function () {
+            $this->dispatchAdmin('');
+        });
+        // 子路径: /z-admin/xxx/yyy
+        $this->router->any("/{$prefix}/{any:.*}", function ($any = '') {
+            $this->dispatchAdmin($any);
+        });
+    }
+
+    /**
+     * 初始化后台环境（在路由匹配后由中间件回调调用）
+     */
+    protected function initAdminEnv(): void
+    {
+        define('IN_ZAP_ADMIN', true);
+        config_set('config.theme', false);
+        define('IS_AJAX', Request::isAjax());
         View::paths(realpath(__DIR__ . '/views'));
-        $theme = option('website.theme','basic');
-        if(is_file(themes_path("{$theme}/functions.php"))){
+
+        $theme = option('website.theme', 'basic');
+        if (is_file(themes_path("{$theme}/functions.php"))) {
             include themes_path("{$theme}/functions.php");
         }
-//        View::paths(base_path(__DIR__ . '/views'));
+    }
+
+    /**
+     * 将后台 URL 分发到对应的控制器和方法
+     *
+     * URL 规则: /{prefix}/{controller}/{method}
+     * 例如:
+     *   /z-admin                    → IndexController@index
+     *   /z-admin/auth/sign-in       → AuthController@signIn
+     *   /z-admin/node/edit/123      → NodeController@edit  (params: [123])
+     */
+    protected function dispatchAdmin(string $path): void
+    {
+        $this->initAdminEnv();
+
+        $segments = $path === '' ? [] : array_values(array_filter(explode('/', $path)));
+
+        $controllerName = $segments[0] ?? 'index';
+        $methodName     = $segments[1] ?? 'index';
+
+        // 额外的 URL 参数（从第2个之后）
+        $extraParams = array_slice($segments, 2);
+
+        $className = '\app\zap\controllers\\' . Router::convertToName($controllerName) . 'Controller';
+
+        if (!class_exists($className)) {
+            // 尝试将第一个段作为方法名
+            $className = '\app\zap\controllers\IndexController';
+            $methodName = $controllerName;
+            $extraParams = array_slice($segments, 1);
+
+            if (!method_exists($className, $methodName)) {
+                http_response_code(404);
+                echo '<h1>404 Not Found</h1>';
+                exit;
+            }
+        }
+
+        if (!method_exists($className, $methodName) && !method_exists($className, '__call')) {
+            // 尝试 index 方法 + 第一个段作为参数
+            if (method_exists($className, 'index')) {
+                $methodName = 'index';
+                $extraParams = $segments;
+            } else {
+                http_response_code(404);
+                echo '<h1>404 Not Found</h1>';
+                exit;
+            }
+        }
+
+        $instance = new $className();
+
+        // 调用控制器方法，传入额外参数
+        if (!empty($extraParams)) {
+            call_user_func_array([$instance, $methodName], $extraParams);
+        } else {
+            $instance->$methodName();
+        }
     }
 }

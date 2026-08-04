@@ -6,17 +6,20 @@ use ArrayAccess;
 use Countable;
 use Exception;
 use IteratorAggregate;
-use Serializable;
 use Traversable;
 use ArrayIterator;
+use Serializable;
 
 class ZArray implements IteratorAggregate, ArrayAccess, Serializable, Countable
 {
-    protected $elements;
+    protected array $elements;
 
-    public function __construct($input = []){
+    public function __construct(array $input = [])
+    {
         $this->elements = $input;
     }
+
+    // ========== 魔术方法 ==========
 
     public function __isset($key)
     {
@@ -31,44 +34,23 @@ class ZArray implements IteratorAggregate, ArrayAccess, Serializable, Countable
     public function &__get($key)
     {
         return $this->offsetGet($key);
-
-
     }
 
-    /**
-     * Retrieve an external iterator
-     *
-     * @link https://php.net/manual/en/iteratoraggregate.getiterator.php
-     * @return Traversable An instance of an object implementing <b>Iterator</b> or
-     * <b>Traversable</b>
-     * @throws Exception on failure.
-     */
-    #[\ReturnTypeWillChange]
-    public function getIterator()
+    // ========== IteratorAggregate ==========
+
+    public function getIterator(): Traversable
     {
         return new ArrayIterator($this->elements);
     }
 
-    /**
-     * Whether a offset exists
-     *
-     * @link https://php.net/manual/en/arrayaccess.offsetexists.php
-     *
-     * @param  mixed  $offset  <p>
-     *                         An offset to check for.
-     *                         </p>
-     *
-     * @return bool true on success or false on failure.
-     * </p>
-     * <p>
-     * The return value will be casted to boolean if non-boolean was returned.
-     */
+    // ========== ArrayAccess ==========
+
     public function offsetExists($offset): bool
     {
         if (is_null($offset)) {
             return false;
         }
-        if (isset($this->elements[$offset])) {
+        if (is_array($this->elements) && array_key_exists($offset, $this->elements)) {
             return true;
         }
         $array = $this->elements;
@@ -79,55 +61,29 @@ class ZArray implements IteratorAggregate, ArrayAccess, Serializable, Countable
             $array = $array[$segment];
         }
         return true;
-
     }
 
-    /**
-     * Offset to retrieve
-     *
-     * @link https://php.net/manual/en/arrayaccess.offsetget.php
-     *
-     * @param  mixed  $offset  <p>
-     *                         The offset to retrieve.
-     *                         </p>
-     *
-     * @return mixed Can return all value types.
-     */
-    #[\ReturnTypeWillChange]
     public function &offsetGet($offset)
     {
-        $ret = null;
+        $notFound = null;
         if (is_null($offset)) {
-            return $ret;
+            return $notFound;
         }
-        if (isset($this->elements[$offset])) {
+        if (is_array($this->elements) && array_key_exists($offset, $this->elements)) {
             return $this->elements[$offset];
         }
-        $array = $this->elements;
-        foreach (explode('.', $offset) as $segment) {
+        $array = &$this->elements;
+        $keys = explode('.', $offset);
+        foreach ($keys as $segment) {
             if (!is_array($array) || !array_key_exists($segment, $array)) {
-                return $ret;
+                return $notFound;
             }
-            $array = $array[$segment];
+            $array = &$array[$segment];
         }
         return $array;
     }
 
-    /**
-     * Offset to set
-     *
-     * @link https://php.net/manual/en/arrayaccess.offsetset.php
-     *
-     * @param  mixed  $offset  <p>
-     *                         The offset to assign the value to.
-     *                         </p>
-     * @param  mixed  $value   <p>
-     *                         The value to set.
-     *                         </p>
-     *
-     * @return void
-     */
-    public function offsetSet($offset, $value) : void
+    public function offsetSet($offset, $value): void
     {
         $keys = explode('.', $offset);
         $array = &$this->elements;
@@ -139,31 +95,18 @@ class ZArray implements IteratorAggregate, ArrayAccess, Serializable, Countable
             $array = &$array[$key];
         }
         $key = array_shift($keys);
-        switch ($key){
+        switch ($key) {
             case '$':
                 $array[] = $value;
                 break;
             case '^':
-                array_unshift($array,$value);
+                array_unshift($array, $value);
                 break;
             default:
                 $array[$key] = $value;
         }
-
     }
 
-    /**
-     * Offset to unset
-     *
-     * @link https://php.net/manual/en/arrayaccess.offsetunset.php
-     *
-     * @param  mixed  $offset  <p>
-     *                         The offset to unset.
-     *                         </p>
-     *
-     * @return void
-     */
-    #[\ReturnTypeWillChange]
     public function offsetUnset($offset): void
     {
         if ($this->offsetExists($offset)) {
@@ -171,101 +114,96 @@ class ZArray implements IteratorAggregate, ArrayAccess, Serializable, Countable
         }
     }
 
-    /**
-     * String representation of object.
-     *
-     * @link https://php.net/manual/en/serializable.serialize.php
-     * @return string|null The string representation of the object or null
-     * @throws Exception Returning other type than string or null
-     */
-    public function serialize(): ?string
-    {
-        return serialize(get_object_vars($this));
-    }
+    // ========== Countable ==========
 
-    /**
-     * Constructs the object.
-     *
-     * @link https://php.net/manual/en/serializable.unserialize.php
-     *
-     * @param  string  $data  The string representation of the object.
-     *
-     * @return void
-     */
-    public function unserialize($data)
+    public function count(): int
     {
-        $ar = unserialize($data);
-        $this->elements = $ar['elements'];
-    }
-
-    public function __serialize()
-    {
-        return serialize(get_object_vars($this));
-    }
-
-    public function __unserialize($data): void
-    {
-        $ar = unserialize($data);
-        $this->elements = $ar['elements'];
-    }
-
-    /**
-     * Count elements of an object
-     *
-     * @link https://php.net/manual/en/countable.count.php
-     * @return int The custom count as an integer.
-     * <p>
-     * The return value is cast to an integer.
-     * </p>
-     */
-    #[\ReturnTypeWillChange]
-    public function count() : int {
         return count($this->elements);
     }
 
-    public function &get($key,$default = null){
-        $ret = $this->offsetGet($key);
-        if(is_null($ret)){
+    // ========== Serializable ==========
+
+    public function serialize(): ?string
+    {
+        return serialize($this->__serialize());
+    }
+
+    public function unserialize($data): void
+    {
+        $this->__unserialize(unserialize($data));
+    }
+
+    /**
+     * PHP 7.4+ 序列化支持
+     */
+    public function __serialize(): array
+    {
+        return ['elements' => $this->elements];
+    }
+
+    /**
+     * PHP 7.4+ 反序列化支持
+     */
+    public function __unserialize(array $data): void
+    {
+        $this->elements = $data['elements'] ?? [];
+    }
+
+    // ========== 公开方法 ==========
+
+    public function &get(string $key, $default = null)
+    {
+        if (!$this->offsetExists($key)) {
             return $default;
         }
-        return $ret;
+        return $this->offsetGet($key);
     }
 
-    public function set($key,$value){
-        $this->offsetSet($key,$value);
+    public function set(string $key, $value): void
+    {
+        $this->offsetSet($key, $value);
     }
 
-    public function has($key): bool
+    public function has(string $key): bool
     {
         return $this->offsetExists($key);
     }
 
     /**
-     * 创建一个Copy
-     * @return array
+     * 获取底层数组副本
      */
-    public function copy()
+    public function toArray(): array
+    {
+        return $this->elements;
+    }
+
+    /** @deprecated 使用 toArray() */
+    public function copy(): array
     {
         return $this->elements;
     }
 
     /**
-     * 如果键值已存在，则跳过
-     * @param $data
-     *
-     * @return void
+     * 合并数据（已有键值保留）
      */
-    public function merge($data){
-        $this->elements = array_merge($data,$this->elements);
+    public function merge(array $data): void
+    {
+        $this->elements = array_merge($data, $this->elements);
     }
 
     /**
-     * 如果键值已存在，则替换新值
-     * @param $data
-     *
-     * @return void
+     * 合并数据（新值覆盖已有键值）
      */
-    public function replace($data){
-        $this->elements = array_merge($this->elements,$data);
+    public function replace(array $data): void
+    {
+        $this->elements = array_merge($this->elements, $data);
+    }
+
+    /**
+     * 获取所有元素
+     */
+    public function all(): array
+    {
+        return $this->elements;
     }
 }

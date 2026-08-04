@@ -1,9 +1,9 @@
 <?php
 
-namespace  zap\util;
+namespace zap\util;
 
-class Random {
-
+class Random
+{
     const NUM = 0;
     const ALNUM = 1;
     const NUMBERIC = 2;
@@ -16,64 +16,89 @@ class Random {
     const NOZERO = 9;
     const DISTINCT = 10;
 
-    public static function int($min = 0, $max = RAND_MAX) {
-        return mt_rand($min, $max);
-    }
+    /** @var array<int, string> 字符池查找表 */
+    private static array $pools = [
+        self::ALPHA    => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        self::ALNUM    => '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        self::NUMBERIC => '0123456789',
+        self::NOZERO   => '123456789',
+        self::HEXDEC   => '0123456789abcdef',
+        self::DISTINCT => '2345679ACDEFHJKLMNPRSTUVWXYZ',
+    ];
 
-    public static function str($length = 6) {
-        $pool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $offset = (62 - $length) - mt_rand(0, 62 - $length);
-        return substr(str_shuffle($pool), $offset, $length);
+    public static function int(int $min = 0, ?int $max = null): int
+    {
+        if ($max === null) {
+            $max = mt_getrandmax();
+        }
+        return random_int($min, $max);
     }
 
     /**
-     * 随机生成
-     * @param int $type 类型
+     * 生成随机字符串（简单版）
+     */
+    public static function str(int $length = 6): string
+    {
+        if ($length < 1) {
+            return '';
+        }
+        $pool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $max = strlen($pool) - 1;
+        $result = '';
+        for ($i = 0; $i < $length; $i++) {
+            $result .= $pool[random_int(0, $max)];
+        }
+        return $result;
+    }
+
+    /**
+     * 按类型生成随机字符串
+     *
+     * @param int $type   类型常量
      * @param int $length 长度
      */
-    public static function rand($type = Random::ALNUM, $length = 6) {
+    public static function rand(int $type = self::ALNUM, int $length = 6): string
+    {
         switch ($type) {
-            case Random::NUM:
-                return mt_rand();
-            case Random::UNIQUE:
-                return md5(uniqid(mt_rand()));
-            case Random::SHA1 :
-                return sha1(uniqid(mt_rand(), true));
-            case Random::UUID:
-                $pool = array('8', '9', 'a', 'b');
-                return sprintf('%s-%s-4%s-%s%s-%s', static::rand('hexdec', 8), static::rand('hexdec', 4), static::rand('hexdec', 3), $pool[array_rand($pool)], static::rand('hexdec', 3), static::rand('hexdec', 12));
-            case Random::ALPHA:
-            case Random::ALNUM:
-            case Random::NUMBERIC:
-            case Random::NOZERO:
-            case Random::DISTINCT:
-            case Random::HEXDEC:
-                switch ($type) {
-                    case Random::ALPHA:
-                        $pool = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-                        break;
-                    default:
-                    case Random::ALNUM:
-                        $pool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-                        break;
-                    case Random::NUMBERIC:
-                        $pool = '0123456789';
-                        break;
-                    case Random::NOZERO:
-                        $pool = '123456789';
-                        break;
-                    case Random::NOZERO:
-                        $pool = '2345679ACDEFHJKLMNPRSTUVWXYZ';
-                        break;
-                    case Random::HEXDEC:
-                        $pool = '0123456789abcdef';
-                        break;
-                }
-                $str = '';
-                for ($i = 0; $i < $length; $i++) {
-                    $str .= substr($pool, mt_rand(0, strlen($pool) - 1), 1);
-                }
-                return $str;
+            case self::NUM:
+                return (string) random_int(0, PHP_INT_MAX);
+
+            case self::UNIQUE:
+                return md5(uniqid((string) random_int(0, PHP_INT_MAX), true));
+
+            case self::SHA1:
+                return sha1(uniqid((string) random_int(0, PHP_INT_MAX), true));
+
+            case self::UUID:
+                return UUID::uuid4();
+
+            case self::MD5:
+                return md5(uniqid((string) random_int(0, PHP_INT_MAX), true));
+
+            default:
+                return self::generateFromPool($type, $length);
         }
+    }
+
+    /**
+     * 从字符池生成字符串
+     */
+    private static function generateFromPool(int $type, int $length): string
+    {
+        $pool = self::$pools[$type] ?? self::$pools[self::ALNUM];
+        $max = strlen($pool) - 1;
+        $result = '';
+        for ($i = 0; $i < $length; $i++) {
+            $result .= $pool[random_int(0, $max)];
+        }
+        return $result;
+    }
+
+    /**
+     * 获取指定类型的字符池
+     */
+    public static function pool(int $type): string
+    {
+        return self::$pools[$type] ?? self::$pools[self::ALNUM];
     }
 }

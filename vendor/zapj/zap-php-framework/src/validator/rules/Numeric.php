@@ -2,7 +2,9 @@
 
 namespace zap\validator\rules;
 
-class Numberic extends \zap\validator\AbstractRule
+use zap\validator\AbstractRule;
+
+class Numeric extends AbstractRule
 {
 
     public function validate($name, $value)

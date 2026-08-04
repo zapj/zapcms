@@ -2,3 +2,5 @@
 var/cache/*
 var/logs/*
 var/tmp/*
+.vscode
+

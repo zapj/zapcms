@@ -2,56 +2,30 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>404 Not Found</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - 页面未找到</title>
     <style>
-        *{
-            transition: all 0.6s;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f5f7fa; color: #333;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; text-align: center;
         }
-
-        html {
-            height: 100%;
-        }
-
-        body{
-            font-family: '微软雅黑', sans-serif;
-            color: #888;
-            margin: 0;
-        }
-
-        #main{
-            display: table;
-            width: 100%;
-            height: 100vh;
-            text-align: center;
-        }
-
-        .fof{
-            display: table-cell;
-            vertical-align: middle;
-        }
-        .fof h1{
-            font-size: 50px;
-        }
-        .fof h2{
-            font-size: 30px;
-            display: inline-block;
-            padding-right: 12px;
-            animation: type .5s alternate infinite;
-        }
-
-        @keyframes type{
-            from{box-shadow: inset -3px 0px 0px #888;}
-            to{box-shadow: inset -3px 0px 0px transparent;}
-        }
+        .container { padding: 40px 20px; }
+        .code { font-size: 120px; font-weight: 700; color: #d0d7de; line-height: 1; }
+        .title { font-size: 28px; font-weight: 600; color: #555; margin-top: 10px; }
+        .desc { font-size: 16px; color: #888; margin-top: 12px; max-width: 420px; margin-left: auto; margin-right: auto; }
+        .home { display: inline-block; margin-top: 28px; padding: 10px 28px; background: #4078c0; color: #fff; text-decoration: none; border-radius: 6px; font-size: 15px; transition: background .2s; }
+        .home:hover { background: #3569a8; }
     </style>
 </head>
 <body>
-<div id="main">
-
-    <div class="fof">
-        <h1>404</h1>
-        <h2>页面不存在</h2>
+    <div class="container">
+        <div class="code">404</div>
+        <div class="title">页面未找到</div>
+        <div class="desc">抱歉，您请求的页面不存在或已被移除。请检查 URL 是否正确。</div>
+        <a class="home" href="/">返回首页</a>
     </div>
-</div>
 </body>
 </html>

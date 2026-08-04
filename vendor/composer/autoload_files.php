@@ -16,6 +16,7 @@ return array(
     'ffecb95d45175fd40f75be8a23b34f90' => $vendorDir . '/twig/twig/src/Resources/debug.php',
     'c7baa00073ee9c61edf148c51917cfb4' => $vendorDir . '/twig/twig/src/Resources/escaper.php',
     'f844ccf1d25df8663951193c3fc307c8' => $vendorDir . '/twig/twig/src/Resources/string_loader.php',
+    '2a9d6d763e243d8f9e496986c262a927' => $vendorDir . '/zapj/zap-php-framework/src/compat.php',
     'ed7610ef029ae6b6d5177039e3fb3277' => $vendorDir . '/zapj/zap-php-framework/src/functions.php',
     '42958137b6d13be8aa87d316c453d768' => $baseDir . '/app/zap/functions.php',
 );

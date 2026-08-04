@@ -2,16 +2,7 @@
 
 namespace zap\validator\rules;
 
-class RangeLength extends \zap\validator\AbstractRule
+class RangeLength extends Length
 {
-
-    public function validate($name, $value)
-    {
-        $length = mb_strlen($value);
-        if (is_array($this->params) && count($this->params) == 2) {
-            return $length >= $this->params[0] && $length <= $this->params[1];
-        }
-        return $length == (is_array($this->params) ? $this->params[0] : $this->params);
-    }
 
 }

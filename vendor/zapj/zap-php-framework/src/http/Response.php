@@ -2,128 +2,290 @@
 
 namespace zap\http;
 
-class Response {
+class Response
+{
+    /** @var int HTTP 状态码 */
+    protected int $statusCode = 200;
 
-    private $statusCode = 200;
-    private $headers = [];
-    private $content;
+    /** @var string 响应内容 */
+    public string $content = '';
 
-    public function __construct($content = null, $statusCode = 200, $headers = []) {
-        $this->content = $content;
-        $this->statusCode = $statusCode;
-        $this->headers = $headers;
+    /** @var array 响应头 */
+    protected array $headers = [];
+
+    /** @var bool 是否已发送 */
+    protected bool $sent = false;
+
+    /** @var array 状态码→状态文本映射 */
+    protected static array $statusTexts = [
+        100 => 'Continue',
+        101 => 'Switching Protocols',
+        200 => 'OK',
+        201 => 'Created',
+        202 => 'Accepted',
+        204 => 'No Content',
+        301 => 'Moved Permanently',
+        302 => 'Found',
+        303 => 'See Other',
+        304 => 'Not Modified',
+        307 => 'Temporary Redirect',
+        308 => 'Permanent Redirect',
+        400 => 'Bad Request',
+        401 => 'Unauthorized',
+        403 => 'Forbidden',
+        404 => 'Not Found',
+        405 => 'Method Not Allowed',
+        406 => 'Not Acceptable',
+        409 => 'Conflict',
+        410 => 'Gone',
+        422 => 'Unprocessable Entity',
+        429 => 'Too Many Requests',
+        500 => 'Internal Server Error',
+        501 => 'Not Implemented',
+        502 => 'Bad Gateway',
+        503 => 'Service Unavailable',
+    ];
+
+    public function __construct($content = null, int $statusCode = 200)
+    {
+        $this->setContent($content);
+        $this->setStatusCode($statusCode);
     }
 
-    /**
-     * 创建Response
-     * @param null $content 响应内容
-     * @param int $statusCode  HTTP Code
-     * @param array|null $headers Headers
-     * @return Response
-     */
-    public static function create($content = null, int $statusCode = 200, ?array $headers = []) {
-        return new Response($content, $statusCode, $headers);
-    }
+    // ───────────────────── 状态码 ─────────────────────
 
-    /**
-     * 创建Json Response
-     *
-     * @param mixed $content 响应内容
-     * @param int $statusCode  HTTP Code
-     * @param array|null $headers Headers
-     *
-     * @return void
-     */
-    public static function json($content = null, int $statusCode = 200, ?array $headers = []) {
-
-
-        (new Response($content, $statusCode, $headers))->withJson();
-    }
-
-    public function setStatusCode($code): Response
+    public function setStatusCode(int $code): self
     {
         $this->statusCode = $code;
         return $this;
     }
 
-    /**
-     * 设置Header
-     * @param string $header Name
-     * @param string $value  Value
-     * @return $this
-     */
-    public function header(string $header, string $value): Response
+    public function getStatusCode(): int
     {
-        $this->headers[$header] = $value;
+        return $this->statusCode;
+    }
+
+    public function getStatusText(): string
+    {
+        return self::$statusTexts[$this->statusCode] ?? '';
+    }
+
+    // ───────────────────── 内容 ─────────────────────
+
+    public function setContent($content): self
+    {
+        if ($content !== null) {
+            if (is_array($content) || is_object($content)) {
+                $this->content = json_encode($content, JSON_UNESCAPED_UNICODE);
+            } else {
+                $this->content = (string)$content;
+            }
+        }
         return $this;
     }
 
-    public function withHeaders($headers): Response
+    public function getContent(): string
     {
-        foreach ($headers as $name=>$value){
+        return $this->content;
+    }
+
+    // ───────────────────── 响应类型 ─────────────────────
+
+    /**
+     * 以 JSON 格式输出并发送
+     */
+    public function withJson(): void
+    {
+        if (!$this->sent) {
+            $this->header('Content-Type', 'application/json; charset=utf-8');
+            $this->send();
+        }
+    }
+
+    /** 标记为 JSON 响应（链式调用，不自动发送） */
+    public function json(): self
+    {
+        $this->header('Content-Type', 'application/json; charset=utf-8');
+        return $this;
+    }
+
+    /** 标记为 HTML 响应 */
+    public function html(): self
+    {
+        $this->header('Content-Type', 'text/html; charset=utf-8');
+        return $this;
+    }
+
+    /** 标记为纯文本响应 */
+    public function text(): self
+    {
+        $this->header('Content-Type', 'text/plain; charset=utf-8');
+        return $this;
+    }
+
+    // ───────────────────── 便捷响应工厂 ─────────────────────
+
+    public static function noContent(): self
+    {
+        $r = new self('', 204);
+        $r->send();
+        return $r;
+    }
+
+    public static function notFound(string $message = 'Not Found'): self
+    {
+        return (new self(['error' => $message], 404))->json();
+    }
+
+    public static function forbidden(string $message = 'Forbidden'): self
+    {
+        return (new self(['error' => $message], 403))->json();
+    }
+
+    public static function unauthorized(string $message = 'Unauthorized'): self
+    {
+        return (new self(['error' => $message], 401))->json();
+    }
+
+    public static function badRequest(string $message = 'Bad Request'): self
+    {
+        return (new self(['error' => $message], 400))->json();
+    }
+
+    public static function created($data = null): self
+    {
+        return (new self($data, 201))->json();
+    }
+
+    public static function ok($data = null): self
+    {
+        return (new self($data, 200))->json();
+    }
+
+    // ───────────────────── 响应头 ─────────────────────
+
+    public function header(string $name, string $value): self
+    {
+        $this->headers[$name] = $value;
+        return $this;
+    }
+
+    public function withHeaders(array $headers): self
+    {
+        foreach ($headers as $name => $value) {
             $this->headers[$name] = $value;
         }
         return $this;
     }
 
-    public function withJson($data = null)
+    public function getHeaders(): array
     {
-        $data = $data ?? $this->content;
-        $respond = json_encode($data,JSON_UNESCAPED_UNICODE);
-        if ($respond === false) {
-            $respond = json_encode(array("jsonError"=>json_last_error_msg(),"code"=>-1,"msg"=>"json parse error"));
-        }
-        $this->content = $respond;
-        $this->header('Content-Type', 'application/json;charset=utf-8');
-        $this->send();
+        return $this->headers;
     }
 
+    // ───────────────────── Cookie ─────────────────────
+
     /**
-     * @param $content
-     * @return $this
+     * 设置 Cookie（PHP 7.3+ 数组语法）
      */
-    public function setContent($content): Response
-    {
-        $this->content = $content;
+    public function cookie(
+        string $name,
+        string $value = '',
+        int $expire = 0,
+        string $path = '/',
+        string $domain = '',
+        bool $secure = false,
+        bool $httpOnly = true,
+        string $sameSite = 'Lax'
+    ): self {
+        setcookie($name, $value, [
+            'expires'  => $expire,
+            'path'     => $path,
+            'domain'   => $domain,
+            'secure'   => $secure,
+            'httponly' => $httpOnly,
+            'samesite' => $sameSite,
+        ]);
         return $this;
     }
 
+    // ───────────────────── 重定向 ─────────────────────
+
     /**
-     * Response发送至浏览器
+     * 重定向
+     *
+     * @param string $url  目标 URL
+     * @param int    $code 重定向状态码 (301/302/303/307/308)
      */
-    public function send() {
-        if (\headers_sent()) {
-            trigger_error('tried to change http response code after sending headers!',E_USER_ERROR);
-        }
-        http_response_code($this->statusCode);
-        foreach ($this->headers as $header => $value) {
-            header(strtoupper($header) . ': ' . $value);
-        }
-        echo $this->content;
+    public static function redirect(string $url, int $code = 302): void
+    {
+        $response = new self();
+        $response->setStatusCode($code);
+        $response->header('Location', $url);
+        $response->send();
         exit;
     }
 
-    public function flash($message, $type = Session::INFO): Response
+    // ───────────────────── 下载 ─────────────────────
+
+    /**
+     * 发送文件下载
+     */
+    public static function download(string $filePath, string $filename = null): void
     {
-        Session::instance()->add_flash($message,$type);
+        if (!is_file($filePath)) {
+            self::notFound('File not found');
+            exit;
+        }
+
+        $filename = $filename ?? basename($filePath);
+        $sanitized = str_replace(['"', "'", '\\', '/', "\0", "\n", "\r"], '_', $filename);
+
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="' . $sanitized . '"');
+        header('Content-Length: ' . filesize($filePath));
+        header('Cache-Control: must-revalidate');
+
+        readfile($filePath);
+        exit;
+    }
+
+    // ───────────────────── 发送 ─────────────────────
+
+    /**
+     * 发送响应
+     */
+    public function send(): self
+    {
+        if ($this->sent) {
+            return $this;
+        }
+
+        // 发送状态码
+        if (!headers_sent()) {
+            http_response_code($this->statusCode);
+        }
+
+        // 发送自定义响应头
+        foreach ($this->headers as $name => $value) {
+            if (!headers_sent()) {
+                header("{$name}: {$value}");
+            }
+        }
+
+        // 输出内容
+        echo $this->content;
+        $this->sent = true;
+
         return $this;
     }
 
     /**
-     * Redirect
-     * @param string $url
-     * @param string|null $message
-     * @param string $type Flash类型
-     * @throws \Exception
+     * 返回响应字符串（不输出）
      */
-    public static function redirect(string $url, string $message = null, string $type = Session::INFO) {
-        $response = Response::create()->header('Location',$url);
-        if(!is_null($message)){
-            $response->flash($message,$type);
-        }
-        $response->send();
+    public function __toString(): string
+    {
+        return $this->content;
     }
-
-
-
 }

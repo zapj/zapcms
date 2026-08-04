@@ -2,12 +2,14 @@
 
 namespace zap\validator\rules;
 
-class Double extends \zap\validator\AbstractRule
+use zap\validator\AbstractRule;
+
+class Double extends AbstractRule
 {
 
     public function validate($name, $value)
     {
-        return is_float($value);
+        return filter_var($value, FILTER_VALIDATE_FLOAT) !== false;
     }
 
 }

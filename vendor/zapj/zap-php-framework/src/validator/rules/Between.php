@@ -12,14 +12,11 @@ class Between extends AbstractRule
         if (!is_numeric($value)) {
             return false;
         }
-        if (!is_array($this->params) && count($this->params[0]) !== 2) {
+        if (!is_array($this->params) || count($this->params) !== 2) {
             return false;
         }
-        $min = $this->params[0];
-        $max = $this->params[1];
+        [$min, $max] = $this->params;
         return $value >= $min && $value <= $max;
-
-
     }
 
 }

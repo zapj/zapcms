@@ -2,268 +2,412 @@
 
 namespace zap\http;
 
-use zap\util\Arr;
-
 class ZapRequest
 {
-    protected $method;
+    /** @var self 单例 */
+    protected static ?ZapRequest $instance = null;
 
-    protected static $instance;
+    /** @var array 请求头缓存 */
+    protected static ?array $headers = null;
 
-    public static function instance(): ZapRequest
+    /** @var string ISO-639 语言代码 */
+    protected static ?string $language = null;
+
+    /** @var array|null 解析后的 JSON 请求体缓存 */
+    protected ?array $jsonBody = null;
+
+    /** @var bool 是否已尝试解析 JSON */
+    protected bool $jsonParsed = false;
+
+    public static function instance(): self
     {
-        if(is_null(static::$instance)){
-            static::$instance = new ZapRequest();
-            static::$instance->init();
+        if (static::$instance === null) {
+            static::$instance = new self();
         }
         return static::$instance;
     }
 
-    /**
-     * Get the public ip address of the user.
-     *
-     * @param string $default
-     * @return  array|string
-     */
-    public function ip(string $default = '') {
-        $clientIP = $default;
-        if (isset($_SERVER['HTTP_CLIENT_IP'])) {
-            $clientIP = $_SERVER['HTTP_CLIENT_IP'];
-        } elseif (isset($_SERVER['HTTP_CF_CONNECTING_IP'])) {
-            $clientIP = $_SERVER['HTTP_CF_CONNECTING_IP'];
-        } elseif (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $clientIP = $_SERVER['HTTP_X_FORWARDED_FOR'];
-        } elseif (isset($_SERVER['HTTP_X_FORWARDED'])) {
-            $clientIP = $_SERVER['HTTP_X_FORWARDED'];
-        } elseif (isset($_SERVER['HTTP_FORWARDED_FOR'])) {
-            $clientIP = $_SERVER['HTTP_FORWARDED_FOR'];
-        } elseif (isset($_SERVER['HTTP_FORWARDED'])) {
-            $clientIP = $_SERVER['HTTP_FORWARDED'];
-        } elseif (isset($_SERVER['REMOTE_ADDR'])) {
-            $clientIP = $_SERVER['REMOTE_ADDR'];
-        }
+    // ───────────────────── 请求方法 ─────────────────────
 
-        return $clientIP;
-    }
-
-    /**
-     * 获取真实IP地址
-     * @param string $default
-     * @param bool $exclude_reserved
-     *
-     * @return false|mixed|string
-     */
-    public function realIp(string $default = '', bool $exclude_reserved = false) {
-        static $server_keys = null;
-        if (empty($server_keys)) {
-            $server_keys = array('HTTP_CLIENT_IP', 'REMOTE_ADDR', 'HTTP_X_CLUSTER_CLIENT_IP', 'HTTP_X_FORWARDED_FOR');
-        }
-        foreach ($server_keys as $key) {
-            if (!static::server($key)) {
-                continue;
-            }
-            $ips = explode(',', static::server($key));
-            array_walk($ips, function (&$ip) {
-                $ip = trim($ip);
-            });
-            $ips = array_filter($ips,
-                function ($ip) use ($exclude_reserved) {
-                    return filter_var($ip, FILTER_VALIDATE_IP, $exclude_reserved ? FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE : null);
-                });
-            if ($ips) {
-                return reset($ips);
-            }
-        }
-        return $default;
-    }
-
-    /**
-     * Request Get
-     * @param string|null $name
-     * @param null|mixed $default
-     * @return mixed
-     */
-    public function get(string $name = null, $default = null) {
-        if ($name == null && $default == null) {
-            return $_GET;
-        }
-        return Arr::get($_GET, $name, $default);
-    }
-
-    /**
-     * Request Post
-     * @param string|null $name
-     * @param null|mixed $default
-     * @return mixed
-     */
-    public function post(string $name = null, $default = null) {
-        if ($name == null && $default == null) {
-            return $_POST;
-        }
-        return Arr::get($_POST, $name, $default);
-    }
-
-    /**
-     * Request All
-     * @param string|null $name
-     * @param null|mixed $default
-     * @return mixed
-     */
-    public function all(string $name = null, $default = null) {
-        if ($name == null && $default == null) {
-            return $_REQUEST;
-        }
-        return Arr::get($_REQUEST, $name, $default);
-    }
-
-    public function protocol(): string
+    public function isMethod(string $method): bool
     {
-        if (static::server('HTTPS') == 'on' or
-            static::server('HTTPS') == 1 or
-            static::server('SERVER_PORT') == 443 or
-            static::server('HTTP_X_FORWARDED_PROTO') == 'https' or
-            static::server('HTTP_X_FORWARDED_PORT') == 443) {
+        return strtoupper($this->method()) === strtoupper($method);
+    }
+
+    public function isPost(): bool
+    {
+        return $this->isMethod('POST');
+    }
+
+    public function isGet(): bool
+    {
+        return $this->isMethod('GET');
+    }
+
+    public function isPut(): bool
+    {
+        return $this->isMethod('PUT');
+    }
+
+    public function isPatch(): bool
+    {
+        return $this->isMethod('PATCH');
+    }
+
+    public function isDelete(): bool
+    {
+        return $this->isMethod('DELETE');
+    }
+
+    public function isOptions(): bool
+    {
+        return $this->isMethod('OPTIONS');
+    }
+
+    public function isHead(): bool
+    {
+        return $this->isMethod('HEAD');
+    }
+
+    public function isAjax(): bool
+    {
+        return strtolower($this->headers('X-Requested-With', '')) === 'xmlhttprequest';
+    }
+
+    public function isJson(): bool
+    {
+        $contentType = $this->headers('Content-Type', '');
+        return strpos(strtolower($contentType), 'application/json') !== false;
+    }
+
+    public function method(): string
+    {
+        $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
+        // 支持 X-HTTP-Method-Override
+        if ($method === 'POST') {
+            $override = $this->headers('X-HTTP-Method-Override', $this->post('_method'));
+            if ($override) {
+                $method = strtoupper($override);
+            }
+        }
+
+        return $method;
+    }
+
+    // ───────────────────── URL ─────────────────────
+
+    public function url(): string
+    {
+        return $this->scheme() . '://' . $this->host() . $this->uri();
+    }
+
+    public function fullUrl(): string
+    {
+        return $this->url() . ($_SERVER['QUERY_STRING'] ?? '' ? '?' . $_SERVER['QUERY_STRING'] : '');
+    }
+
+    public function uri(): string
+    {
+        return $_SERVER['REQUEST_URI'] ?? '/';
+    }
+
+    public function path(): string
+    {
+        $uri = $this->uri();
+        return parse_url($uri, PHP_URL_PATH) ?: '/';
+    }
+
+    public function scheme(): string
+    {
+        if (
+            (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off')
+            || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+        ) {
             return 'https';
         }
         return 'http';
     }
 
-
-    public function isAjax(): bool
+    public function host(): string
     {
-        return ($this->server('HTTP_X_REQUESTED_WITH') !== null) and strtolower($this->server('HTTP_X_REQUESTED_WITH')) === 'xmlhttprequest';
+        return $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost';
     }
 
-    public function isJson(): bool
+    public function port(): int
     {
-        $content_type = $_SERVER['CONTENT_TYPE'] ?? '';
-        return (stripos($content_type, 'application/json') !== false);
+        return (int)($_SERVER['SERVER_PORT'] ?? 80);
     }
 
-    public function isXml(): bool
+    public function query($key = null, $default = null)
     {
-        $content_type = $_SERVER['CONTENT_TYPE'] ?? '';
-        return (stripos($content_type, 'application/xml') !== false);
-    }
-
-    public function prevUrl($default = '') {
-        return $this->server('HTTP_REFERER', $default);
-    }
-
-    public function userAgent($default = '') {
-        return $this->server('HTTP_USER_AGENT', $default);
-    }
-
-    public function file($key = null, $default = null) {
-        return is_null($key) ? $_FILES : Arr::get($_FILES, $key, $default);
+        if ($key === null) {
+            return $_GET;
+        }
+        return $_GET[$key] ?? $default;
     }
 
     /**
-     * @param $key
-     * @param $default
-     * @return array|mixed|null
+     * Alias for query() - get GET parameter
      */
-    public function cookie($key = null, $default = null) {
-        return (func_num_args() === 0) ? $_COOKIE : Arr::get($_COOKIE, $key, $default);
+    public function get($key = null, $default = null)
+    {
+        return $this->query($key, $default);
     }
 
-    public function server($key = null, $default = null) {
-        return is_null($key) ? $_SERVER : Arr::get($_SERVER, strtoupper($key), $default);
-    }
+    // ───────────────────── IP & Agent ─────────────────────
 
-    public function headers($key = null, $default = null) {
-        static $headers = null;
-        if ($headers === null) {
-            if (function_exists('getallheaders')) {
-                $headers = getallheaders();
+    public function ip(): string
+    {
+        $headers = [
+            'HTTP_X_FORWARDED_FOR',
+            'HTTP_X_FORWARDED',
+            'HTTP_X_CLUSTER_CLIENT_IP',
+            'HTTP_FORWARDED_FOR',
+            'HTTP_FORWARDED',
+            'HTTP_CLIENT_IP',
+            'REMOTE_ADDR',
+        ];
 
-                if ($headers !== false) {
-                    return $headers;
-                }
-            }
-
-            foreach ($_SERVER as $name => $value) {
-                if ((substr($name, 0, 5) == 'HTTP_') || ($name == 'CONTENT_TYPE') || ($name == 'CONTENT_LENGTH')) {
-                    $headers[str_replace(array(' ', 'Http'), array('-', 'HTTP'), ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+        foreach ($headers as $header) {
+            if (!empty($_SERVER[$header])) {
+                $ips = explode(',', $_SERVER[$header]);
+                $ip = trim($ips[0]);
+                if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                    return $ip;
                 }
             }
         }
-        return empty($headers) ? $default : (is_null($key) ? $headers : Arr::get($headers, $key, $default));
+
+        return '0.0.0.0';
     }
 
+    public function userAgent(): string
+    {
+        return $_SERVER['HTTP_USER_AGENT'] ?? '';
+    }
 
-    public function query_string($default = '') {
-        return $this->server('QUERY_STRING', $default);
+    public function referer(): string
+    {
+        return $_SERVER['HTTP_REFERER'] ?? '';
+    }
+
+    // ───────────────────── 输入数据 ─────────────────────
+
+    /**
+     * 获取 POST 数据
+     *
+     * @param string|null $key     键名
+     * @param mixed       $default 默认值
+     * @return mixed
+     */
+    public function post($key = null, $default = null)
+    {
+        if ($key === null) {
+            return $_POST;
+        }
+        return $_POST[$key] ?? $default;
     }
 
     /**
-     * HTTP isMethod
-     * @param string $method
+     * 通用输入获取（GET > POST > JSON > 默认值）
+     *
+     * @param string|null $key     键名
+     * @param mixed       $default 默认值
+     * @return mixed
+     */
+    public function input($key = null, $default = null)
+    {
+        // 优先 GET
+        if (isset($_GET[$key])) {
+            return $_GET[$key];
+        }
+
+        // 其次 POST
+        if (isset($_POST[$key])) {
+            return $_POST[$key];
+        }
+
+        // 最后 JSON 请求体
+        $json = $this->json();
+        if ($json !== null && array_key_exists($key, $json)) {
+            return $json[$key];
+        }
+
+        return $default;
+    }
+
+    /**
+     * 检查输入是否存在
+     *
      * @return bool
      */
-    public function isMethod(string $method): bool
+    public function has(string $key): bool
     {
-        return (strtoupper($this->method) == strtoupper($method));
-    }
-
-    public function isPost(): bool
-    {
-        return static::isMethod('post');
-    }
-
-    public function isGet(): bool
-    {
-        return static::isMethod('get');
+        if (isset($_GET[$key]) || isset($_POST[$key])) {
+            return true;
+        }
+        $json = $this->json();
+        return $json !== null && array_key_exists($key, $json);
     }
 
     /**
-     * Get Method
-     * @return string
+     * 仅获取指定键的输入
      */
-    public function method(): string
+    public function only(array $keys): array
     {
-        return $this->method;
-    }
-
-    public function raw() {
-        return file_get_contents('php://input');
-    }
-
-    public function getScriptName($suffix = '') {
-        if (isset($_SERVER['SCRIPT_FILENAME']) && !empty($_SERVER['SCRIPT_FILENAME'])) {
-            return basename($_SERVER['SCRIPT_FILENAME'], $suffix);
-        } else if (isset($_SERVER['PHP_SELF']) && !empty($_SERVER['PHP_SELF'])) {
-            return basename($_SERVER['PHP_SELF'], $suffix);
-        } else if (isset($_SERVER['SCRIPT_NAME']) && !empty($_SERVER['SCRIPT_NAME'])) {
-            return basename($_SERVER['SCRIPT_NAME'], $suffix);
-        } else if (isset($_SERVER['REQUEST_URI']) && !empty($_SERVER['REQUEST_URI'])) {
-            return basename($_SERVER['REQUEST_URI'], $suffix);
+        $result = [];
+        foreach ($keys as $key) {
+            $result[$key] = $this->input($key);
         }
-        return basename('index.php', $suffix);
+        return $result;
     }
 
+    /**
+     * 排除指定键的输入
+     */
+    public function except(array $keys): array
+    {
+        $all = array_merge($this->json() ?? [], $_POST, $_GET);
+        return array_diff_key($all, array_flip($keys));
+    }
 
-    public function init(){
-        $this->method = strtoupper($_SERVER['REQUEST_METHOD']);
-        if ($this->method == 'POST' && array_key_exists('HTTP_X_HTTP_METHOD', $_SERVER)) {
-            $this->method = strtoupper($_SERVER['HTTP_X_HTTP_METHOD']);
-            array_key_exists('X-HTTP-Method-Override', $_SERVER) && $this->method = strtoupper($_SERVER['X-HTTP-Method-Override']);
-        } else if ($this->method == 'POST' && array_key_exists('X-HTTP-Method-Override', $_SERVER)) {
-            $this->method = strtoupper($_SERVER['X-HTTP-Method-Override']);
-        } else if ($_SERVER['REQUEST_METHOD'] == 'POST' && array_key_exists('_method', $_POST)) {
-            $this->method = strtoupper($_POST['_method']);
+    /**
+     * 获取所有输入
+     */
+    public function all(): array
+    {
+        return array_merge($this->json() ?? [], $_POST, $_GET);
+    }
+
+    /**
+     * 获取 JSON 请求体（自动解析）
+     *
+     * @return array|null
+     */
+    public function json(): ?array
+    {
+        if ($this->jsonParsed) {
+            return $this->jsonBody;
         }
+
+        $this->jsonParsed = true;
+
+        if (!$this->isJson()) {
+            return null;
+        }
+
+        $raw = file_get_contents('php://input');
+        if (empty($raw)) {
+            return null;
+        }
+
+        $data = json_decode($raw, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return null;
+        }
+
+        $this->jsonBody = (array)$data;
+        return $this->jsonBody;
     }
 
-    public function getPreferredLanguage() {
-        $default = config('config.fallback_locale','zh-CN');
-        $available_languages = config('config.available_languages',[]);
-        $acceptLanguages = preg_split('#[,;]#',$_SERVER["HTTP_ACCEPT_LANGUAGE"]);
-        foreach($acceptLanguages as $language) {
-            if(array_search($language,$available_languages)){
-                return $language;
+    /**
+     * 获取原始请求体
+     */
+    public function rawBody(): string
+    {
+        return file_get_contents('php://input') ?: '';
+    }
+
+    // ───────────────────── 请求头 ─────────────────────
+
+    /**
+     * 获取请求头
+     *
+     * @param string|null $key     头名称（或 null 返回全部）
+     * @param mixed       $default 默认值
+     * @return mixed
+     */
+    public function headers($key = null, $default = null)
+    {
+        if (static::$headers === null) {
+            if (function_exists('getallheaders')) {
+                $headers = getallheaders();
+                if ($headers !== false) {
+                    static::$headers = $headers;
+                    // 将键统一为小写便于查找
+                    static::$headers = array_change_key_case(static::$headers, CASE_LOWER);
+                }
+            }
+
+            if (static::$headers === null) {
+                static::$headers = [];
+                foreach ($_SERVER as $name => $value) {
+                    if (strpos($name, 'HTTP_') === 0) {
+                        $headerName = str_replace('_', '-', substr($name, 5));
+                        static::$headers[strtolower($headerName)] = $value;
+                    }
+                }
             }
         }
-        return $default;
+
+        if ($key === null) {
+            return static::$headers;
+        }
+
+        return static::$headers[strtolower($key)] ?? $default;
+    }
+
+    // ───────────────────── 文件上传 ─────────────────────
+
+    /**
+     * 获取上传文件
+     *
+     * @param string|null $key 文件字段名，null 返回全部
+     * @return array|null
+     */
+    public function file($key = null)
+    {
+        if ($key === null) {
+            return $_FILES;
+        }
+        return $_FILES[$key] ?? null;
+    }
+
+    /**
+     * 检查是否有上传文件
+     */
+    public function hasFile(string $key): bool
+    {
+        return isset($_FILES[$key]) && $_FILES[$key]['error'] !== UPLOAD_ERR_NO_FILE;
+    }
+
+    // ───────────────────── 语言 ─────────────────────
+
+    /**
+     * 获取客户端首选语言
+     */
+    public function language(): string
+    {
+        if (static::$language !== null) {
+            return static::$language;
+        }
+
+        if (!isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+            static::$language = 'en';
+            return static::$language;
+        }
+
+        // 解析 Accept-Language
+        $langs = [];
+        foreach (explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']) as $part) {
+            if (preg_match('/([a-z]{2}(?:-[A-Z]{2})?)\s*(?:;\s*q=([0-9.]+))?/', trim($part), $matches)) {
+                $langs[$matches[1]] = (float)($matches[2] ?? 1.0);
+            }
+        }
+
+        arsort($langs);
+        static::$language = (string)array_key_first($langs);
+        return static::$language;
     }
 }

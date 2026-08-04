@@ -2,6 +2,8 @@
 
 namespace zap;
 
+use zap\log\SimpleLogger;
+
 /**
  * Level Log::DEBUG|Log::INFO|Log::NOTICE|Log::WARNING|Log::ERROR|Log::CRITICAL|Log::ALERT|Log::EMERGENCY
  *
@@ -37,7 +39,16 @@ class Log
     public static function __callStatic($name, $arguments)
     {
         if(config('config.log',false)) {
-            call_user_func_array([app()->getLogger(), $name], $arguments);
+            try {
+                call_user_func_array([app()->getLogger(), $name], $arguments);
+            } catch (\Exception $e) {
+                error_log(sprintf(
+                    '[Log] Failed to write log: %s in %s:%d',
+                    $e->getMessage(),
+                    $e->getFile(),
+                    $e->getLine()
+                ));
+            }
         }
     }
 

@@ -24,7 +24,6 @@ if (!is_file('config/config.php') ) {
 
 
 require "vendor/autoload.php";
-
 $app = new \zap\App(dirname(__DIR__));
 
 $app->run();

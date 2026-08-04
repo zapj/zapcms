@@ -2,102 +2,142 @@
 
 namespace zap\http;
 
-
+use \Exception;
 use zap\exception\NotFoundException;
+use zap\view\View;
 
-class Dispatcher implements Middleware
+class Dispatcher
 {
-
-    public $baseUrl;
-
-    public $currentUri;
+    /** @var Router */
+    protected $router;
 
     /**
-     * @var \zap\http\Router
+     * @var string|null URL 前缀（如 /admin），用于解析路由时移除
      */
-    public $router;
+    protected string $routeBase = '';
 
-    public $controller;
-
-    private $controllerClass;
-
-    public $method;
-
-    public $options;
-
-    public $hasParams = false;
-
-    public function __construct($options)
+    public function __construct($router)
     {
-        $default_params = ['controller' => 'index', 'action' => 'index'];
-        $this->options = array_merge($options, $default_params);
-        $this->controller = $this->options['controller'];
-        $this->method = $this->options['action'];
+        $this->router = $router;
     }
 
-    public function handle()
+    /**
+     * 设置路由基础路径前缀
+     * @param string $routeBase
+     */
+    public function setRouteBase(string $routeBase): void
     {
-        $this->parseUrlPath();
+        $this->routeBase = rtrim($routeBase, '/');
+    }
 
-        if ( ! class_exists($this->controllerClass)) {
-            $this->router->trigger404();
-
-            return false;
-        }
+    /**
+     * 处理请求分发
+     *
+     * @param string|null $requestUrl
+     * @return bool true=成功拦截, false=无匹配路由
+     */
+    public function handle($requestUrl = null): bool
+    {
+        $handled = false;
+        $requestUrl = $this->parseUrlPath($requestUrl);
+        $requestUrl = urldecode($requestUrl);
+        $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
         try {
-            app()->controller = new $this->controllerClass();
-            call_user_func_array([app()->controller, 'setParams'], ['params'=>$this->router->params]);
-            if (method_exists(app()->controller, '_invoke')) {
-                call_user_func_array([app()->controller, '_invoke'],
-                    ['method' => $this->method,
-                     'params' => $this->router->params]
-                );
-            } else {
-                if (method_exists(app()->controller, $this->method)) {
-                    call_user_func_array([app()->controller, $this->method],$this->router->params);
-                } else {
-                    throw new NotFoundException('not found');
+            // 匹配路由
+            if ($this->router->dispatch($requestUrl, $requestMethod)) {
+                $handled = true;
+            }
+
+            // 无匹配路由 → 执行 notFound 处理
+            if (!$handled) {
+                $handler = $this->router->getNotFound();
+                if (is_callable($handler)) {
+                    $result = call_user_func($handler, $requestUrl);
+                    if ($result !== null) {
+                        echo $result;
+                        $handled = true;
+                    }
                 }
             }
         } catch (NotFoundException $e) {
-            if (method_exists(app()->controller, '_notfound')) {
-                call_user_func_array([app()->controller, '_notfound'],['method' => $this->method,'params' => $this->router->params]);
+            // notFound 处理器抛出的，直接展示错误页
+            if (config('config.debug', false)) {
+                (new \zap\util\Printer($e))->display();
             } else {
-                $this->router->trigger404();
+                ZView::render(__DIR__ . '/../resources/views/errors/exception.php', ['e' => $e]);
             }
+            $handled = true;
+        } catch (Exception $e) {
+            if (config('config.debug', false)) {
+                (new \zap\util\Printer($e))->display();
+            } else {
+                ZView::render(__DIR__ . '/../resources/views/errors/exception.php', ['e' => $e]);
+            }
+            $handled = true;
         }
 
-        return false;
+        return $handled;
     }
 
-    private function parseUrlPath()
+    /**
+     * 解析 URL 路径（剥离基础前缀）
+     */
+    private function parseUrlPath($uri): string
     {
-        $namespace = $this->options['namespace'];
-        $routeBase = rtrim($this->router->currentRoute['pattern'], '.*');
-        $url = trim(
-            preg_replace("#$routeBase#iu", '', $this->currentUri, 1), '/ '
-        );
-        $segments = preg_split('#/#', trim($url, '/'), -1, PREG_SPLIT_NO_EMPTY);
-        $controller = array_shift($segments);
-        $method = array_shift($segments);
+        $start = 0;
+        $uri = (string)$uri;
 
-        if ($controller != null && preg_match('/^[a-z]+[-_0-9a-z]+$/i', $controller)) {
-            $this->controller = $controller;
-            if ($method != null && preg_match('/^[a-z][a-z0-9-_]+$/i', $method)) {
-                $this->method = Router::convertToName($method);
-            } elseif ($method != null) {
-                array_unshift($segments, $method);
+        // 获取请求 URI
+        if ($uri) {
+            $queryPos = strpos($uri, '?');
+            if ($queryPos !== false) {
+                $queryString = substr($uri, $queryPos + 1);
+                parse_str($queryString, $queryData);
+                $_REQUEST = array_merge($_REQUEST, $queryData);
+                $_GET = array_merge($_GET, $queryData);
+                $uri = substr($uri, 0, $queryPos);
             }
         } else {
-            array_unshift($segments, $controller);
+            $uri = $_SERVER['REQUEST_URI'] ?? '';
+            $stripos = function_exists('mb_stripos') ? 'mb_stripos' : 'stripos';
+            $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+
+            // 过滤查询字符串
+            $queryPos = strpos($uri, '?');
+            if ($queryPos !== false) {
+                parse_str(substr($uri, $queryPos + 1), $queryData);
+                $_REQUEST = array_merge($_REQUEST, $queryData);
+                $_GET = array_merge($_GET, $queryData);
+                $uri = substr($uri, 0, $queryPos);
+            }
+
+            // 去除脚本名
+            if ($stripos($uri, $scriptName) === 0) {
+                $uri = substr($uri, strlen($scriptName));
+            }
+
+            // 去除 index.php
+            if ($uri && stripos($uri, 'index.php') === 0) {
+                $uri = substr($uri, 9);
+            }
         }
 
-        $this->hasParams = !((count($segments) == 0));
+        // 安全地剥离路由前缀
+        if ($this->routeBase && strpos($uri, $this->routeBase) === 0) {
+            $uri = substr($uri, strlen($this->routeBase));
+        }
 
-        $this->router->params = $segments;
-        $this->controllerClass = $namespace.'\\'. Router::convertToName($this->controller) . 'Controller';
+        // 补上前导 /
+        if ($uri === '' || $uri === false || $uri[0] !== '/') {
+            $uri = '/' . ltrim($uri, '/');
+        }
+
+        // 去除末尾斜杠（保留根路径 '/'）
+        if ($uri !== '/' && $uri !== false) {
+            $uri = rtrim($uri, '/');
+        }
+
+        return $uri;
     }
-
-
 }

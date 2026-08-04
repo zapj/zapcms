@@ -4,61 +4,40 @@ namespace zap\net;
 
 use zap\exception\CurlException;
 
-class Curl {
-
+/**
+ * 精简 HTTP 客户端（向后兼容）
+ *
+ * 内部复用 Requests，保持原有的 get/post 签名。
+ */
+class Curl extends Requests
+{
     /**
-     * @param string $url
-     * @param $params
-     * @param $headers
-     * @return bool|string
+     * GET 请求（兼容旧签名）
+     *
+     * @param string       $url
+     * @param string|array $params  查询参数，非数组时直接拼接 URL
+     * @param array        $headers
+     * @return string
      * @throws CurlException
      */
-    public static function get($url, $params = [], $headers = []) {
-        $ch = curl_init();
-        if (is_array($params)) {
-            curl_setopt($ch, CURLOPT_URL, $url . '?' . http_build_query($params));
-        } else {
-            curl_setopt($ch, CURLOPT_URL, $url);
-        }
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Macintosh; U; PPC Mac OS X; en) AppleWebKit/48 (like Gecko) Safari/48");
-
-        $output = curl_exec($ch);
-        $error = curl_error($ch);
-        if ($error) {
-            throw new CurlException('Curl Error:', $error, curl_errno($ch));
-        }
-        curl_close($ch);
-        return $output;
+    public static function get($url, $params = [], $headers = [])
+    {
+        $response = parent::get($url, is_array($params) ? $params : [], $headers);
+        return $response->body();
     }
 
     /**
-     * @param string $url 请求URL
-     * @param array $params
-     * @param array $headers
-     * @return bool|string
+     * POST 请求（兼容旧签名）
+     *
+     * @param string            $url
+     * @param string|array      $params  POST 数据；字符串时作为原始 body
+     * @param array             $headers
+     * @return string
      * @throws CurlException
      */
-    public static function post(string $url, array $params = [], array $headers = []) {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, is_string($params) ? $params : http_build_query($params));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-        curl_setopt($ch, CURLOPT_CAINFO, ZAP_SRC . '/resources/certificates/cacert.pem');
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Macintosh; U; PPC Mac OS X; en) AppleWebKit/48 (like Gecko) Safari/48");
-
-        $output = curl_exec($ch);
-        $error = curl_error($ch);
-        if ($error) {
-            throw new CurlException('Curl Error:', $error, curl_errno($ch));
-        }
-        curl_close($ch);
-        return $output;
+    public static function post(string $url, array $params = [], array $headers = [])
+    {
+        $response = parent::post($url, $params, $headers);
+        return $response->body();
     }
 }

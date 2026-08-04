@@ -26,19 +26,23 @@ class RuleFactory
      * @return \zap\validator\AbstractRule
      * @throws \Exception
      */
-    public function make($ruleName,$validator){
-        if(isset($this->instanceRules[$ruleName])){
+    public function make($ruleName, $validator)
+    {
+        if (isset($this->instanceRules[$ruleName])) {
             return $this->instanceRules[$ruleName];
         }
+
         foreach ($this->rulesNamespaces as $namespace) {
             try {
-                $name = $namespace . '\\' . ucfirst(str_replace(' ','',ucwords(str_replace(['-','_'],' ',$ruleName))));
-                $this->instanceRules[$ruleName] = $this->createRule($name,['validator'=>$validator]);
+                $name = $namespace . '\\' . ucfirst(str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $ruleName))));
+                $this->instanceRules[$ruleName] = $this->createRule($name, ['validator' => $validator]);
+                return $this->instanceRules[$ruleName];
             } catch (ReflectionException $exception) {
                 continue;
             }
         }
-        return $this->instanceRules[$ruleName];
+
+        throw new Exception("Validator rule '{$ruleName}' not found in registered namespaces");
     }
 
     private function createRule($ruleName, $args = [])

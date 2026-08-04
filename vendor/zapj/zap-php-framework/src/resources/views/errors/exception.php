@@ -1,47 +1,38 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="zh">
+<html lang="zh-CN">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>异常 - <?= htmlspecialchars($type ?? 'Error') ?></title>
     <style>
-        /*li::before{*/
-        /*    background-color: #C8E1FA; white-space: nowrap; width: 23px;   text-align: center; color: #3F85CA;*/
-        /*}*/
-        /*ol {list-style: none; counter-reset: li}*/
-
-        li::marker {
-            /*content: counter(li);*/
-            color: #b7b9bb;
-            display: inline-block;
-            width: 1em;
-            margin-left: -1em;
-            white-space: nowrap;
-            background-color: #f1f1f1;
-            text-align: center;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f5f7fa; color: #333; padding: 20px;
         }
-
-        /*li {counter-increment: li}*/
+        .exception-header {
+            background: #fff; border: 1px solid #e1e4e8; border-radius: 8px; padding: 16px 20px;
+            margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .exception-header h3 { font-size: 18px; color: #d73a49; word-break: break-all; }
+        .exception-header .meta { font-size: 13px; color: #666; margin-top: 6px; }
+        .exception-header .meta span { margin-right: 12px; }
+        .label {
+            display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;
+        }
+        .label-danger { background: #ffdce0; color: #86181d; }
     </style>
 </head>
-
 <body>
-<?php
-// print_r($exception);
-// echo gc_highlight_file($exception->getFile(), $exception->getLine(), $exception->getMessage(), get_class($exception) . ' 异常');
+    <div class="exception-header">
+        <h3><?= htmlspecialchars($type ?? 'Exception') ?></h3>
+        <div class="meta">
+            <span>文件: <?= htmlspecialchars($file ?? '') ?></span>
+            <span>行: <?= $line ?? '' ?></span>
+        </div>
+        <p style="font-size:14px;color:#a00;margin-top:8px;"><?= htmlspecialchars($message ?? '') ?></p>
+    </div>
 
-$trace_arr = (array)($exception->getTrace());
-//$pdoException = $exception instanceof PDOException;
-
-echo $handler->zapHighlightFile($exception->getFile(), $exception->getLine(), $exception->getMessage(), "错误类型:".get_class($exception));
-
-foreach($trace_arr as $trace){
-    if(!isset($trace['file'])) continue;
-    if(stripos(str_replace('\\','/',$trace['file']),'zap-php-framework') !== FALSE){
-        continue;
-    }
-    echo $handler->zapHighlightFile($trace['file'],$trace['line'], '', get_class($exception) . ' 异常');
-    $msg = '';
-}
-?>
+    <?= $html ?? '' ?>
 </body>
 </html>

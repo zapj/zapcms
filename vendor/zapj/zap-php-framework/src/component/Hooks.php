@@ -64,7 +64,7 @@ class Hooks
 
     public function apply_filters($hookName,$value,...$args)
     {
-        foreach($this->filter[$hookName] as $filters){
+        foreach(($this->filter[$hookName] ?? []) as $filters){
             foreach($filters as $filter){
                 array_unshift($args,$value);
                 if(is_callable($filter)){
@@ -85,7 +85,7 @@ class Hooks
 
     public function do_action($hookName,...$args)
     {
-        foreach($this->action[$hookName] as $actions){
+        foreach(($this->action[$hookName] ?? []) as $actions){
             foreach($actions as $action){
                 if(is_callable($action)){
                     call_user_func_array($action,$args);

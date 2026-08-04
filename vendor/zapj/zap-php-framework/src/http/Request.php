@@ -1,48 +1,48 @@
 <?php
+
 namespace zap\http;
 
-use zap\facades\Facade;
-
-
 /**
- * @method static string ip($default = '')
- * @method static realIp(string $default = '', bool $exclude_reserved = false)
- * @method static string getPreferredLanguage()
- * @method static string|array get(string $name = null, $default = null)
- * @method static string|array post(string $name = null, $default = null)
- * @method static string|array all(string $name = null, $default = null)
- * @method static string protocol()
- * @method static bool isAjax()
- * @method static bool isJson()
- * @method static bool isXml()
- * @method static string prevUrl($default = '')
- * @method static string userAgent($default = '')
- * @method static file($key = null, $default = null)
- * @method static cookie($key = null, $default = null)
- * @method static server($key = null, $default = null)
- * @method static headers($key = null, $default = null)
- * @method static string query_string($default = '')
- * @method static bool isMethod(string $method)
- * @method static bool isPost()
- * @method static bool isGet()
  * @method static string method()
- * @method static string raw()
- * @method static string getScriptName($suffix = '')
+ * @method static bool   isPost()
+ * @method static bool   isGet()
+ * @method static bool   isPut()
+ * @method static bool   isPatch()
+ * @method static bool   isDelete()
+ * @method static bool   isOptions()
+ * @method static bool   isHead()
+ * @method static bool   isAjax()
+ * @method static bool   isJson()
+ * @method static bool   isMethod(string $method)
+ * @method static string url()
+ * @method static string fullUrl()
+ * @method static string uri()
+ * @method static string path()
+ * @method static string scheme()
+ * @method static string host()
+ * @method static int    port()
+ * @method static mixed  query($key = null, $default = null)
+ * @method static mixed  post($key = null, $default = null)
+ * @method static mixed  input($key = null, $default = null)
+ * @method static bool   has(string $key)
+ * @method static array  only(array $keys)
+ * @method static array  except(array $keys)
+ * @method static array  all()
+ * @method static array|null json()
+ * @method static string rawBody()
+ * @method static string ip()
+ * @method static string userAgent()
+ * @method static string referer()
+ * @method static string language()
+ * @method static mixed  headers($key = null, $default = null)
+ * @method static array|null file($key = null)
+ * @method static bool   hasFile(string $key)
+ * @method static ZapRequest instance()
  */
-class Request extends Facade {
-
-    const NAME = '_zapRequest';
-
-    /**
-     * @return ZapRequest
-     */
-    protected static function getInstance()
+class Request
+{
+    public static function __callStatic($name, $arguments)
     {
-        if(!app()->has(self::NAME)){
-            app()->set(self::NAME,ZapRequest::instance());
-        }
-
-        return app()->get(static::NAME);
+        return ZapRequest::instance()->$name(...$arguments);
     }
-
 }

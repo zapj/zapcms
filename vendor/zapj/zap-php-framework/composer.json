@@ -20,7 +20,7 @@
     "ext-simplexml": "*"
   },
   "autoload": {
-    "files": ["src/functions.php"],
+    "files": ["src/compat.php", "src/functions.php"],
     "psr-4": {
       "zap\\": "src/"
     }
@@ -28,5 +28,8 @@
   "minimum-stability": "dev",
   "require-dev": {
     "phpunit/phpunit": "9.6.x-dev"
+  },
+  "suggest": {
+    "monolog/monolog": "Allows more advanced logging with multiple handlers"
   }
 }
