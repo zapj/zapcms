@@ -662,4 +662,15 @@ class Router
         $name = ucwords($name);
         return str_replace(' ', '', $name);
     }
+
+    /**
+     * 将 PascalCase 类名/方法名转回 URL slug 格式
+     * 例如: 'UserProfile' → 'user-profile', 'DefaultIndex' → 'default-index'
+     */
+    public static function convertToUrlName(string $name): string
+    {
+        // 在大写字母前插入分隔符，首字母除外
+        $name = preg_replace('/(?<!^|[A-Z])([A-Z])/', '-$1', $name);
+        return strtolower($name);
+    }
 }

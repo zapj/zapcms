@@ -189,6 +189,33 @@ class Query
 
     public function orWhere($column, $operator = null, $value = null): self
     {
+        // Allow passing a where array directly
+        if (is_array($column)) {
+            foreach ($column as $key => $val) {
+                if (is_numeric($key)) {
+                    $this->_where([$val['column'] => [
+                        'operator' => $val['operator'] ?? '=',
+                        'value'    => $val['value'] ?? null,
+                        'boolean'  => 'OR',
+                    ]]);
+                } else {
+                    $this->_where([$key => [
+                        'operator' => '=',
+                        'value'    => $val,
+                        'boolean'  => 'OR',
+                    ]]);
+                }
+            }
+            return $this;
+        }
+
+        if ($column instanceof \Closure) {
+            $query = new self($this->db, $this->from, $this->alias);
+            $column($query);
+            $this->wheres[] = ['type' => 'nested', 'query' => $query, 'boolean' => 'OR'];
+            return $this;
+        }
+
         if (func_num_args() === 2) {
             [$value, $operator] = [$operator, '='];
         }
@@ -605,13 +632,18 @@ class Query
 
     /**
      * Set fields for UPDATE query.
+     * Supports: set($key, $value) or set(['key' => 'value', ...])
      */
-    public function set($params): self
+    public function set($params, $value = null): self
     {
         $this->type = 'update';
 
+        if ($value !== null) {
+            $params = [$params => $value];
+        }
+
         if ($this->db) {
-            foreach ($params as $name => $param) {
+            foreach ((array)$params as $name => $param) {
                 if ($param instanceof Expr) {
                     $this->fields[] = $this->db->quoteColumn($name) . '=' . $param->raw;
                 } else {
@@ -701,6 +733,19 @@ class Query
         $this->limit(1);
         $results = $this->get($fetchMode);
         return $results[0] ?? null;
+    }
+
+    /**
+     * 返回结果集第一行第一列的值（常用于 COUNT 查询）
+     */
+    public function fetchColumn(int $columnIndex = 0)
+    {
+        $this->limit(1);
+        $sql = $this->getSQL();
+        $stm = $this->db->prepare($sql);
+        $stm->execute($this->params);
+        $result = $stm->fetch(\PDO::FETCH_NUM);
+        return $result[$columnIndex] ?? null;
     }
 
     public function first()
@@ -803,6 +848,34 @@ class Query
         $extra[$column] = new Expr($column . ' - ' . $amount);
         $this->type = 'update';
         return $this->updateQuery($extra);
+    }
+
+    /**
+     * Execute an UPDATE query. Supports two patterns:
+     *  - Chained:   ->set('col', val)->set('col2', val2)->where(...)->update()
+     *  - Direct:    ->where(...)->update(['col' => val])
+     */
+    public function update(array $data = null): int
+    {
+        $this->type = 'update';
+
+        if ($data !== null) {
+            return $this->updateQuery($data);
+        }
+
+        if (empty($this->fields)) {
+            return 0;
+        }
+
+        $sql = 'UPDATE ' . ($this->db ? $this->db->quoteTable($this->from) : $this->from);
+        $sql .= ' SET ' . implode(', ', $this->fields);
+        $sql .= $this->prepareWhereString();
+        $sql .= $this->prepareLimitString();
+        $sql .= $this->prepareOrderString();
+
+        $stm = $this->db->prepare($sql);
+        $stm->execute($this->params);
+        return $stm->rowCount();
     }
 
     /**

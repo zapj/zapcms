@@ -35,7 +35,7 @@ class Bootstrap
         }
 
         // ──── 注册后台自动路由 ────
-        $prefix = Z_ADMIN_PREFIX;
+        $prefix = trim(Z_ADMIN_PREFIX, '/');
         // 根路径: /z-admin 或 /z-admin/
         $this->router->any("/{$prefix}", function () {
             $this->dispatchAdmin('');

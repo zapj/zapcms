@@ -15,7 +15,7 @@ use zap\DB;
 class SysInfo
 {
     public static function getDatabaseTableNames() {
-        if(DB::getPDO()->driver == 'sqlite') {
+        if(DB::connection()->driver == 'sqlite') {
             $tables = DB::query("SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%'")->fetchAll(FETCH_ASSOC);
         }else{
             $tables = DB::query("SHOW TABLES")->fetchAll(FETCH_ASSOC);

@@ -61,8 +61,11 @@ class Str
 
     // ========== 判断型 ==========
 
-    public static function startsWith(string $string, string $start, bool $caseSensitive = true): bool
+    public static function startsWith(?string $string, string $start, bool $caseSensitive = true): bool
     {
+        if ($string === null) {
+            return false;
+        }
         if (!$caseSensitive) {
             $string = strtolower($string);
             $start = strtolower($start);
@@ -70,8 +73,11 @@ class Str
         return str_starts_with($string, $start);
     }
 
-    public static function endsWith(string $string, string $end, bool $caseSensitive = true): bool
+    public static function endsWith(?string $string, string $end, bool $caseSensitive = true): bool
     {
+        if ($string === null) {
+            return false;
+        }
         if (!$caseSensitive) {
             $string = strtolower($string);
             $end = strtolower($end);

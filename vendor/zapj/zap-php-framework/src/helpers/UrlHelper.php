@@ -129,9 +129,19 @@ class UrlHelper
      * @param array  $pathParams  Path parameters for the URL pattern
      * @return string
      */
-    public function action(string $action, array $queryParams = [], array $pathParams = []): string
+    public function action(string $action, $queryParams = [], $pathParams = []): string
     {
+        $queryParams = is_array($queryParams) ? $queryParams : [];
+        $pathParams = is_array($pathParams) ? $pathParams : [];
+        
         $uri = $action;
+
+        // Admin context: prepend admin prefix and convert "Controller@method" to "controller/method"
+        if (defined('IN_ZAP_ADMIN') && IN_ZAP_ADMIN) {
+            $prefix = defined('Z_ADMIN_PREFIX') ? trim(Z_ADMIN_PREFIX, '/') : 'z-admin';
+            $uri = str_replace('@', '/', $uri);
+            $uri = $prefix . '/' . ltrim($uri, '/');
+        }
 
         // Replace path params in the action string
         foreach ($pathParams as $key => $value) {

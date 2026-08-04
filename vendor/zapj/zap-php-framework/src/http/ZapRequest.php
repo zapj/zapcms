@@ -382,6 +382,34 @@ class ZapRequest
         return isset($_FILES[$key]) && $_FILES[$key]['error'] !== UPLOAD_ERR_NO_FILE;
     }
 
+    // ───────────────────── 服务器变量 ─────────────────────
+
+    /**
+     * 获取 $_SERVER 变量
+     *
+     * @param string|null $key     键名（或 null 返回全部）
+     * @param mixed       $default 默认值
+     * @return mixed
+     */
+    public function server($key = null, $default = null)
+    {
+        if ($key === null) {
+            return $_SERVER;
+        }
+        return $_SERVER[$key] ?? $default;
+    }
+
+    /**
+     * 获取上一页 URL（优先 HTTP_REFERER，否则用默认值）
+     *
+     * @param string|null $default 默认 URL
+     * @return string
+     */
+    public function prevUrl($default = '/'): string
+    {
+        return $_SERVER['HTTP_REFERER'] ?? $default;
+    }
+
     // ───────────────────── 语言 ─────────────────────
 
     /**

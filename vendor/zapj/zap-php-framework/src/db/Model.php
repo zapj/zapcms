@@ -261,6 +261,11 @@ abstract class Model implements ArrayAccess, JsonSerializable
         return null;
     }
 
+    public function hasAttribute(string $name): bool
+    {
+        return array_key_exists($name, $this->attributes);
+    }
+
     public function setAttribute(string $name, $value): void
     {
         $this->attributes[$name] = $this->castSet($name, $value);
@@ -572,6 +577,18 @@ abstract class Model implements ArrayAccess, JsonSerializable
             }
 
             return $query->where($colName, '=', $parameters[0] ?? null)->get();
+        }
+
+        // Handle find() with array conditions (e.g. find(['node_id' => 5]))
+        // Return Query with where applied, not executed — caller chains
+        // select/orderBy/fetchColumn or first/get themselves
+        if ($method === 'find' && !empty($parameters) && is_array($parameters[0])) {
+            return $query->where($parameters[0]);
+        }
+
+        // Handle delete() with array conditions instead of a single id value
+        if ($method === 'delete' && !empty($parameters) && is_array($parameters[0])) {
+            return $query->where($parameters[0])->delete();
         }
 
         return $query->$method(...$parameters);

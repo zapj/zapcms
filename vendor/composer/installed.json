@@ -817,12 +817,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/zapj/zap-php-framework.git",
-                "reference": "2f3791059b726bc7d3a537a2585628a40dc38bac"
+                "reference": "44f528dd539c213bb0c7d619e6d662f6ed5a69db"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/2f3791059b726bc7d3a537a2585628a40dc38bac",
-                "reference": "2f3791059b726bc7d3a537a2585628a40dc38bac",
+                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/44f528dd539c213bb0c7d619e6d662f6ed5a69db",
+                "reference": "44f528dd539c213bb0c7d619e6d662f6ed5a69db",
                 "shasum": ""
             },
             "require": {
@@ -841,7 +841,7 @@
             "suggest": {
                 "monolog/monolog": "Allows more advanced logging with multiple handlers"
             },
-            "time": "2026-08-04T10:57:23+00:00",
+            "time": "2026-08-04T13:05:20+00:00",
             "default-branch": true,
             "type": "library",
             "installation-source": "dist",

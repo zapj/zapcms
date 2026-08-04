@@ -29,11 +29,11 @@ class AuthController extends Controller
             $admin = DB::table('admin')->where('username', $username)->fetch(FETCH_OBJ);
             if (empty($admin) || ($admin && Password::verify($password, $admin->password) === false )) {
                 if (Request::isAjax()) {
-                    Response::json(['code'=>1,'msg'=>'登录失败，用户名或密码错误']);
+                    Response::jsonResponse(['code'=>1,'msg'=>'登录失败，用户名或密码错误'])->withJson();
                 }else{
                     Response::redirect(Url::action('Auth@signIn'), "登录失败，用户名或密码错误", Session::ERROR);
                 }
-
+                exit;
             }
 
             //登录成功
@@ -50,10 +50,11 @@ class AuthController extends Controller
             ]);
 
             if (Request::isAjax()) {
-                Response::json(['code'=>0,'msg'=>'登录成功','redirect_to'=>Url::action('Index')]);
+                Response::jsonResponse(['code'=>0,'msg'=>'登录成功','redirect_to'=>Url::action('Index')])->withJson();
             }else{
                 Response::redirect(Url::action('Index'), "登录成功", FLASH_SUCCESS);
             }
+            exit;
         }
         View::render("auth.login");
     }

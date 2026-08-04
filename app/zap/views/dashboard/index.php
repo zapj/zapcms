@@ -39,7 +39,7 @@ $this->layout('layouts/common');
                     <hr class="border-secondary"/>
                     <div class="list-group list-group-horizontal ">
                         <a class="list-group-item list-group-item-action" href="#">
-                            系统语言 : <strong class="text-success"><?php echo req()->getPreferredLanguage(); ?></strong>
+                            系统语言 : <strong class="text-success"><?php echo req()->language(); ?></strong>
                         </a>
                         <a class="list-group-item list-group-item-action" href="#">
                             站点模版 : <strong class="text-success"><?php echo option('website.theme','basic'); ?></strong>
@@ -69,7 +69,7 @@ $this->layout('layouts/common');
                             <td><?php echo PHP_VERSION , '(' , php_sapi_name() , ')'; ?></td>
                         </tr>
                         <tr>
-                            <?php $driver = \zap\DB::getPDO()->getAttribute(PDO::ATTR_DRIVER_NAME) ;?>
+                            <?php $driver = \zap\DB::connection()->getAttribute(PDO::ATTR_DRIVER_NAME) ;?>
                             <td ><?php echo $driver;?> 版本</td>
                             <td>v<?php
                                 if($driver == 'mysql'){

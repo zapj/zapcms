@@ -38,7 +38,7 @@ $error_status = '<span style="color:red">No</span>';
         <div class="card shadow-sm">
 
             <?php
-            $driver = \zap\DB::getPDO()->driver;
+            $driver = \zap\DB::connection()->driver;
             $conn_name = config('database.default');
             ?>
             <div class="card-body p-0" >

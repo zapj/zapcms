@@ -495,35 +495,8 @@ class ErrorHandler
                 . '无法读取文件: ' . htmlspecialchars($filename) . '</div>';
         }
 
-        $totalLines = count(file($filename));
-        $startLine = max(1, $lineNo - $offset);
-        $endLine   = min($totalLines, $lineNo + $offset);
-
-        // 使用 PHP 内置高亮 + 按行提取
-        $highlighted = highlight_file($filename, true);
-        // 按 <br /> 拆分行
-        $lines = explode('<br />', $highlighted);
-        // 去除 PHP 内置高亮的 <code> / <span> 等外层标签，只保留 <ol> 内容
-        $lines = preg_grep('/^\s*$/', $lines, PREG_GREP_INVERT);
-
-        // 如果行数匹配不上（因 highlight_file 的 HTML 结构复杂），降级为手动高亮
-        if (count($lines) < $totalLines) {
-            return $this->manualHighlightFile($filename, $lineNo, $message, $title, $offset);
-        }
-
-        // 提取目标行范围（$lines 索引从 0 开始对应第 1 行）
-        $sliced = array_slice($lines, $startLine - 1, $offset * 2 + 1);
-        $lineCount = count($sliced);
-
-        return $this->buildHighlightHtml(
-            $filename,
-            $message,
-            $title,
-            $startLine,
-            $lineNo,
-            $lineCount,
-            $sliced
-        );
+        // 使用手动高亮，避免 highlight_file 按 <br /> 拆分导致 HTML 标签破碎
+        return $this->manualHighlightFile($filename, $lineNo, $message, $title, $offset);
     }
 
     /**
@@ -558,28 +531,45 @@ class ErrorHandler
     {
         $line = htmlspecialchars($line, ENT_QUOTES, 'UTF-8');
 
-        $keywords = implode('|', [
-            'abstract', 'and', 'array', 'as', 'break', 'case', 'catch', 'class', 'clone',
-            'const', 'continue', 'declare', 'default', 'die', 'do', 'echo', 'else', 'elseif',
-            'empty', 'enddeclare', 'endfor', 'endforeach', 'endif', 'endswitch', 'endwhile',
-            'eval', 'exit', 'extends', 'final', 'finally', 'for', 'foreach', 'function',
-            'global', 'goto', 'if', 'implements', 'include', 'include_once', 'instanceof',
-            'insteadof', 'interface', 'isset', 'list', 'namespace', 'new', 'or', 'print',
-            'private', 'protected', 'public', 'require', 'require_once', 'return', 'static',
-            'switch', 'throw', 'trait', 'try', 'unset', 'use', 'var', 'while', 'xor', 'yield',
-            'true', 'false', 'null', 'self', 'parent', 'static', 'this',
-            'int', 'float', 'bool', 'string', 'void', 'null', 'iterable', 'object', 'callable',
-            'mixed', 'never',
-        ]);
+        $keywords = 'abstract|and|array|as|break|case|catch|class|clone|'
+            . 'const|continue|declare|default|die|do|echo|else|elseif|'
+            . 'empty|enddeclare|endfor|endforeach|endif|endswitch|endwhile|'
+            . 'eval|exit|extends|final|finally|for|foreach|function|'
+            . 'global|goto|if|implements|include|include_once|instanceof|'
+            . 'insteadof|interface|isset|list|namespace|new|or|print|'
+            . 'private|protected|public|require|require_once|return|'
+            . 'switch|throw|trait|try|unset|use|var|while|xor|yield|'
+            . 'true|false|null|self|parent|static|this|'
+            . 'int|float|bool|string|void|iterable|object|callable|mixed|never';
 
-        $line = preg_replace('/\b(' . $keywords . ')\b/', '<span style="color:#00b">$1</span>', $line);
-        $line = preg_replace('/(\$[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)/', '<span style="color:#060">$1</span>', $line);
-        $line = preg_replace_callback('/("(?:[^"\\\\]|\\\\.)*"|\'(?:[^\'\\\\]|\\\\.)*\')/', static function ($m) {
-            return '<span style="color:#c00">' . $m[0] . '</span>';
-        }, $line);
-        $line = preg_replace('/(\/\/.*$|#.*$)/m', '<span style="color:#999;font-style:italic">$1</span>', $line);
-        $line = preg_replace('/(\/\*.*?\*\/)/', '<span style="color:#999;font-style:italic">$1</span>', $line);
-        $line = preg_replace('/(\b\d+(?:\.\d+)?\b)/', '<span style="color:#f60">$1</span>', $line);
+        // Single-pass regex to avoid re-matching inside generated HTML tags
+        $line = preg_replace_callback(
+            '/'
+            // 1: single-line comment
+            . '(\/\/[^\n]*|\#[^\n]*)'
+            // 2: multi-line comment
+            . '|(\/\*.*?\*\/)'
+            // 3: string literal
+            . '|(&#(?:039|0(?:39|o47|x27));.*?&#(?:039|0(?:39|o47|x27));)'
+            . '|(&quot;.*?&quot;)'
+            // 4: variable
+            . '|(\$[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)'
+            // 5: keyword
+            . '|(?<![a-zA-Z0-9_])(' . $keywords . ')(?![a-zA-Z0-9_])'
+            // 6: number
+            . '|(\b\d+(?:\.\d+)?\b)'
+            . '/s',
+            function ($m) {
+                if (!empty($m[1])) return '<span style="color:#999;font-style:italic">' . $m[1] . '</span>';
+                if (!empty($m[2])) return '<span style="color:#999;font-style:italic">' . $m[2] . '</span>';
+                if (!empty($m[3]) || !empty($m[4])) return '<span style="color:#c00">' . $m[0] . '</span>';
+                if (!empty($m[5])) return '<span style="color:#060">' . $m[5] . '</span>';
+                if (!empty($m[6])) return '<span style="color:#00b">' . $m[6] . '</span>';
+                if (!empty($m[7])) return '<span style="color:#f60">' . $m[7] . '</span>';
+                return $m[0];
+            },
+            $line
+        );
 
         return $line;
     }
