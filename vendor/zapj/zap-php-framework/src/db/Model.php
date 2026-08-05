@@ -57,7 +57,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
     /**
      * The attributes that aren't mass assignable.
      */
-    protected $guarded = ['*'];
+    protected $guarded = [];
 
     /**
      * Indicates if the model exists in the database.
