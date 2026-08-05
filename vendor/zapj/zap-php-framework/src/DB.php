@@ -237,19 +237,19 @@ class DB
     /**
      * 执行原始 SQL 语句（SELECT / 任意），返回受影响行数
      */
-    public static function query(string $query, array $params = []): int
+    public static function query(string $query, array $params = []): \zap\db\Statement
     {
         $stm = self::connection()->prepare($query);
         $stm->execute($params);
-        return $stm->rowCount();
+        return $stm;
     }
 
     /**
      * 执行 SELECT 并返回所有结果
      */
-    public static function select(string $query, array $params = []): array
+    public static function select(string $query, array $params = [], int $fetchMode = \PDO::FETCH_ASSOC): array
     {
-        return self::connection()->select($query, $params);
+        return self::connection()->select($query, $params, $fetchMode);
     }
 
     // ==================================================================

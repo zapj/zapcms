@@ -16,42 +16,7 @@
                 use zap\cms\AdminMenu;
 
                 $menuTree = AdminMenu::instance()->getTreeArray();
-
-                // 修正 link_to：数据库列名是 link_to（非 action 列），去掉多余的 admin/ 前缀
-                $fixAction = function($link_to) {
-                    if (empty($link_to)) return '';
-                    $link_to = ltrim($link_to, '/');
-                    if (str_starts_with($link_to, 'admin/')) {
-                        $link_to = substr($link_to, 6);
-                    }
-                    return $link_to;
-                };
-
-                // 修正 active_rule：
-                //   1. 去掉括号 (node/.*) → node/.*
-                //   2. admin/ → z-admin/
-                //   3. @ → /
-                //   4. 补充 z-admin/ 前缀
-                //   5. 正则 .* → 简单 *  (urlMatch 只支持末尾单 * 前缀匹配)
-                //   6. 补充前导 /  (current() 返回 /z-admin/xxx)
-                $fixRule = function($rule) {
-                    if (empty($rule)) return '';
-                    $rule = ltrim($rule, '/');
-                    $rule = trim($rule, '()');
-                    if (str_starts_with($rule, 'admin/')) {
-                        $rule = 'z-' . $rule;
-                    }
-                    $rule = str_replace('@', '/', $rule);
-                    if (!str_starts_with($rule, 'z-admin/')) {
-                        $rule = 'z-admin/' . $rule;
-                    }
-                    // urlMatch 只能识别末尾单个 *（非正则 .*）
-                    $rule = preg_replace('#/\.\*$#', '*', $rule);
-                    if (!str_starts_with($rule, '/')) {
-                        $rule = '/' . $rule;
-                    }
-                    return $rule;
-                };
+                
 
                 foreach ($menuTree as $group):
                     $groupTitle = $group['title'] ?? $group['name'] ?? '';
@@ -59,21 +24,33 @@
 
                     $children = $group['children'] ?? [];
                     $hasChildren = !empty($children);
-                    $groupAction = $fixAction($group['link_to'] ?? '');
-                    $groupRule  = $fixRule($group['active_rule'] ?? $groupAction);
+                    $groupAction = Url::action($group['link_to'] ?? '');
 
                     // 判断当前 group 自身或任意子节点是否激活
+                    // active_rule 优先 → 正则匹配 controller/method；否则用 URL 匹配
                     $groupActive = false;
-                    if (!$hasChildren && $groupRule) {
-                        $groupActive = (bool)Url::isActive($groupRule);
+                    if (!$hasChildren) {
+                        if ($group['active_rule'] ?? '') {
+                            $groupActive = Url::active($group['active_rule']);
+                        } elseif ($groupAction && $groupAction !== '#') {
+                            $groupActive = Url::active($groupAction);
+                        }
                     }
+                    echo "\n<!-- Menu Group: " . htmlspecialchars($groupTitle) . " -->\n";
+                    echo "<!-- Group Active: " . ($groupActive ? 'true' : 'false') . " -->\n";
 
                     // 检查子节点激活状态，并决定父级是否展开
                     $childActiveAny = false;
                     if ($hasChildren):
                         foreach ($children as $child):
-                            $childRule = $fixRule($child['active_rule'] ?? $fixAction($child['link_to'] ?? ''));
-                            if ($childRule && Url::isActive($childRule)) {
+                            $childActive = false;
+                            if ($child['active_rule'] ?? '') {
+                                $childActive = Url::active($child['active_rule']);
+                            } else {
+                                $childAction = Url::action($child['link_to'] ?? '');
+                                $childActive = ($childAction && $childAction !== '#') ? Url::active($childAction) : false;
+                            }
+                            if ($childActive) {
                                 $childActiveAny = true;
                                 $groupActive = true; // 父级也标记为激活
                                 break;
@@ -118,13 +95,12 @@
                         <ul class="nav nav-treeview">
                             <?php foreach ($children as $child):
                                 $childTitle = $child['title'] ?? $child['name'] ?? '';
-                                $childAction = $fixAction($child['link_to'] ?? '#');
-                                $childRule = $fixRule($child['active_rule'] ?? $childAction);
-                                $childActive = $childRule ? Url::isActive($childRule, ' active') : '';
+                                $childAction = Url::action($child['link_to'] ?? '#');
+                                $childActive = Url::active($child['active_rule'] ?: $childAction) ? ' active' : '';
                                 $childIcon = $child['icon'] ?? 'far fa-circle';
                             ?>
                             <li class="nav-item">
-                                <a href="<?php echo $childAction === '#' ? '#' : Url::action($childAction); ?>" class="nav-link<?php echo $childActive; ?>">
+                                <a href="<?php echo $childAction === '#' ? '#' : $childAction; ?>" class="nav-link<?php echo $childActive; ?>">
                                     <i class="nav-icon <?php echo htmlspecialchars($childIcon); ?>"></i>
                                     <p><?php echo htmlspecialchars($childTitle); ?></p>
                                 </a>
@@ -132,7 +108,7 @@
                             <?php endforeach; ?>
                         </ul>
                         <?php else: ?>
-                        <a href="<?php echo $groupAction === '#' ? '#' : Url::action($groupAction); ?>" class="<?php echo $linkClass; ?>">
+                        <a href="<?php echo $groupAction === '#' ? '#' : $groupAction; ?>" class="<?php echo $linkClass; ?>">
                             <i class="nav-icon <?php echo htmlspecialchars($icon); ?>"></i>
                             <p><?php echo htmlspecialchars($groupTitle); ?></p>
                         </a>

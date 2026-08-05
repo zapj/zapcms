@@ -19,6 +19,12 @@ class Router
     /** @var array|null 当前匹配的路由信息（兼容旧版） */
     public $currentRoute = null;
 
+    /** @var string 路由解析后的控制器名（如 "user"） */
+    public string $controller = '';
+
+    /** @var string 路由解析后的方法名（如 "list"） */
+    public string $method = '';
+
     /** @var string|null 当前请求路径 */
     protected ?string $requestPath = null;
 

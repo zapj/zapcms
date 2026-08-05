@@ -113,26 +113,54 @@ class UrlHelper
 
     /**
      * Get the current controller name.
+     * Priority: router property → URL parsing (for admin with Z_ADMIN_PREFIX)
      */
     public function controller(): string
     {
+        // Try router property first (if framework sets it)
         try {
-            return app()->router->controller ?? '';
-        } catch (\Throwable $e) {
-            return '';
+            if (!empty(app()->router->controller)) {
+                return app()->router->controller;
+            }
+        } catch (\Throwable $e) {}
+
+        // Derive from current URL
+        $path = trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/', '/');
+        if (defined('IN_ZAP_ADMIN') && IN_ZAP_ADMIN) {
+            $prefix = defined('Z_ADMIN_PREFIX') ? trim(Z_ADMIN_PREFIX, '/') : 'z-admin';
+            if (str_starts_with($path, $prefix . '/')) {
+                $path = substr($path, strlen($prefix) + 1);
+            } elseif ($path === $prefix) {
+                $path = '';
+            }
         }
+        $segments = $path !== '' ? explode('/', $path) : [];
+        return $segments[0] ?? 'index';
     }
 
     /**
      * Get the current method/action name.
+     * Priority: router property → URL parsing (for admin with Z_ADMIN_PREFIX)
      */
     public function method(): string
     {
         try {
-            return app()->router->method ?? '';
-        } catch (\Throwable $e) {
-            return '';
+            if (!empty(app()->router->method)) {
+                return app()->router->method;
+            }
+        } catch (\Throwable $e) {}
+
+        $path = trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/', '/');
+        if (defined('IN_ZAP_ADMIN') && IN_ZAP_ADMIN) {
+            $prefix = defined('Z_ADMIN_PREFIX') ? trim(Z_ADMIN_PREFIX, '/') : 'z-admin';
+            if (str_starts_with($path, $prefix . '/')) {
+                $path = substr($path, strlen($prefix) + 1);
+            } elseif ($path === $prefix) {
+                $path = '';
+            }
         }
+        $segments = $path !== '' ? explode('/', $path) : [];
+        return $segments[1] ?? 'index';
     }
 
     /**
@@ -148,21 +176,28 @@ class UrlHelper
         $queryParams = is_array($queryParams) ? $queryParams : [];
         $pathParams = is_array($pathParams) ? $pathParams : [];
         
-        $uri = $action;
 
-        // Admin context: prepend admin prefix and convert "Controller@method" to "controller/method"
-        if (defined('IN_ZAP_ADMIN') && IN_ZAP_ADMIN) {
-            $prefix = defined('Z_ADMIN_PREFIX') ? trim(Z_ADMIN_PREFIX, '/') : 'z-admin';
-            $uri = str_replace('@', '/', $uri);
-            $uri = $prefix . '/' . ltrim($uri, '/');
+        [$controller,$action] = explode('@',$action);
+        $controller = strtolower(trim(preg_replace('/([A-Z])/', '-$1', $controller),'-'));
+        $action = strtolower(trim(preg_replace('/([A-Z])/', '-$1', $action),'-'));
+        $uri = '';
+        if($action){
+            $uri .= '/' . $controller . '/' . $action;
+        } else if($controller){
+            $uri .= '/' . $controller;
         }
 
+        // Admin context: prepend admin prefix
+        if (defined('IN_ZAP_ADMIN') && IN_ZAP_ADMIN) {
+            $uri = Z_ADMIN_PREFIX.'/'. ltrim($uri, '/');
+        }else{
+             $uri = '/' . ltrim($uri, '/');
+        }
+   
         // Replace path params in the action string
         foreach ($pathParams as $key => $value) {
             $uri = str_replace('{' . $key . '}', urlencode($value), $uri);
         }
-
-        $uri = '/' . ltrim($uri, '/');
 
         if (!empty($queryParams)) {
             $uri .= (str_contains($uri, '?') ? '&' : '?') . http_build_query($queryParams);
@@ -224,21 +259,51 @@ class UrlHelper
     }
 
     /**
-     * Legacy active method (may echo output).
+     * Check if a menu item is active.
      *
-     * @param string      $action Action to check
-     * @param string|null $output Class or text for active state
+     * If $action looks like an active_rule pattern (e.g. "User", "User/.*", "Node/list"),
+     * it matches against current controller/method with regex support.
+     * If it looks like a URL path (starts with "/" or "http"), it matches against current URL.
+     *
+     * @param string|array $action Action/rule to check, or array of rules
+     * @param string|null  $output Class or text for active state (echoed if matched)
      * @return bool
      */
-    public function active(string $action, $output = null): bool
+    public function active($action, $output = null): bool
     {
-        $active = $this->urlMatch($this->current(), $action);
+        if (empty($action)) {
+            return false;
+        }
 
-        if ($active && $output !== null) {
+        // Get current controller/method (e.g. "user", "user/list")
+        $controller = $this->controller();
+        $method     = $this->method();
+        $currentAction = strtolower($controller . ($method && $method !== 'index' ? '/' . $method : ''));
+
+        $matched = false;
+
+        if (is_string($action)) {
+            // Is it a URL path? (/xxx, http://, etc.)
+            $isUrl = (str_starts_with($action, '/') || str_starts_with($action, 'http'));
+
+            if ($isUrl) {
+                // URL matching
+                $matched = ($action === $this->current() || $this->urlMatch($this->current(), $action));
+            } else {
+                // active_rule matching: regex against controller/method
+                // e.g. "User/.*" → matches user/list, user/edit, user/anything
+                $matched = ($action === $currentAction || @preg_match("#^{$action}$#i", $currentAction));
+                echo '<!-- preg:', $action, ' match: ', $matched ? 'true' : 'false', " -->\n";
+            }
+        } elseif (is_array($action)) {
+            $matched = in_array($currentAction, (array)$action);
+        }
+
+        if ($matched && $output !== null) {
             echo $output;
         }
 
-        return $active;
+        return $matched;
     }
 
     /**

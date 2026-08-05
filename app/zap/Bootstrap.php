@@ -103,6 +103,9 @@ class Bootstrap
         if (!method_exists($className, $methodName) && !method_exists($className, '__call')) {
             // 支持 _invoke 动态路由（如 NodeController）
             if (method_exists($instance, '_invoke')) {
+                // 保存 controller/method 到 Router 供全局访问
+                app()->router->controller = $controllerName;
+                app()->router->method = strtolower($methodName);
                 $instance->_invoke($methodName, $extraParams);
                 return;
             }
@@ -116,6 +119,10 @@ class Bootstrap
                 exit;
             }
         }
+
+        // 保存已解析的 controller/method 到 Router 供全局访问
+        app()->router->controller = $controllerName;
+        app()->router->method = strtolower($methodName);
 
         // 调用控制器方法，传入额外参数
         if (!empty($extraParams)) {

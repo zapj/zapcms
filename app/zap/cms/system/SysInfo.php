@@ -16,9 +16,9 @@ class SysInfo
 {
     public static function getDatabaseTableNames() {
         if(DB::connection()->driver == 'sqlite') {
-            $tables = DB::query("SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%'")->fetchAll(FETCH_ASSOC);
+            $tables = DB::select("SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%'");
         }else{
-            $tables = DB::query("SHOW TABLES")->fetchAll(FETCH_ASSOC);
+            $tables = DB::select("SHOW TABLES");
         }
 
         return $tables;

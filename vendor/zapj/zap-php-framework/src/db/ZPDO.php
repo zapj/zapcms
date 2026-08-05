@@ -143,12 +143,12 @@ class ZPDO extends PDO
     /**
      * Execute a SELECT and return all rows as array.
      */
-    public function select(string $query, array $params = [], ...$fetch_mode_args): array
+    public function select(string $query, array $params = [], int $fetchMode = \PDO::FETCH_ASSOC): array
     {
         $stm = $this->prepare($query);
         $stm->execute($params);
         $this->rowCount = $stm->rowCount();
-        return $stm->fetchAll();
+        return $stm->fetchAll($fetchMode);
     }
 
     // ─── CRUD Operations ───────────────────────────────────────

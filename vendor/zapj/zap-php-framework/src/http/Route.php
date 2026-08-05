@@ -197,15 +197,23 @@ class Route
 
         if (is_string($this->fn) && strpos($this->fn, '@') !== false) {
             // Controller@method 格式
-            [$controller, $method] = explode('@', $this->fn);
+            [$controllerClass, $method] = explode('@', $this->fn);
 
-            $reflectedMethod = new \ReflectionMethod($controller, $method);
+            // 保存到 Router 供全局访问（如 UrlHelper 用于 active 匹配）
+            try {
+                $shortName = (new \ReflectionClass($controllerClass))->getShortName();
+                $controllerName = strtolower(preg_replace('/Controller$/i', '', $shortName));
+                app()->router->controller = $controllerName;
+                app()->router->method = strtolower($method);
+            } catch (\Throwable $e) {}
+
+            $reflectedMethod = new \ReflectionMethod($controllerClass, $method);
             if ($reflectedMethod->isPublic() && !$reflectedMethod->isAbstract()) {
-                $this->runMiddlewaresAndHandler(function () use ($controller, $method, $params, $reflectedMethod) {
+                $this->runMiddlewaresAndHandler(function () use ($controllerClass, $method, $params, $reflectedMethod) {
                     if ($reflectedMethod->isStatic()) {
-                        return call_user_func_array([$controller, $method], $params);
+                        return call_user_func_array([$controllerClass, $method], $params);
                     }
-                    $instance = new $controller();
+                    $instance = new $controllerClass();
                     $instance->setParams($params);
                     return call_user_func_array([$instance, $method], $params);
                 });

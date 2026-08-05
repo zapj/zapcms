@@ -400,10 +400,14 @@ Request::isHead();       Request::isAjax();      Request::isJson();
 
 ### 文件上传
 
+获取原始上传文件信息：
+
 ```php
 $file   = Request::file('avatar');               // 获取单个上传文件
 if (Request::hasFile('avatar')) { ... }           // 检查是否有上传
 ```
+
+> 如需类型验证、大小限制、自动重命名等完整上传功能，请使用专门的 [文件上传组件 (FileUpload)](#文件上传组件-fileupload)。
 
 ### 请求头
 
@@ -2574,6 +2578,179 @@ $avatar->copy()
     ->resize(64, 64)
     ->saveFile('/public/avatars/user_123_thumb.webp');
 ```
+
+---
+
+## 文件上传组件 (FileUpload)
+
+提供文件上传处理、验证和保存功能，支持单文件与多文件上传，内置类型检查、大小限制和自动重命名。
+
+### 基本使用
+
+```php
+use zap\fileupload\FileUpload;
+
+$uploader = new FileUpload();
+
+// 设置限制
+$uploader->setAllowedTypes(['jpg', 'png', 'gif', 'pdf']);
+$uploader->setMaxSize(5 * 1024 * 1024); // 5MB
+
+try {
+    // 单文件上传
+    $file = $uploader->upload('avatar', '/path/to/uploads');
+    echo $file->getSavedPath();              // 最终保存路径
+    echo $file->getClientOriginalName();     // 原始文件名
+    echo $file->getSize();                   // 文件大小（字节）
+    echo $file->getClientExtension();        // jpg
+} catch (\zap\fileupload\FileUploadException $e) {
+    echo '上传失败: ' . $e->getMessage();
+    echo '字段名: ' . $e->getField();
+}
+```
+
+### 多文件上传
+
+```php
+// 前端 input: <input type="file" name="photos[]" multiple>
+
+$uploader = new FileUpload();
+$uploader->setAllowedTypes(['jpg', 'png']);
+$uploader->setMaxSize(10 * 1024 * 1024); // 10MB
+
+$files = $uploader->uploadMultiple('photos', '/path/to/uploads');
+
+foreach ($files as $file) {
+    echo $file->getSavedPath() . "\n";
+}
+
+// 获取所有保存的文件
+$allFiles = $uploader->getFiles();
+```
+
+### 自定义文件名
+
+```php
+// 方式一：指定基础文件名
+$file = $uploader->upload('avatar', '/uploads', 'user_avatar');
+
+// 方式二：禁用自动重命名（使用原始文件名）
+$uploader->setAutoRename(false);
+$file = $uploader->upload('avatar', '/uploads');
+
+// 方式三：自定义命名回调
+$uploader->setNameCallback(function ($file, $suggestedName) {
+    return 'prefix_' . date('Ymd') . '_' . uniqid();
+});
+$file = $uploader->upload('avatar', '/uploads');
+```
+
+### MIME 类型验证
+
+```php
+// 通过 MIME 类型限制（更精确）
+$uploader->setAllowedMimes([
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'application/pdf',
+]);
+
+// 可与扩展名限制同时使用
+$uploader->setAllowedTypes(['jpg', 'png', 'gif', 'pdf']);
+$uploader->setAllowedMimes(['image/jpeg', 'image/png', 'image/gif', 'application/pdf']);
+```
+
+### UploadedFile 对象
+
+```php
+$file = $uploader->upload('file', '/uploads');
+
+$file->getClientOriginalName();  // string  原始文件名
+$file->getClientExtension();     // string  扩展名（小写，不含点）
+$file->getSize();                 // int     文件大小（字节）
+$file->getClientMimeType();      // string  浏览器提供的 MIME 类型
+$file->getMimeType();            // string  服务器检测的真实 MIME 类型
+$file->getTmpName();             // string  临时文件路径
+$file->getError();               // int     上传错误码
+$file->isValid();                // bool    上传是否成功
+$file->getErrorMessage();        // string  可读的错误消息
+$file->getSavedPath();           // ?string 移动后的保存路径
+```
+
+### 错误码说明
+
+| 错误码 | 常量 | 说明 |
+|--------|------|------|
+| 0 | `UPLOAD_ERR_OK` | 上传成功 |
+| 1 | `UPLOAD_ERR_INI_SIZE` | 超过 php.ini upload_max_filesize |
+| 2 | `UPLOAD_ERR_FORM_SIZE` | 超过表单 MAX_FILE_SIZE |
+| 3 | `UPLOAD_ERR_PARTIAL` | 文件仅部分上传 |
+| 4 | `UPLOAD_ERR_NO_FILE` | 没有文件被上传 |
+| 6 | `UPLOAD_ERR_NO_TMP_DIR` | 缺少临时文件夹 |
+| 7 | `UPLOAD_ERR_CANT_WRITE` | 文件写入磁盘失败 |
+| 8 | `UPLOAD_ERR_EXTENSION` | 文件上传被扩展停止 |
+
+### 链式配置
+
+所有配置方法均支持链式调用：
+
+```php
+$uploader = new FileUpload();
+
+$uploader
+    ->setAllowedTypes(['jpg', 'png', 'gif'])
+    ->setMaxSize(5 * 1024 * 1024)
+    ->setAutoRename(true);
+
+$file = $uploader->upload('image', '/uploads');
+```
+
+### 完整示例：用户头像上传
+
+```php
+use zap\fileupload\FileUpload;
+use zap\fileupload\FileUploadException;
+use zap\image\Image;
+
+$uploader = new FileUpload();
+
+try {
+    // 验证并保存原始文件
+    $file = $uploader
+        ->setAllowedTypes(['jpg', 'jpeg', 'png', 'gif', 'webp'])
+        ->setMaxSize(10 * 1024 * 1024)
+        ->upload('avatar', '/public/uploads/avatars');
+
+    $savedPath = $file->getSavedPath();
+
+    // 使用 Image 组件生成缩略图
+    $image = new Image($savedPath);
+    $image->copy()
+        ->square(200, 'center')
+        ->resize(80, 80)
+        ->saveFile('/public/uploads/avatars/thumb_' . basename($savedPath));
+
+    echo '头像上传成功: ' . $savedPath;
+
+} catch (FileUploadException $e) {
+    echo '上传失败: ' . $e->getMessage();
+}
+```
+
+### 配置方法速查
+
+| 方法 | 说明 |
+|------|------|
+| `setAllowedTypes(array)` | 设置允许的扩展名，如 `['jpg', 'png']` |
+| `setAllowedMimes(array)` | 设置允许的 MIME 类型，如 `['image/jpeg']` |
+| `setMaxSize(int)` | 设置最大文件大小（字节），0 = 不限制 |
+| `setAutoRename(bool)` | 设置是否自动重命名（默认 true） |
+| `setNameCallback(callable)` | 设置文件名生成回调 |
+| `upload(key, dir, name?)` | 上传单个文件，返回 `UploadedFile` |
+| `uploadMultiple(key, dir, name?)` | 上传多个文件，返回 `UploadedFile[]` |
+| `getFile()` | 获取最近上传的第一个文件 |
+| `getFiles()` | 获取最近上传的所有文件 |
 
 ---
 
