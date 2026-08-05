@@ -51,15 +51,4 @@ abstract class Controller
     {
         return new Response($content, $statusCode);
     }
-
-    /**
-     * 将未定义的方法调用转发到 _invoke
-     */
-    public function __call(string $method, array $arguments)
-    {
-        if (method_exists($this, '_invoke')) {
-            return $this->_invoke($method, $arguments);
-        }
-        throw new \BadMethodCallException("Method {$method} does not exist in " . static::class);
-    }
 }

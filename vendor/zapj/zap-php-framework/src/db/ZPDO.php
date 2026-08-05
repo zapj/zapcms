@@ -86,11 +86,7 @@ class ZPDO extends PDO
 
     public function prepare($query, $options = [])
     {
-        try {
-            return parent::prepare($this->prepareSQL($query), $options);
-        } catch (\PDOException $e) {
-            throw new \PDOException($e->getMessage() . ' [SQL: ' . $this->prepareSQL($query) . ']', 0, $e);
-        }
+        return parent::prepare($this->prepareSQL($query), $options);
     }
 
     public function exec($statement)

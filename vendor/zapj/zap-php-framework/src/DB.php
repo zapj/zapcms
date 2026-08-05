@@ -284,12 +284,4 @@ class DB
     {
         return self::connection()->info();
     }
-
-    /**
-     * 获取底层 PDO 连接实例
-     */
-    public static function getPDO(): \PDO
-    {
-        return self::connection();
-    }
 }

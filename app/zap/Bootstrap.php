@@ -98,9 +98,16 @@ class Bootstrap
             }
         }
 
+        $instance = new $className();
+
         if (!method_exists($className, $methodName) && !method_exists($className, '__call')) {
+            // 支持 _invoke 动态路由（如 NodeController）
+            if (method_exists($instance, '_invoke')) {
+                $instance->_invoke($methodName, $extraParams);
+                return;
+            }
             // 尝试 index 方法 + 第一个段作为参数
-            if (method_exists($className, 'index')) {
+            if (method_exists($instance, 'index')) {
                 $methodName = 'index';
                 $extraParams = $segments;
             } else {
@@ -109,8 +116,6 @@ class Bootstrap
                 exit;
             }
         }
-
-        $instance = new $className();
 
         // 调用控制器方法，传入额外参数
         if (!empty($extraParams)) {

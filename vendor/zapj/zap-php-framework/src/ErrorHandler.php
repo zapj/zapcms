@@ -466,8 +466,6 @@ class ErrorHandler
             $payload['file']      = $e->getFile();
             $payload['line']      = $e->getLine();
             $payload['trace']     = $this->formatTrace($e);
-            // Debug 模式下覆盖 message 为真实异常消息
-            $payload['message']   = $e->getMessage();
         }
 
         echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);

@@ -735,19 +735,6 @@ class Query
         return $results[0] ?? null;
     }
 
-    /**
-     * 返回结果集第一行第一列的值（常用于 COUNT 查询）
-     */
-    public function fetchColumn(int $columnIndex = 0)
-    {
-        $this->limit(1);
-        $sql = $this->getSQL();
-        $stm = $this->db->prepare($sql);
-        $stm->execute($this->params);
-        $result = $stm->fetch(\PDO::FETCH_NUM);
-        return $result[$columnIndex] ?? null;
-    }
-
     public function first()
     {
         $result = $this->limit(1)->get();
