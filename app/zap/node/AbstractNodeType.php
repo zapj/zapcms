@@ -179,7 +179,7 @@ class AbstractNodeType
         return Catalog::instance()->getCatalogPathById($this->catalogId);
     }
 
-    protected function usePageHelper($total,$pageKeyName = 'page',$limit = 20 , $query = null): Pagination
+    protected function usePageHelper($total,$pageKeyName = 'page',$limit = 1 , $query = null): Pagination
     {
         $this->pageHelper = new Pagination(intval(Request::get($pageKeyName,1)),$limit, $query ?? Request::get());
         $this->pageHelper->setTotal($total);

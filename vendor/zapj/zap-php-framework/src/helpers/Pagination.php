@@ -212,7 +212,10 @@ class Pagination
 
         $path = $this->path ?: '';
         if (str_contains($path, '?')) {
-            return str_replace('%7Bpage%7D', (string)$page, urlencode($path));
+            if (str_contains($path, '{page}')) {
+                return str_replace('{page}', (string)$page, $path);
+            }
+            return $path . '&page=' . $page;
         }
         return $path . '/' . $page;
     }
@@ -294,7 +297,7 @@ class Pagination
             $active,
             $this->h($this->classes['link'] ?? 'page-link'),
             $this->h($url),
-            $this->h($text)
+            $text
         );
     }
 
@@ -308,7 +311,7 @@ class Pagination
             $this->h($this->classes['item'] ?? 'page-item'),
             $this->h($this->classes['disabled'] ?? 'disabled'),
             $this->h($this->classes['link'] ?? 'page-link'),
-            $this->h($text)
+            $text
         );
     }
 
@@ -356,8 +359,26 @@ class Pagination
     /**
      * Render pagination HTML (Bootstrap 5 compatible by default).
      */
-    public function render(string $prevLabel = '&laquo;', string $nextLabel = '&raquo;'): string
+    public function render($prevLabel = '&laquo;', string $nextLabel = '&raquo;'): string
     {
+        // Backward compatibility: old signature render($onEachSide, $navClass, $itemClass, $linkClass)
+        if (is_int($prevLabel)) {
+            $this->onEachSide($prevLabel);
+            if (is_string($nextLabel) && $nextLabel !== '') {
+                $this->classes['nav'] = $nextLabel;
+            }
+            $itemClass = func_num_args() > 2 ? (string)func_get_arg(2) : '';
+            $linkClass = func_num_args() > 3 ? (string)func_get_arg(3) : '';
+            if ($itemClass !== '') {
+                $this->classes['item'] = $itemClass;
+            }
+            if ($linkClass !== '') {
+                $this->classes['link'] = $linkClass;
+            }
+            $prevLabel = '&laquo;';
+            $nextLabel = '&raquo;';
+        }
+
         if (!$this->hasPages()) {
             return '';
         }
