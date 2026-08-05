@@ -109,10 +109,7 @@ class Response
         return $this;
     }
 
-    /**
-     * 发送 JSON 响应并退出（静态便捷方法）
-     * 兼容 Response::json([...]) 的静态调用
-     */
+    /** 发送 JSON 响应并退出（静态，兼容 Response::json([...])） */
     public static function json($data = null, int $statusCode = 200): void
     {
         $response = new self($data, $statusCode);
