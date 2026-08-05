@@ -41,7 +41,13 @@ class UrlHelper
      */
     public function home(): string
     {
-        return $this->base();
+        $base = $this->base();
+        // When in admin panel, return admin dashboard URL
+        if (defined('IN_ZAP_ADMIN') && IN_ZAP_ADMIN) {
+            $prefix = defined('Z_ADMIN_PREFIX') ? trim(Z_ADMIN_PREFIX, '/') : 'z-admin';
+            return $base . '/' . $prefix;
+        }
+        return $base;
     }
 
     /**
@@ -95,6 +101,14 @@ class UrlHelper
     public function current(): string
     {
         return parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+    }
+
+    /**
+     * Get the current URL path with query string (relative).
+     */
+    public function currentFull(): string
+    {
+        return $_SERVER['REQUEST_URI'] ?? '/';
     }
 
     /**

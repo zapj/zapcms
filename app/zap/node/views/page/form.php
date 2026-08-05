@@ -283,7 +283,7 @@ Asset::library('jqueryvalidation');
         }
         zapload = Zap.loading('正在保存，请稍后');
         $.ajax({
-            url: '<?php echo Url::current();?>',
+            url: '<?php echo Url::currentFull();?>',
             method: 'post',
             data: zapForm.serialize(),
             dataType: 'json',

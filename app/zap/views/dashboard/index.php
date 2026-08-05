@@ -69,7 +69,7 @@ $this->layout('layouts/common');
                             <td><?php echo PHP_VERSION , '(' , php_sapi_name() , ')'; ?></td>
                         </tr>
                         <tr>
-                            <?php $driver = \zap\DB::getPDO()->getAttribute(PDO::ATTR_DRIVER_NAME) ;?>
+                            <?php $driver = \zap\DB::connection()->getAttribute(PDO::ATTR_DRIVER_NAME) ;?>
                             <td ><?php echo $driver;?> 版本</td>
                             <td>v<?php
                                 if($driver == 'mysql'){

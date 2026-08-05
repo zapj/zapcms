@@ -103,10 +103,21 @@ class Response
     }
 
     /** 标记为 JSON 响应（链式调用，不自动发送） */
-    public function json(): self
+    public function asJson(): self
     {
         $this->header('Content-Type', 'application/json; charset=utf-8');
         return $this;
+    }
+
+    /**
+     * 发送 JSON 响应并退出（静态便捷方法）
+     * 兼容 Response::json([...]) 的静态调用
+     */
+    public static function json($data = null, int $statusCode = 200): void
+    {
+        $response = new self($data, $statusCode);
+        $response->asJson()->send();
+        exit;
     }
 
     /** 标记为 HTML 响应 */
@@ -134,32 +145,32 @@ class Response
 
     public static function notFound(string $message = 'Not Found'): self
     {
-        return (new self(['error' => $message], 404))->json();
+        return (new self(['error' => $message], 404))->asJson();
     }
 
     public static function forbidden(string $message = 'Forbidden'): self
     {
-        return (new self(['error' => $message], 403))->json();
+        return (new self(['error' => $message], 403))->asJson();
     }
 
     public static function unauthorized(string $message = 'Unauthorized'): self
     {
-        return (new self(['error' => $message], 401))->json();
+        return (new self(['error' => $message], 401))->asJson();
     }
 
     public static function badRequest(string $message = 'Bad Request'): self
     {
-        return (new self(['error' => $message], 400))->json();
+        return (new self(['error' => $message], 400))->asJson();
     }
 
     public static function created($data = null): self
     {
-        return (new self($data, 201))->json();
+        return (new self($data, 201))->asJson();
     }
 
     public static function ok($data = null): self
     {
-        return (new self($data, 200))->json();
+        return (new self($data, 200))->asJson();
     }
 
     // ───────────────────── 响应头 ─────────────────────
