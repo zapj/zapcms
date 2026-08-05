@@ -1,0 +1,12 @@
+{
+    "name": "example-plugin",
+    "title": "示例插件",
+    "version": "1.0.0",
+    "author": "ZAP CMS",
+    "description": "这是一个示例插件，展示了插件开发的基本结构",
+    "homepage": "https://zap.cn",
+    "package_name": "zapcms/example-plugin",
+    "requires": {
+        "zapcms": ">=1.0.0"
+    }
+}

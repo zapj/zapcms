@@ -321,6 +321,45 @@ class CreateTables
             $table->setTableEngine(TableSchema::ENGINE_INNODB);
         });
 
+        // 插件/模块表
+        Schema::create('plugin',function(TableSchema $table){
+            $table->integer('id')->autoIncrement();
+            $table->varchar('name',191);
+            $table->varchar('title',255);
+            $table->varchar('version',32)->nullable()->default('1.0.0');
+            $table->varchar('author',255)->nullable()->default(null);
+            $table->text('description')->nullable();
+            $table->varchar('homepage',255)->nullable()->default(null);
+            $table->varchar('package_name',255)->nullable()->default(null);
+            $table->integer('status')->nullable()->default(1);
+            $table->integer('sort_order')->nullable()->default(0);
+            $table->integer('installed_at')->nullable()->default(0);
+            $table->integer('updated_at')->nullable()->default(0);
+
+            $table->addPrimary('plugin_pk','id');
+            $table->addUnique('plugin_name_uk','name');
+
+            $table->dropTableIfExists();
+            $table->setTableEngine(TableSchema::ENGINE_INNODB);
+        });
+
+        // 更新历史表
+        Schema::create('update_history',function(TableSchema $table){
+            $table->integer('id')->autoIncrement();
+            $table->varchar('target',64);
+            $table->varchar('from_version',32);
+            $table->varchar('to_version',32);
+            $table->text('changelog')->nullable();
+            $table->varchar('status',32)->nullable()->default('success');
+            $table->integer('created_at')->nullable()->default(0);
+
+            $table->addPrimary('update_history_pk','id');
+            $table->addIndex('target_idx','target');
+
+            $table->dropTableIfExists();
+            $table->setTableEngine(TableSchema::ENGINE_INNODB);
+        });
+
 
     }
 
@@ -354,7 +393,9 @@ class CreateTables
                 [4, '基础设置', 3, '3,4,', 2, 'fa-solid fa-angle-right', 'System@settings', '_self', 'action', '(system/.*)', '1,2', 0, 1694684704, 1694684704],
                 [5, '系统菜单设置', 3, '3,5,', 2, 'fa-solid fa-angle-right', 'AdminMenu', '_self', 'action', '(admin-menu/.*|system/.*)', '1,2', 1, 1694684714, 1694684714],
                 [7, '主题', 0, '7,', 1, 'fa-solid fa-wand-magic-sparkles', 'Theme', '_self', 'action', '(theme/.*)', '1', 3, 1697790328, 1697700805],
-                [8, '用户管理', 3, '38,', 2, 'fa-solid fa-chevron-right', 'User', '_self', 'action', '(user/.*)', '1', 2, 1697700876, 1697700876]
+                [8, '用户管理', 3, '38,', 2, 'fa-solid fa-chevron-right', 'User', '_self', 'action', '(user/.*)', '1', 2, 1697700876, 1697700876],
+                [9, '插件', 0, '9,', 1, 'fa-solid fa-puzzle-piece', 'Plugin', '_self', 'action', '(plugin/.*)', '1', 5, time(), time()],
+                [10, '系统更新', 3, '3,10,', 2, 'fa-solid fa-arrows-rotate', 'Update', '_self', 'action', '(update/.*)', '1,2', 3, time(), time()]
             ]);
         });
 
@@ -546,6 +587,8 @@ class CreateTables
                 [1, 'admin_menu_5', '', 1698571937],
                 [1, 'admin_menu_7', '', 1698571937],
                 [1, 'admin_menu_8', '', 1698571937],
+                [1, 'admin_menu_9', '', 1698571937],
+                [1, 'admin_menu_10', '', 1698571937],
                 [1, 'user', 'modify,access', 1698571937],
                 [2, 'admin_menu_1', '', 1698571949],
                 [2, 'admin_menu_2', '', 1698571949],

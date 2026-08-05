@@ -95,6 +95,13 @@ $this->layout('layouts/common');
                                    value="<?php echo $options['website.tel'];?>" />
                         </div>
 
+                        <div class="col-md-6">
+                            <label for="website.api_url" class="form-label">插件市场API地址</label>
+                            <input type="text" class="form-control" id="website.api_url" placeholder="https://api.zap.cn/api/v1" name="options[website.api_url]"
+                                   value="<?php echo $options['website.api_url'] ?? '';?>" />
+                            <div class="form-text">用于检查更新和获取插件市场数据</div>
+                        </div>
+
                     </div>
                 </div>
                 <div class="tab-pane fade" id="third-party-tab-pane" role="tabpanel" aria-labelledby="third-party-tab"
