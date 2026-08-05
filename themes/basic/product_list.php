@@ -30,24 +30,26 @@ echo $this->extend('layout/default'); ?>
                 </div>
             </aside>
             <section class="category-content col-sm-9">
-<!--                <h2 class="category-title">产品列表</h2>-->
-                <div class="row product-list">
+                <div class="product-grid">
                     <?php foreach ($data_list as $node){ ?>
-                        <div class="col-md-3 col-xs-6 mb-2 product">
-                            <div class="product-img">
-                                <a href="<?php echo site_url("/product/{$node['slug']}") ?>" title="Post">
-                                    <img src="<?php echo \zap\cms\helpers\ThumbHelper::thumb($node['image'],200,200); ?>" alt="Post" >
+                        <div class="product-card">
+                            <div class="product-image">
+                                <a href="<?php echo site_url("/product/{$node['slug']}") ?>">
+                                    <img src="<?php echo \zap\cms\helpers\ThumbHelper::thumb($node['image'],400,400); ?>" alt="<?php echo $node['title'];?>">
+                                    <div class="product-overlay">
+                                        <i class="fa fa-link"></i>
+                                    </div>
                                 </a>
                             </div>
-
-                            <div class="text-center">
-                                <a href="<?php echo site_url("/product/{$node['slug']}") ?>" title="<?php echo $node['title'];?>" class="title fs-6"><?php echo $node['title'];?></a>
-<!--                                <a href="#" title="产品价格" class="price"></a>-->
+                            <div class="product-info">
+                                <h4 class="product-title">
+                                    <a href="<?php echo site_url("/product/{$node['slug']}") ?>" title="<?php echo $node['title'];?>"><?php echo $node['title'];?></a>
+                                </h4>
                             </div>
                         </div>
                     <?php } ?>
                 </div>
-                <div class="row text-center">
+                <div class="pagination-wrapper">
                     <?php echo $page->render(); ?>
                 </div>
             </section>
@@ -55,3 +57,164 @@ echo $this->extend('layout/default'); ?>
         </div>
     </div>
 </main>
+
+<style>
+/* Product Grid Styles */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.product-card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+}
+
+.product-image {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 1;
+}
+
+.product-image a {
+    display: block;
+    height: 100%;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.product-card:hover .product-image img {
+    transform: scale(1.1);
+}
+
+.product-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(102,126,234,0.85) 0%, rgba(118,75,162,0.85) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.product-overlay i {
+    font-size: 36px;
+    color: #fff;
+}
+
+.product-card:hover .product-overlay {
+    opacity: 1;
+}
+
+.product-info {
+    padding: 16px;
+    text-align: center;
+}
+
+.product-title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.product-title a {
+    color: #667eea;
+    transition: color 0.3s ease;
+}
+
+.product-title a:hover {
+    color: #764ba2;
+    text-decoration: none;
+}
+
+.pagination-wrapper {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+    grid-column: 1 / -1;
+}
+
+.pagination-wrapper .pagination {
+    margin: 0;
+}
+
+.pagination-wrapper .pagination li a,
+.pagination-wrapper .pagination li span {
+    border: none;
+    border-radius: 8px;
+    margin: 0 3px;
+    color: #666;
+    transition: all 0.3s ease;
+}
+
+.pagination-wrapper .pagination li a:hover,
+.pagination-wrapper .pagination li.active span {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+}
+
+/* Mobile Responsive */
+@media (max-width: 992px) {
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .product-info {
+        padding: 12px;
+    }
+
+    .product-title {
+        font-size: 14px;
+    }
+
+    .product-overlay i {
+        font-size: 28px;
+    }
+}
+
+@media (max-width: 480px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .product-image {
+        aspect-ratio: 1;
+    }
+
+    .product-info {
+        padding: 10px 8px;
+    }
+
+    .product-title {
+        font-size: 13px;
+    }
+}
+</style>

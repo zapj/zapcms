@@ -103,6 +103,10 @@ class AbstractNodeType
             $node['pub_time']  = strtotime($node['pub_time']) ?: time();
             $node = apply_filters('node_add',$node);
             $nodeModel = Node::create($node);
+        
+            if ($nodeModel !== null && !$nodeModel->id){
+                Response::json(['code'=>1,'msg'=>$this->title . '创建失败']);
+            }
             foreach ($catalogArray as $catalog_id=>$level){
                 NodeRelation::create(['node_id'=>$nodeModel->id,'catalog_id'=>$catalog_id,'level'=>$level]);
             }

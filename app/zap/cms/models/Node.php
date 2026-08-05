@@ -22,8 +22,6 @@ class Node extends Model
     const STATUS_SOFT_DELETE = 'soft_delete'; //软删除
     const STATUS_TRASH = 'trash'; //软删除
 
-    public ?int $id = null;
-
     public static function tableName(): string
     {
         return 'node';

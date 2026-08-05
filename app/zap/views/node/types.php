@@ -78,24 +78,34 @@ $this->layout('layouts/common');
 <script >
 
     function remove(id,title){
-        layer.confirm("确认删除 【"+title+"】 吗？", {icon: 3, title:'提示'}, function(index){
-            $.ajax({
-                url: '<?php echo url_action('Zap@{$_controller}/remove');?>',
-                method: 'POST',
-                data: {id:id},
-                dataType: 'json',
-                success: function (data) {
-                    if(data.code === 0){
-                        location.reload();
-                    }else{
-                        ZapToast.alert(data.msg, {bgColor: bgDanger, position: Toast_Pos_Center});
+        const m = ZapModal.create({
+            id: 'confirmDelete',
+            title: '提示',
+            content: "确认删除 【"+title+"】 吗？",
+            backdrop: false,
+            buttons: [
+                {close: true, title: "取消", class: 'btn-outline-secondary'},
+                {title: "确定", class: 'btn-danger'}
+            ],
+            btn2: function() {
+                $.ajax({
+                    url: '<?php echo url_action('Zap@{$_controller}/remove');?>',
+                    method: 'POST',
+                    data: {id:id},
+                    dataType: 'json',
+                    success: function (data) {
+                        if(data.code === 0){
+                            location.reload();
+                        }else{
+                            ZapToast.alert(data.msg, {bgColor: bgDanger, position: Toast_Pos_Center});
+                        }
                     }
-                }
-            }).always(function (){
-                layer.close(index);
-            })
-
-        });
+                }).always(function(){
+                    m.hide();
+                })
+            }
+        }, true);
+        m.show();
     }
 
 </script>
