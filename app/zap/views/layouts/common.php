@@ -7,14 +7,16 @@
     <link href="<?php echo base_url();?>/assets/admin/css/overlayscrollbars.css" rel="stylesheet">
     <link href="<?php echo base_url();?>/assets/admin/css/zap-admin.css" rel="stylesheet">
     <link href="<?php echo base_url();?>/assets/admin/css/zap-admin-custom.css" rel="stylesheet">
-    <?php echo $this->block('styles'); ?>
-    <?php echo $this->block('head_js'); ?>
+    
     <script src="<?php echo base_url();?>/assets/jquery/jquery-3.6.4.min.js"></script>
     <link href="<?php echo base_url();?>/assets/fontawesome/6.4.2/css/all.css" rel="stylesheet">
     <script>
         window.ZAP_BASE_URL = '<?php echo base_url();?>';
         window.ZAP_ASSETS_URL = '<?php echo base_url();?>/assets/admin';
     </script>
+    <?php print_styles(); ?>
+    <?php print_scripts(ASSETS_HEAD); ?>
+    <?php print_scripts(ASSETS_HEAD_TEXT); ?>
 </head>
 
 <body class="layout-fixed sidebar-expand-lg">
@@ -91,8 +93,8 @@
     <div class="toast-container p-3 top-0 end-0" id="topRightToast" data-original-class="toast-container p-3"></div>
     <div class="toast-container p-3 top-50 start-50 translate-middle" id="centerToast" data-original-class="toast-container p-3"></div>
     <div class="toast-container p-3 bottom-0 end-0" id="bottomRightToast" data-original-class="toast-container p-3"></div>
-
-    <?php echo $this->block('scripts'); ?>
+ 
+    
     <script src="<?php echo base_url();?>/assets/admin/js/bootstrap.bundle.min.js"></script>
     <script src="<?php echo base_url();?>/assets/admin/js/overlayscrollbars.browser.es6.js"></script>
     <script src="<?php echo base_url();?>/assets/admin/js/zap-admin.js"></script>
@@ -104,5 +106,7 @@
         ?>
     </script>
     <?php echo $this->block('page_scripts'); ?>
+    <?php print_scripts(ASSETS_BODY); ?>
+    <?php print_scripts(ASSETS_BODY_TEXT); ?>
 </body>
 </html>

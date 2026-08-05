@@ -150,34 +150,4 @@ $error_status = '<span style="color:red">No</span>';
 
     </main>
 </form>
-<script>
 
-    $(function(){
-        $('#zapForm').validate({ignore:''});
-
-    })
-
-    function save(){
-        const zapForm = $('#zapForm');
-        if (!zapForm.valid()) {
-            ZapToast.alert('必填项不能为空', {bgColor: bgDanger, position: Toast_Pos_Center});
-            return false;
-        }
-        const load = Zap.loadding('正在保存，请稍后');
-        $.ajax({
-            url: '<?php echo Url::current();?>',
-            method: 'post',
-            data: zapForm.serialize(),
-            dataType: 'json',
-            success: function (data) {
-                if (data.code === 0) {
-                    ZapToast.alert(data.msg, {bgColor: bgSuccess, position: Toast_Pos_Center});
-                } else {
-                    ZapToast.alert(data.msg, {bgColor: bgDanger, position: Toast_Pos_Center});
-                }
-            }
-        }).always(function () {
-            load.dispose()
-        });
-    }
-</script>
