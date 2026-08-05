@@ -107,7 +107,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
     /**
      * Create a new query builder instance.
      */
-    protected static function createQuery(array $conditions = []): Query
+    public static function createQuery(array $conditions = []): Query
     {
         return Query::query(static::getDB(), static::getTableName());
     }

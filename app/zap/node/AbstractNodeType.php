@@ -67,6 +67,7 @@ class AbstractNodeType
         if(!$id){
             $this->redirectTo("Node@{$this->action}",$_GET,$this->getTitle("%s不存在"),FLASH_ERROR);
         }
+
         if(Request::isPost()){
             $node = Request::post('node');
             $catalogArray = Request::post('catalog',[]);
@@ -84,7 +85,11 @@ class AbstractNodeType
         $this->nodeId = $id;
         $data['title'] = $this->title;
         $data['sub_title'] = $this->getTitle("修改%s");
-        $data['node'] = Node::findById($id);
+        $node = Node::findById($id);
+        if (!$node) {
+            return $this->add();
+        }
+        $data['node'] = $node;
         $data['node_relations'] = $this->getNodeRelationships($id);
         $data['catalogList'] = Catalog::instance()->getTreeArray(['node_type'=>$data['node']['node_type']]);
         $this->display($data,'form');

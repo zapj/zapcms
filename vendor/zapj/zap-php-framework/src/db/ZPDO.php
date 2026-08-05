@@ -58,6 +58,11 @@ class ZPDO extends PDO
         $this->setAttribute(PDO::ATTR_STATEMENT_CLASS, [Statement::class]);
     }
 
+    public function getTablePrefix(): string
+    {
+        return $this->tablePrefix;
+    }
+
     // ─── DSN ──────────────────────────────────────────────────
 
     private function buildDSN(&$config): string

@@ -64,6 +64,11 @@ class Query
     protected $alias = '';
 
     /**
+     * Known raw table names (before prefix) for distinguishing table names from aliases.
+     */
+    protected $knownTables = [];
+
+    /**
      * LIMIT value.
      */
     protected $limit = null;
@@ -104,6 +109,9 @@ class Query
             $this->db = $db;
         }
         $this->from = $from;
+        if ($from) {
+            $this->knownTables[] = $from;
+        }
         if ($alias) {
             $this->alias = $alias;
         }
@@ -144,6 +152,7 @@ class Query
     public function from(string $table, string $alias = ''): self
     {
         $this->from = $table;
+        $this->knownTables[] = $table;
         if ($alias) {
             $this->alias = $alias;
         }
@@ -333,7 +342,18 @@ class Query
             $boolean  = $condition['boolean'] ?? 'AND';
 
             if ($this->db) {
-                $colName = $this->db->quoteColumn($colName);
+                // Support table prefix for table.column references
+                if ($this->db->getTablePrefix() && str_contains($colName, '.')) {
+                    $parts = explode('.', $colName, 2);
+                    // Only prefix if it's a known real table name (not an alias)
+                    if (in_array($parts[0], $this->knownTables, true)) {
+                        $colName = $this->db->quoteTable($parts[0]) . '.' . $this->db->quoteColumn($parts[1]);
+                    } else {
+                        $colName = $this->db->quoteColumn($colName);
+                    }
+                } else {
+                    $colName = $this->db->quoteColumn($colName);
+                }
             }
 
             switch ($operator) {
@@ -505,6 +525,14 @@ class Query
             $table = $table[0];
         }
 
+        // Detect when $alias is actually an ON condition (contains =)
+        if (is_string($alias) && $alias !== '' && $on === '' && str_contains($alias, '=')) {
+            $on    = $alias;
+            $alias = '';
+        }
+
+        $rawJoinTable = $table; // Save original table name before quoting
+        $this->knownTables[] = $rawJoinTable;
         if ($this->db) {
             $table = $this->db->quoteTable($table);
         }
@@ -514,6 +542,14 @@ class Query
             $clause .= " AS {$alias}";
         }
         if ($on) {
+            // Wrap table names in ON condition with {} for prefix support via prepareSQL()
+            if ($this->db && $this->db->getTablePrefix()) {
+                // Replace known table references: FROM table and JOINED table
+                $on = preg_replace('/\b' . preg_quote($this->from, '/') . '\./', '{' . $this->from . '}.', $on);
+                if (is_string($rawJoinTable)) {
+                    $on = preg_replace('/\b' . preg_quote($rawJoinTable, '/') . '\./', '{' . $rawJoinTable . '}.', $on);
+                }
+            }
             $clause .= " ON {$on}";
         }
 

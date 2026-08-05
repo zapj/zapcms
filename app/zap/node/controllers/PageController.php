@@ -15,7 +15,7 @@ class PageController extends AbstractNodeType
         if($this->catalogId==0){
 //            $this->redirectTo('Node');
             $this->title = '单页';
-            $page = new Pagination(req()->get('page'),20,req()->get());
+            $page = new Pagination((int)req()->get('page', 1), 20, req()->get());
             $page->setTotal($this->getPageTotal());
             $this->display([
                 'page'=> $page,
@@ -25,16 +25,13 @@ class PageController extends AbstractNodeType
             return;
         }
         View::share('catalog',$this->getCatalogById($this->catalogId));
-        parent::edit($this->catalogId);
-
-//        $node = $this->getNodeByCatalogId($this->catalogId);
-//        $this->title = $node['title'];
-//        if($node){
-//            parent::edit($node['id']);
-//        }else{
-//            parent::add();
-//        }
-//
+        $node = $this->getNodeByCatalogId($this->catalogId);
+        if($node){
+            $this->title = $node['title'];
+            parent::edit($node['id']);
+        }else{
+            parent::add();
+        }
     }
 
     public function getPageTotal(){

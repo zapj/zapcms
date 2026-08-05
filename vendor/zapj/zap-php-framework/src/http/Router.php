@@ -263,6 +263,9 @@ class Router
         // 存储请求路径（去掉查询参数）
         $this->requestPath = strtok($requestUrl, '?') ?: '/';
 
+        // 也清理掉 $requestUrl 中的查询参数，避免被 {any:.*} 通配符捕获
+        $requestUrl = $this->requestPath;
+
         $matched = false;
 
         // HEAD 请求复用 GET 路由
