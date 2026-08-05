@@ -747,6 +747,17 @@ class Query
     }
 
     /**
+     * Fetch the first column of the first row as a scalar value.
+     */
+    public function fetchColumn(int $columnIndex = 0)
+    {
+        $sql = $this->getSQL();
+        $stm = $this->db->prepare($sql);
+        $stm->execute($this->params);
+        return $stm->fetchColumn($columnIndex);
+    }
+
+    /**
      * Get a single column's value from the first result.
      */
     public function value(string $column)

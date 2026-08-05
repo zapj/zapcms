@@ -135,8 +135,8 @@ class AbstractNodeType
 
     protected function display($data = [], $name = null){
 
-        $controller = Router::convertToUrlName($this->controller);
-        $action = Router::convertToUrlName($this->action);
+        $controller = strtolower($this->controller);
+        $action = strtolower($this->action);
         $data['_controller'] = $this->controller;
         $data['_action'] = $this->action;
         $data['catalogId'] = $this->catalogId;
