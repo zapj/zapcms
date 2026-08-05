@@ -162,6 +162,16 @@ class Response
         return (new self($data, 200))->json();
     }
 
+    /**
+     * 静态工厂：创建 JSON 响应
+     * @param mixed $data       响应数据
+     * @param int   $statusCode HTTP 状态码
+     */
+    public static function jsonResponse($data = null, int $statusCode = 200): self
+    {
+        return (new self($data, $statusCode))->json();
+    }
+
     // ───────────────────── 响应头 ─────────────────────
 
     public function header(string $name, string $value): self

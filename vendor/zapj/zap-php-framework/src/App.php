@@ -189,20 +189,12 @@ class App implements \ArrayAccess
 
     /**
      * 运行应用（启动路由分发）
-     *
-     * URI 和 HTTP Method 从 $_SERVER 自动检测，也可通过参数动态传入。
-     *
-     * @param string|null $uri    请求 URI，不传则从 $_SERVER['REQUEST_URI'] 自动获取
-     * @param string|null $method 请求 Method，不传则从 $_SERVER['REQUEST_METHOD'] 自动获取
      */
-    public function run(?string $uri = null, ?string $method = null): bool
+    public function run(): bool
     {
         $router = $this->router ?? $this->createRouter();
         $this->dispatchRoutes($router);
-        return $router->dispatch(
-            $uri ?? $_SERVER['REQUEST_URI'] ?? '/',
-            $method ?? $_SERVER['REQUEST_METHOD'] ?? 'GET'
-        );
+        return $router->dispatch($_SERVER['REQUEST_URI'] ?? '/', $_SERVER['REQUEST_METHOD'] ?? 'GET');
     }
 
     /**
