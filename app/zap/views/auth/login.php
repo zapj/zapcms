@@ -4,10 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ZAP CMS - 登录</title>
-    <link href="<?php echo base_url();?>/assets/admin/css/bootstrap.css" rel="stylesheet">
-    <link href="<?php echo base_url();?>/assets/admin/css/adminlte.min.css" rel="stylesheet">
+    <link href="<?php echo base_url();?>/assets/admin/css/zap-admin.css" rel="stylesheet">
     <script src="<?php echo base_url();?>/assets/jquery/jquery-3.6.4.min.js"></script>
-    <link href="<?php echo base_url();?>/assets/font-awesome-6.4.2/css/all.css" rel="stylesheet">
+    <link href="<?php echo base_url();?>/assets/fontawesome/6.4.2/css/all.css" rel="stylesheet">
     <style>
         :root {
             --zap-green: #10b981;

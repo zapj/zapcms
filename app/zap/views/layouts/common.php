@@ -10,7 +10,7 @@
     <?php echo $this->block('styles'); ?>
     <?php echo $this->block('head_js'); ?>
     <script src="<?php echo base_url();?>/assets/jquery/jquery-3.6.4.min.js"></script>
-    <link href="<?php echo base_url();?>/assets/font-awesome-6.4.2/css/all.css" rel="stylesheet">
+    <link href="<?php echo base_url();?>/assets/fontawesome/6.4.2/css/all.css" rel="stylesheet">
     <script>
         window.ZAP_BASE_URL = '<?php echo base_url();?>';
         window.ZAP_ASSETS_URL = '<?php echo base_url();?>/assets/admin';
