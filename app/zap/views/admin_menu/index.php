@@ -166,9 +166,18 @@ use zap\facades\Url;
                     method:'post',
                     data:$('#adminMenu form').serialize(),
                     success:function (data){
+                        ZapToast.alert(data.msg,{
+                            bgColor:data.code===0?bgSuccess:bgDanger,
+                            position:Toast_Pos_Center,
+                            delay: 2000,
+                            callback:function(){ location.reload();}
+                        });
+                        // 解决 aria-hidden 警告：先失焦再关闭模态框
+                        document.activeElement && document.activeElement.blur();
                         m.hide();
-                        ZapToast.alert(data.msg,{bgColor:data.code===0?bgSuccess:bgDanger});
-                        Zap.reload();
+                    },
+                    error:function(xhr){
+                        ZapToast.alert('保存失败：' + xhr.statusText,{bgColor:bgDanger,position:Toast_Pos_Center});
                     }
                 })
             }

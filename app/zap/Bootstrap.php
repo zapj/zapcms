@@ -85,13 +85,17 @@ class Bootstrap
 
         $className = '\app\zap\controllers\\' . Router::convertToName($controllerName) . 'Controller';
 
+        // 将 kebab-case 方法名转换为 camelCase（如 save-admin-menu → saveAdminMenu）
+        $actionMethod = lcfirst(Router::convertToName($methodName));
+
         if (!class_exists($className)) {
             // 尝试将第一个段作为方法名
             $className = '\app\zap\controllers\IndexController';
             $methodName = $controllerName;
+            $actionMethod = lcfirst(Router::convertToName($methodName));
             $extraParams = array_slice($segments, 1);
 
-            if (!method_exists($className, $methodName)) {
+            if (!method_exists($className, $actionMethod)) {
                 http_response_code(404);
                 echo '<h1>404 Not Found</h1>';
                 exit;
@@ -100,10 +104,10 @@ class Bootstrap
 
         $instance = new $className();
 
-        if (!method_exists($className, $methodName) && !method_exists($className, '__call')) {
+        if (!method_exists($className, $actionMethod) && !method_exists($className, '__call')) {
             // 支持 _invoke 动态路由（如 NodeController）
             if (method_exists($instance, '_invoke')) {
-                // 保存 controller/method 到 Router 供全局访问
+                // 保存 controller/method（kebab-case）到 Router 供全局访问
                 app()->router->controller = $controllerName;
                 app()->router->method = strtolower($methodName);
                 $instance->_invoke($methodName, $extraParams);
@@ -111,7 +115,7 @@ class Bootstrap
             }
             // 尝试 index 方法 + 第一个段作为参数
             if (method_exists($instance, 'index')) {
-                $methodName = 'index';
+                $actionMethod = 'index';
                 $extraParams = $segments;
             } else {
                 http_response_code(404);
@@ -120,15 +124,15 @@ class Bootstrap
             }
         }
 
-        // 保存已解析的 controller/method 到 Router 供全局访问
+        // 保存已解析的 controller/method（kebab-case）到 Router 供全局访问
         app()->router->controller = $controllerName;
         app()->router->method = strtolower($methodName);
 
-        // 调用控制器方法，传入额外参数
+        // 调用控制器方法（camelCase），传入额外参数
         if (!empty($extraParams)) {
-            call_user_func_array([$instance, $methodName], $extraParams);
+            call_user_func_array([$instance, $actionMethod], $extraParams);
         } else {
-            $instance->$methodName();
+            $instance->$actionMethod();
         }
     }
 }

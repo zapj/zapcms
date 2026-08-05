@@ -82,7 +82,7 @@
             <div class="float-end d-none d-sm-block">
                 <b><?php echo ZAP_CMS_VERSION; ?></b>
             </div>
-            <strong>&copy; <a href="https://zap.cn" class="text-decoration-none">ZAP CMS</a> <?php echo date('Y');?></strong>
+            <strong>&copy; <a href="https://zap.cn" class="text-decoration-none">ZapCMS</a> <?php echo date('Y');?></strong>
         </footer>
     </div>
 
