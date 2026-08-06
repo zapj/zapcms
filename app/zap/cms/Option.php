@@ -57,12 +57,12 @@ class Option
 
 
     public static function get($option_name, $default = null){
-        $option_value = DB::value('select option_value from {options} where option_name=:option_name',
+        $rows = DB::select('select option_value from {options} where option_name=:option_name',
             ['option_name'=>$option_name]);
-        if(empty($option_value)){
+        if(empty($rows)){
             return $default;
         }
-        return $option_value;
+        return $rows[0]['option_value'];
     }
 
     public static function getArray($option_name,$type = '='): array
