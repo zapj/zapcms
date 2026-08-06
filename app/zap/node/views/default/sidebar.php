@@ -125,13 +125,6 @@ function renderTree($items, $catalogId, $expandIdsMap, $level = 0) {
 }
 ?>
 
-<div class="p-2">
-    <a href="<?php echo Url::action("Node"); ?>"
-       class="btn btn-outline-secondary btn-sm w-100 <?php echo !$catalogId ? 'active' : ''; ?>">
-        <i class="fa fa-home me-2"></i>全部内容
-    </a>
-</div>
-
 <div class="list-group list-group-flush">
     <?php if (!empty($tree)): ?>
         <?php renderTree($tree, $catalogId, $expandIdsMap); ?>

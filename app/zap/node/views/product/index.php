@@ -31,9 +31,10 @@ if (!empty($catalogPaths)) {
                         <i class="fa fa-sitemap me-1 text-warning"></i>栏目导航
                     </h6>
                     <div class="card-tools">
-                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                            <i class="fa fa-minus"></i>
-                        </button>
+                        <a href="<?php echo Url::action("Node"); ?>"
+                           class="btn btn-tool <?php echo !$catalogId ? 'text-warning' : ''; ?>" title="全部内容">
+                            <i class="fa fa-home"></i>
+                        </a>
                     </div>
                 </div>
                 <div class="card-body p-0" style="max-height:calc(100vh - 260px);overflow-y:auto;">
@@ -127,11 +128,10 @@ if (!empty($catalogPaths)) {
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <?php if (($row['status'] ?? 1) == 1): ?>
-                                        <span class="badge bg-success">已发布</span>
-                                        <?php else: ?>
-                                        <span class="badge bg-secondary">草稿</span>
-                                        <?php endif; ?>
+                                        <?php $status = $row['status'] ?? 'draft'; ?>
+                                        <span class="badge bg-<?php echo $status === 'publish' ? 'success' : 'secondary'; ?>">
+                                            <?php echo \zap\cms\models\Node::getStatusTitle($status); ?>
+                                        </span>
                                     </td>
                                     <td class="text-muted small">
                                         <?php echo date('Y-m-d H:i', $row['pub_time'] ?? $row['add_time'] ?? 0); ?>
