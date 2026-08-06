@@ -1,7 +1,6 @@
 <?php
 
 use zap\cms\Asset;
-use zap\cms\BreadCrumb;
 use zap\facades\Url;
 
 Asset::library('summernote');
@@ -9,36 +8,25 @@ Asset::library('datetimepicker');
 Asset::library('jqueryvalidation');
 register_scripts(base_url('/assets/plugins/zapuploader.js'));
 
-!IS_AJAX && $this->layout('layouts/common');
+!IS_AJAX && $this->extend('layouts/common');
+
+// 向 common layout 传递标题和面包屑（模板中 $this 是 PHPRenderer，须通过 $this->view 写入 View::params）
+$this->view->page_title = !empty($sub_title) ? $sub_title : ($title ?? '编辑');
+$this->view->page_subtitle = $title ?? '';
+// $breadcrumbs 已由 AbstractNodeType::display() 传入 $data['breadcrumbs']，已在 params 中
 ?>
-<nav class="navbar bg-body-tertiary position-fixed w-100 shadow-sm z-3 zap-top-bar">
-    <div class="container-fluid">
-        <?php BreadCrumb::instance()->display() ; ?>
-
-        <div class="text-end">
-            <a class="btn btn-secondary btn-sm" href="<?php echo url_action("Node@{$_controller}", $_GET); ?>">
-                <i class="fa fa-arrow-left me-1"></i> 取消
-            </a>
-            <button type="button" class="btn btn-success btn-sm" onclick="save();">
-                <i class="fa fa-save me-1"></i> 保存
-            </button>
-        </div>
-    </div>
-</nav>
-
 <form id="zapForm" method="post">
     <input type="hidden" value="<?php echo $node->id; ?>" name="node_id">
     <input type="hidden" name="node[pub_time]" value="<?php echo $node->getPubTimeToDate(); ?>" />
     <input name="node[status]" id="node_status" type="hidden" value="<?php echo $node->status ?: \zap\cms\models\Node::STATUS_PUBLISH;?>" />
     <input type="hidden" id="node_author_id" name="node[author_id]" value="<?php echo \zap\cms\Auth::user('id') ?>">
 
-    <main class="container-fluid zap-main">
-        <div class="row">
-            <div class="col-md-9 mb-3">
+    <div class="row g-3">
+        <div class="col-lg-9">
                 <!-- 主内容卡片 -->
                 <div class="card shadow-sm">
-                    <!-- Tabs 导航 -->
-                    <div class="card-header p-0">
+                    <!-- Tabs 导航 + 操作按钮 -->
+                    <div class="card-header d-flex justify-content-between align-items-center p-0 pe-2">
                         <ul class="nav nav-tabs border-0" role="tablist">
                             <li class="nav-item">
                                 <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#zapTabPanel1" type="button">
@@ -51,6 +39,14 @@ register_scripts(base_url('/assets/plugins/zapuploader.js'));
                                 </button>
                             </li>
                         </ul>
+                        <div class="d-flex gap-1">
+                            <a class="btn btn-outline-secondary btn-sm" href="<?php echo url_action("Node@{$_controller}", $_GET); ?>">
+                                <i class="fa fa-arrow-left me-1"></i> 取消
+                            </a>
+                            <button type="button" class="btn btn-success btn-sm" onclick="save();">
+                                <i class="fa fa-save me-1"></i> 保存
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Tabs 内容 -->
@@ -231,12 +227,11 @@ register_scripts(base_url('/assets/plugins/zapuploader.js'));
                 </div>
             </div>
         </div>
-    </main>
 </form>
 
 <style>
 /* 编辑页面样式 */
-.zap-main .card {
+.card {
     border-radius: 12px;
     overflow: hidden;
 }
@@ -335,35 +330,39 @@ register_scripts(base_url('/assets/plugins/zapuploader.js'));
 
 @media (max-width: 767px) {
     .card-header {
-        padding: 0.75rem 1rem;
-        font-size: 0.9rem;
+        flex-wrap: wrap;
+        padding: 0.5rem 0.75rem 0;
     }
-    
+
+    .card-header .d-flex.gap-1 {
+        padding-bottom: 0.5rem;
+    }
+
     .nav-tabs {
         padding: 0.5rem 0.75rem 0;
     }
-    
+
     .nav-tabs .nav-link {
         padding: 0.5rem 0.75rem;
         font-size: 0.85rem;
     }
-    
+
     .nav-tabs .nav-link i {
         display: none;
     }
-    
+
     .card-body {
         padding: 1rem;
     }
-    
+
     .form-control-lg {
         font-size: 1rem;
     }
-    
+
     .btn {
         font-size: 0.875rem;
     }
-    
+
     .row.g-3 > .col-md-6 {
         margin-bottom: 0.5rem;
     }

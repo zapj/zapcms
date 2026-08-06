@@ -124,7 +124,7 @@ if (!empty($catalogPaths)) {
                                             <span class="badge bg-info text-dark"><?php echo htmlspecialchars($row['catalog_name']); ?></span>
                                         <?php elseif (!empty($row['catalog_id'])): ?>
                                             <?php $cat = $menu->get($row['catalog_id']); ?>
-                                            <?php echo $cat ? '<span class="badge bg-info text-dark">' . htmlspecialchars($cat['name']) . '</span>' : '<span class="text-muted">-</span>'; ?>
+                                            <?php echo $cat ? '<span class="badge bg-info text-dark">' . htmlspecialchars($cat['title']) . '</span>' : '<span class="text-muted">-</span>'; ?>
                                         <?php else: ?>
                                             <span class="text-muted">-</span>
                                         <?php endif; ?>

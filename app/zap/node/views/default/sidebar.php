@@ -1,6 +1,7 @@
 <?php
 use zap\facades\Url;
 use zap\cms\Catalog;
+use zap\cms\models\Node;
 
 /**
  * @var \zap\cms\Catalog $menu
@@ -40,6 +41,37 @@ if ($catalogId > 0) {
 $expandIdsMap = array_flip($expandIds);
 
 /**
+ * 解析 link-url 栏目的目标链接
+ * link-url 是导航链接，不存实际内容，需要解析到真正的目标
+ */
+function resolveLinkUrlTarget($item, $menu) {
+    $linkType = $item['link_type'] ?? '';
+    $linkObject = intval($item['link_object'] ?? 0);
+    $linkTo = $item['link_to'] ?? '';
+
+    if ($linkType === 'catalog' && $linkObject > 0) {
+        // 链接到另一个栏目 → 打开目标栏目的内容列表
+        $targetCatalog = $menu->get($linkObject);
+        if ($targetCatalog) {
+            $targetNodeType = $targetCatalog['node_type'] ?? 'page';
+            return Url::action("Node@{$targetNodeType}", ['cid' => $linkObject]);
+        }
+    } elseif ($linkType === 'node' && $linkObject > 0) {
+        // 链接到具体内容节点 → 打开该节点的编辑页
+        $targetNode = Node::findById($linkObject);
+        if ($targetNode) {
+            $targetNodeType = $targetNode->node_type ?? 'page';
+            return Url::action("Node@{$targetNodeType}/edit/{$linkObject}");
+        }
+    } elseif ($linkType === 'external') {
+        // 外部链接 → 直接用 link_to 作为 URL，_blank 打开
+        return $linkTo ?: '#';
+    }
+    // fallback: 无法解析时使用 link_to
+    return $linkTo ?: Url::action("Node@page", ['cid' => $item['id']]);
+}
+
+/**
  * 递归渲染树节点
  */
 function renderTree($items, $catalogId, $expandIdsMap, $level = 0) {
@@ -52,10 +84,17 @@ function renderTree($items, $catalogId, $expandIdsMap, $level = 0) {
         $paddingLeft = $indentMap[$level] ?? (2.5 + ($level - 2) * 2);
         // catalog 表中 node_type 存的是真实内容类型（page/article/product 等）
         $nodeType = $item['node_type'] ?? 'default';
-        $isPage = $nodeType === 'page';
+        $isLinkUrl = $nodeType === 'link-url';
+
+        // link-url 类型：解析目标链接，不生成 Node@link-url 这种无效地址
+        if ($isLinkUrl) {
+            $nodeUrl = resolveLinkUrlTarget($item, Catalog::instance());
+        } else {
+            $nodeUrl = Url::action("Node@{$nodeType}", ['cid' => $item['id']]);
+        }
 ?>
     <div class="tree-node">
-        <a href="<?php echo Url::action("Node@{$nodeType}", ['cid' => $item['id']]); ?>"
+        <a href="<?php echo $nodeUrl; ?>"
            class="list-group-item list-group-item-action border-0 d-flex align-items-center <?php echo $isActive ? 'active' : ''; ?>"
            data-catalog-id="<?php echo $item['id']; ?>"
            style="padding-left: <?php echo $paddingLeft; ?>rem;">
@@ -66,10 +105,12 @@ function renderTree($items, $catalogId, $expandIdsMap, $level = 0) {
             <?php else: ?>
             <span style="width:16px" class="me-1 flex-shrink-0"></span>
             <?php endif; ?>
-            <?php if ($isPage): ?>
-            <i class="far fa-file me-1 text-info" style="width:14px;flex-shrink-0;"></i>
+            <?php if ($isLinkUrl): ?>
+            <i class="fa fa-link me-1 text-primary" style="width:14px;flex-shrink:0;"></i>
+            <?php elseif ($nodeType === 'page'): ?>
+            <i class="far fa-file me-1 text-info" style="width:14px;flex-shrink:0;"></i>
             <?php else: ?>
-            <i class="far fa-folder me-1 text-warning" style="width:14px;flex-shrink-0;"></i>
+            <i class="far fa-folder me-1 text-warning" style="width:14px;flex-shrink:0;"></i>
             <?php endif; ?>
             <span class="flex-grow-1 text-truncate"><?php echo htmlspecialchars($item['title']); ?></span>
         </a>
@@ -111,7 +152,7 @@ function toggleTreeNode(e, el) {
     if (children) {
         children.classList.toggle('d-none');
         if (icon) {
-            if (children.classList.contains('d-none')) {
+            if (icon.classList.contains('d-none')) {
                 icon.classList.remove('fa-caret-down');
                 icon.classList.add('fa-caret-right');
             } else {

@@ -14,10 +14,10 @@ use zap\facades\Url;
 
 $this->layout('layouts/common');
 
-// 更新 page_title 以便布局渲染面包屑
 if (!empty($catalogPaths)) {
     $last = array_pop($catalogPaths);
     $page_title = $last['title'] . ' - ' . $page_title;
+    $catalogPaths[] = $last;
 }
 ?>
 
@@ -25,10 +25,10 @@ if (!empty($catalogPaths)) {
     <div class="row g-3">
         <!-- 左侧栏目导航 -->
         <div class="col-lg-3">
-            <div class="card card-outline card-primary">
+            <div class="card card-outline card-warning">
                 <div class="card-header p-2">
                     <h6 class="card-title mb-0">
-                        <i class="fa fa-sitemap me-1 text-primary"></i>栏目导航
+                        <i class="fa fa-sitemap me-1 text-warning"></i>栏目导航
                     </h6>
                     <div class="card-tools">
                         <button type="button" class="btn btn-tool" data-card-widget="collapse">
@@ -37,7 +37,7 @@ if (!empty($catalogPaths)) {
                     </div>
                 </div>
                 <div class="card-body p-0" style="max-height:calc(100vh - 260px);overflow-y:auto;">
-                    <?php include __DIR__ . '/sidebar.php'; ?>
+                    <?php include __DIR__ . '/../default/sidebar.php'; ?>
                 </div>
             </div>
         </div>
@@ -45,7 +45,7 @@ if (!empty($catalogPaths)) {
 
         <!-- 右侧内容区 -->
         <div class="col-lg-9">
-            <div class="card card-outline card-primary">
+            <div class="card card-outline card-warning">
                 <!-- 工具栏 -->
                 <div class="card-header p-2">
                     <div class="d-flex flex-wrap align-items-center gap-2">
@@ -58,11 +58,10 @@ if (!empty($catalogPaths)) {
                                 foreach ($catalogPaths as $cat):
                                     $breadcrumbParts[] = '<a href="' . Url::action("Node@{$_controller}", ['cid' => $cat['id']]) . '" class="text-muted text-decoration-none">' . htmlspecialchars($cat['title']) . '</a>';
                                 endforeach;
-                                $breadcrumbParts[] = '<span class="text-muted">' . htmlspecialchars($last['title'] ?? '') . '</span>';
                                 echo implode(' <span class="text-muted mx-1">/</span> ', $breadcrumbParts);
                                 ?>
                             <?php else: ?>
-                                <span class="text-muted">全部内容</span>
+                                <span class="text-muted">全部产品</span>
                             <?php endif; ?>
                         </div>
 
@@ -82,8 +81,8 @@ if (!empty($catalogPaths)) {
 
                         <!-- 添加按钮 -->
                         <a href="<?php echo Url::action("Node@{$_controller}/add", ['cid' => $catalogId]); ?>"
-                           class="btn btn-primary btn-sm">
-                            <i class="fa fa-plus me-1"></i>添加
+                           class="btn btn-warning btn-sm">
+                            <i class="fa fa-plus me-1"></i>添加产品
                         </a>
                     </div>
                 </div>
@@ -118,17 +117,14 @@ if (!empty($catalogPaths)) {
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <?php
-                                        // 获取节点所属栏目
-                                        if (!empty($row['catalog_name'])):
-                                            echo '<span class="badge bg-info text-dark">' . htmlspecialchars($row['catalog_name']) . '</span>';
-                                        elseif (!empty($row['catalog_id'])):
-                                            $cat = $menu->get($row['catalog_id']);
-                                            echo $cat ? '<span class="badge bg-info text-dark">' . htmlspecialchars($cat['title']) . '</span>' : '<span class="text-muted">-</span>';
-                                        else:
-                                            echo '<span class="text-muted">-</span>';
-                                        endif;
-                                        ?>
+                                        <?php if (!empty($row['catalog_name'])): ?>
+                                            <span class="badge bg-info text-dark"><?php echo htmlspecialchars($row['catalog_name']); ?></span>
+                                        <?php elseif (!empty($row['catalog_id'])): ?>
+                                            <?php $cat = $menu->get($row['catalog_id']); ?>
+                                            <?php echo $cat ? '<span class="badge bg-info text-dark">' . htmlspecialchars($cat['title']) . '</span>' : '<span class="text-muted">-</span>'; ?>
+                                        <?php else: ?>
+                                            <span class="text-muted">-</span>
+                                        <?php endif; ?>
                                     </td>
                                     <td>
                                         <?php if (($row['status'] ?? 1) == 1): ?>
@@ -143,7 +139,7 @@ if (!empty($catalogPaths)) {
                                     <td>
                                         <div class="btn-group btn-group-sm">
                                             <a href="<?php echo Url::action("Node@{$_controller}/edit/{$row['id']}", ['cid' => $catalogId]); ?>"
-                                               class="btn btn-outline-primary" title="编辑">
+                                               class="btn btn-outline-warning" title="编辑">
                                                 <i class="fa fa-edit"></i>
                                             </a>
                                             <button type="button" class="btn btn-outline-danger"
@@ -161,11 +157,11 @@ if (!empty($catalogPaths)) {
                     <?php else: ?>
                     <!-- 空状态 -->
                     <div class="text-center py-5">
-                        <i class="fa fa-inbox fa-3x text-muted mb-3 d-block"></i>
-                        <p class="text-muted mb-3">暂无内容数据</p>
+                        <i class="fa fa-cube fa-3x text-muted mb-3 d-block"></i>
+                        <p class="text-muted mb-3">暂无产品数据</p>
                         <a href="<?php echo Url::action("Node@{$_controller}/add", ['cid' => $catalogId]); ?>"
-                           class="btn btn-primary btn-sm">
-                            <i class="fa fa-plus me-1"></i>添加第一条内容
+                           class="btn btn-warning btn-sm">
+                            <i class="fa fa-plus me-1"></i>添加第一个产品
                         </a>
                     </div>
                     <?php endif; ?>
