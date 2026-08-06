@@ -159,6 +159,9 @@ class AbstractNodeType
             //获取catalog path
 
         }
+        $data['breadcrumbs'] = BreadCrumb::instance()->toArray();
+        $data['menu'] = Catalog::instance();
+        $data['node_type'] = $this->nodeType;
         try{
             View::render("{$controller}.". ($name ?? $action),$data);
         }catch (ViewNotFoundException $e){

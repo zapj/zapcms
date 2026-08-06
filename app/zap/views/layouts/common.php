@@ -19,7 +19,7 @@
     <?php print_scripts(ASSETS_HEAD_TEXT); ?>
 </head>
 
-<body class="layout-fixed sidebar-expand-lg">
+<body class="layout-fixed sidebar-expand-lg bg-body-tertiary ">
     <div class="app-wrapper">
         <!-- 顶部导航栏 -->
         <nav class="app-header navbar navbar-expand bg-white shadow-sm">

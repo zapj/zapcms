@@ -19,10 +19,11 @@ class CatalogController extends AdminController
         $data = [];
         $menu = Catalog::instance();
         $data['menu'] = $menu;
+        $data['catalog_count'] = DB::table('catalog')->count();
         $page_title = '栏目管理';
         $breadcrumbs = [
-            ['title' => '首页', 'url' => url_action('Index')],
-            ['title' => '栏目管理', 'url' => url_action('Catalog')],
+            ['title' => '控制台', 'url' => url_action('Index')],
+            ['title' => '栏目管理'],
         ];
         $data['page_title'] = $page_title;
         $data['breadcrumbs'] = $breadcrumbs;
