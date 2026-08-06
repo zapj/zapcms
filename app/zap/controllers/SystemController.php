@@ -33,11 +33,25 @@ class SystemController extends AdminController
 
     public function sysInfo()
     {
-        View::render("system.sysinfo",[]);
+        View::render("system.sysinfo",[
+            'page_title' => '服务器信息',
+            'page_subtitle' => '系统运行环境与配置详情',
+            'breadcrumbs' => [
+                ['title' => '控制台', 'url' => \zap\facades\Url::action('Index')],
+                ['title' => '服务器信息'],
+            ],
+        ]);
     }
 
     public function database(){
-        \view('system.database',[]);
+        \view('system.database',[
+            'page_title' => '数据库管理',
+            'page_subtitle' => '查看数据库信息、备份与还原',
+            'breadcrumbs' => [
+                ['title' => '控制台', 'url' => \zap\facades\Url::action('Index')],
+                ['title' => '数据库管理'],
+            ],
+        ]);
     }
 
     public function backup(){
@@ -73,7 +87,16 @@ class SystemController extends AdminController
             });
         }
 
-        View::render('system.backup-list', ['files' => $files]);
+        View::render('system.backup-list', [
+            'files' => $files,
+            'page_title' => '备份列表',
+            'page_subtitle' => '数据库备份文件管理',
+            'breadcrumbs' => [
+                ['title' => '控制台', 'url' => \zap\facades\Url::action('Index')],
+                ['title' => '数据库管理', 'url' => \zap\facades\Url::action('System@database')],
+                ['title' => '备份列表'],
+            ],
+        ]);
     }
 
     public function backupDownload($filename = null){

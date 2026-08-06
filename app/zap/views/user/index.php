@@ -1,11 +1,6 @@
 <?php
 use zap\facades\Url;
 
-$page_title = '用户管理';
-$breadcrumbs = [
-    ['title' => '用户管理'],
-];
-
 $this->layout('layouts/common');
 
 // 统计数据

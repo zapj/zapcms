@@ -24,7 +24,15 @@ class UserController extends AdminController
         $pageHelper = new Pagination(intval(Request::get('page',1)),20, Request::get());
         $pageHelper->setTotal(Admin::count());
         $users = Admin::select()->orderBy('id DESC')->get(FETCH_ASSOC);
-        view('user.index',['pageHelper'=>$pageHelper,'users'=>$users]);
+        view('user.index',[
+            'pageHelper'=>$pageHelper,
+            'users'=>$users,
+            'page_title'=>'用户列表',
+            'breadcrumbs'=>[
+                ['title'=>'控制台','url'=>\zap\facades\Url::action('Index')],
+                ['title'=>'用户列表'],
+            ]
+        ]);
     }
 
     public function form(){
@@ -107,7 +115,16 @@ class UserController extends AdminController
         $pageHelper = new Pagination(intval(Request::get('page',1)),20, Request::get());
         $pageHelper->setTotal(Roles::count());
         $data = Roles::select()->orderBy("role_id DESC")->get(FETCH_ASSOC);
-        view('user.roles',['pageHelper'=>$pageHelper,'data'=>$data]);
+        view('user.roles',[
+            'pageHelper'=>$pageHelper,
+            'data'=>$data,
+            'page_title'=>'角色管理',
+            'breadcrumbs'=>[
+                ['title'=>'控制台','url'=>\zap\facades\Url::action('Index')],
+                ['title'=>'用户管理','url'=>\zap\facades\Url::action('User')],
+                ['title'=>'角色管理'],
+            ]
+        ]);
     }
 
     public function formRole(){
@@ -178,7 +195,16 @@ class UserController extends AdminController
         $data = Permissions::instance()->getAllByPath([
             'limit'=>[$pageHelper->getLimit(),$pageHelper->getOffset()]
         ]);
-        view('user.permissions',['pageHelper'=>$pageHelper,'data'=>$data]);
+        view('user.permissions',[
+            'pageHelper'=>$pageHelper,
+            'data'=>$data,
+            'page_title'=>'权限管理',
+            'breadcrumbs'=>[
+                ['title'=>'控制台','url'=>\zap\facades\Url::action('Index')],
+                ['title'=>'用户管理','url'=>\zap\facades\Url::action('User')],
+                ['title'=>'权限管理'],
+            ]
+        ]);
     }
 
     public function formPermission(){

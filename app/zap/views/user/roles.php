@@ -1,12 +1,6 @@
 <?php
 use zap\facades\Url;
 
-$page_title = '角色管理';
-$breadcrumbs = [
-    ['title' => '用户管理', 'url' => Url::action('User')],
-    ['title' => '角色管理'],
-];
-
 $this->layout('layouts/common');
 $roleCount = count($data);
 ?>

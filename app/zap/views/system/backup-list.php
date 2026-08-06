@@ -11,14 +11,6 @@
 use zap\cms\Asset;
 use zap\facades\Url;
 
-$page_title = '备份列表';
-$page_subtitle = '数据库备份文件管理';
-$breadcrumbs = [
-    ['title' => '系统管理', 'url' => Url::action('System@settings')],
-    ['title' => '数据库管理', 'url' => Url::action('System@database')],
-    ['title' => '备份列表'],
-];
-
 $this->layout('layouts/common');
 
 $totalSize = 0;

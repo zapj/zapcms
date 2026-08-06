@@ -11,13 +11,6 @@
 use zap\cms\Asset;
 use zap\facades\Url;
 
-$page_title = '数据库管理';
-$page_subtitle = '查看数据库信息、备份与还原';
-$breadcrumbs = [
-    ['title' => '系统管理', 'url' => Url::action('System@settings')],
-    ['title' => '数据库管理'],
-];
-
 $this->layout('layouts/common');
 
 $conn_name = config('database.default');

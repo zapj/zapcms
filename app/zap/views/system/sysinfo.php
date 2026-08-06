@@ -11,13 +11,6 @@
 use zap\cms\Asset;
 use zap\facades\Url;
 
-$page_title = '服务器信息';
-$page_subtitle = '系统运行环境与配置详情';
-$breadcrumbs = [
-    ['title' => '系统管理', 'url' => Url::action('System@settings')],
-    ['title' => '服务器信息'],
-];
-
 $this->layout('layouts/common');
 
 // 辅助函数

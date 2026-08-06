@@ -1,12 +1,6 @@
 <?php
 use zap\facades\Url;
 
-$page_title = '权限管理';
-$breadcrumbs = [
-    ['title' => '用户管理', 'url' => Url::action('User')],
-    ['title' => '权限管理'],
-];
-
 $this->layout('layouts/common');
 $permCount = count($data);
 ?>
