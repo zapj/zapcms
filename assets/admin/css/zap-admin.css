@@ -13883,7 +13883,7 @@ body:not(.app-loaded) .app-footer {
   }
 }
 .app-main .app-content-header {
-  padding: 1rem 0.5rem;
+  padding: 1rem 0.5rem 0.3rem;
 }
 .app-main .app-content-header .breadcrumb {
   padding: 0;
