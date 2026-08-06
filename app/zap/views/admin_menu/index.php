@@ -2,115 +2,101 @@
 use zap\facades\Url;
 
 !IS_AJAX && $this->layout('layouts/common');
+$this->view->page_title = '系统菜单管理';
 ?>
+<script>
+    function checkAll(el) {
+        $('.zap_catalog').prop('checked', $(el).prop('checked'));
+    }
+</script>
 
-<nav class="navbar bg-body-tertiary mb-3 rounded shadow-sm ">
-    <div class="container-fluid">
-        <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);"
-             aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item "><a href="<?php echo Url::action('System@settings') ?>">设置</a></li>
-                <li class="breadcrumb-item active"><a href="<?php echo Url::action('AdminMenu') ?>">系统菜单管理</a></li>
-            </ol>
-        </nav>
-        <div class=" text-end" >
-            <button type="button" class="btn btn-sm btn-success" onclick="addOrEdit(0)"><i class="fa fa-plus"></i> 添加</button>
+<form id="reqForm">
+    <div class="card card-outline card-success">
+
+        <div class="card-header d-flex align-items-center">
+            <h2 class="card-title fs-6 mb-0">
+                <i class="fa fa-bars me-2"></i>菜单列表
+            </h2>
+            <div class="card-tools ms-auto">
+                <button type="button" class="btn btn-success btn-sm" onclick="addOrEdit(0)">
+                    <i class="fa fa-plus me-1"></i>添加
+                </button>
+            </div>
         </div>
-    </div>
 
-</nav>
-
-<main class="container zap-main">
-
-
-    <div class="card shadow-sm">
-
-        <script>
-            function checkAll(el) {
-                $('.zap_catalog').prop('checked', $(el).prop('checked'));
-            }
-        </script>
-        <form action="post" id="reqForm">
-
-            <div class="table-responsive">
-            <table class="table table-hover text-nowrap">
-            <thead>
-                <tr class="table-secondary">
-                    <th scope="col" style="width: 50px">
-                        <label>
-                            <input class="form-check-input" type="checkbox" onclick="checkAll(this)"/>
-                        </label>
-                    </th>
-                    <th scope="col" style="width: 50px">排序</th>
-                    <th scope="col" class="w-100">菜单名称</th>
-                    <th scope="col">链接</th>
-                    <th scope="col">操作</th>
-
-
-                </tr>
-            </thead>
-            <tbody>
-            <?php
-            $menu->forEachAll(function ($admin_menu) {
-                $paddingLeft = ($admin_menu['level'] - 1) + ($admin_menu['level'] - 1) * 0.5;
-                ?>
-                <tr>
-                    <td>
-                        <input name="admin_menu[<?php echo $admin_menu['id']; ?>][id]"
-                               value="<?php echo $admin_menu['id']; ?>"
-                               class="form-check-input zap_catalog" type="checkbox"/>
-                    </td>
-                    <td>
-
+        <div class="table-responsive">
+            <table class="table table-hover text-nowrap table-sm mb-0">
+                <thead>
+                    <tr class="table-secondary">
+                        <th style="width:40px">
+                            <input class="form-check-input" type="checkbox" onclick="checkAll(this)" title="全选"/>
+                        </th>
+                        <th style="width:60px">排序</th>
+                        <th class="w-100">菜单名称</th>
+                        <th>链接</th>
+                        <th style="width:80px">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php
+                $menu->forEachAll(function ($admin_menu) {
+                    $paddingLeft = ($admin_menu['level'] - 1) * 1.5;
+                    ?>
+                    <tr>
+                        <td>
+                            <input name="admin_menu[<?php echo $admin_menu['id']; ?>][id]"
+                                   value="<?php echo $admin_menu['id']; ?>"
+                                   class="form-check-input zap_catalog" type="checkbox"/>
+                        </td>
+                        <td>
                             <input name="admin_menu[<?php echo $admin_menu['id']; ?>][sort_order]"
                                    value="<?php echo $admin_menu['sort_order']; ?>"
-                                   class="form-control form-control-sm" size="1" data-bs-toggle="tooltip" data-bs-placement="right"
-                                   data-bs-title="数值越小越靠前" />
+                                   class="form-control form-control-sm" size="2"
+                                   data-bs-toggle="tooltip" data-bs-placement="right"
+                                   data-bs-title="数值越小越靠前"/>
+                        </td>
+                        <td>
+                            <div style="padding-left:<?php echo $paddingLeft; ?>rem;">
+                                <i class="<?php echo $admin_menu['icon']; ?> me-1"
+                                   onclick="ZapFaIcons(['#ami-<?php echo $admin_menu['id']; ?>','#amii-<?php echo $admin_menu['id']; ?>']);"
+                                   id="ami-<?php echo $admin_menu['id']; ?>"></i>
+                                <input name="admin_menu[<?php echo $admin_menu['id']; ?>][icon]" type="hidden"
+                                       value="<?php echo $admin_menu['icon']; ?>"
+                                       id="amii-<?php echo $admin_menu['id']; ?>"/>
+                                <input name="admin_menu[<?php echo $admin_menu['id']; ?>][title]"
+                                       value="<?php echo $admin_menu['title']; ?>"
+                                       class="d-inline form-control form-control-sm w-auto"/>
+                                <small class="text-muted ms-1">ID:<?php echo $admin_menu['id']; ?></small>
+                            </div>
+                        </td>
+                        <td class="text-muted"><?php echo $admin_menu['link_to']; ?></td>
+                        <td>
+                            <button type="button" class="btn btn-outline-success btn-sm"
+                                    onclick="addOrEdit(<?php echo $admin_menu['pid'],',',$admin_menu['id'];?>)">
+                                <i class="fa fa-pen"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <?php
+                });
+                ?>
+                </tbody>
+            </table>
+        </div>
 
-                    </td>
-                    <td>
-                        <div style="padding-left:<?php echo $paddingLeft; ?>rem!important;">
-                            <i class="<?php echo $admin_menu['icon']; ?>" onclick="ZapFaIcons(['#ami-<?php echo $admin_menu['id']; ?>','#amii-<?php echo $admin_menu['id']; ?>']);" id="ami-<?php echo $admin_menu['id']; ?>" ></i>
-                            <input name="admin_menu[<?php echo $admin_menu['id']; ?>][icon]" type="hidden" value="<?php echo $admin_menu['icon']; ?>" id="amii-<?php echo $admin_menu['id']; ?>" />
-                            <input name="admin_menu[<?php echo $admin_menu['id']; ?>][title]"
-                                   value="<?php echo $admin_menu['title']; ?>"
-                                   class="d-inline form-control form-control-sm w-auto"/>
-                            <small class="text-black-50">ID:<?php echo $admin_menu['id'];?></small>
-                        </div>
-                    </td>
-                    <td><?php echo $admin_menu['link_to']; ?></td>
-
-
-                    <td>
-                        <button type="button" class="btn btn-outline-success btn-sm" onclick="addOrEdit(<?php echo $admin_menu['pid'],',',$admin_menu['id'];?>)">设置</button>
-                      
-                    </td>
-
-                </tr>
-
-                <?php
-            });
-            ?>
-
-
-            </tbody>
-
-
-        </table>
-            </div>
-        </form>
-        <div class="pb-2 ps-2 pe-3">
-            <button type="button" class="btn btn-success btn-sm" onclick="save()">保存</button>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="remove()">删除</button>
+        <div class="card-footer d-flex justify-content-between">
+            <button type="button" class="btn btn-danger btn-sm" onclick="remove()">
+                <i class="fa fa-trash me-1"></i>删除选中
+            </button>
+            <button type="button" class="btn btn-success" onclick="save()">
+                <i class="fa fa-save me-1"></i>保存
+            </button>
         </div>
 
     </div>
-
-
-</main>
+</form>
 
 <script>
-
     $(function (){
         Zap.EnableToolTip();
     })
@@ -134,7 +120,7 @@ use zap\facades\Url;
     function remove(){
         const checkedCatalog = $('.zap_catalog:checked').serialize();
         if(checkedCatalog.length === 0){
-            ZapToast.alert('请选选择需要删除的菜单',{bgColor:bgWarning,position:Toast_Pos_Center});
+            ZapToast.alert('请选择需要删除的菜单',{bgColor:bgWarning,position:Toast_Pos_Center});
             return;
         }
         $.ajax({
@@ -155,7 +141,7 @@ use zap\facades\Url;
         }
         const m = ZapModal.create({
             id:'adminMenu',
-            title: menuId===undefined ? '添加栏目' : '修改栏目',
+            title: menuId===undefined ? '添加菜单' : '修改菜单',
             content:ZapModal.loadding(),
             backdrop:false,
             url: formUrl,
@@ -172,7 +158,6 @@ use zap\facades\Url;
                             delay: 2000,
                             callback:function(){ location.reload();}
                         });
-                        // 解决 aria-hidden 警告：先失焦再关闭模态框
                         document.activeElement && document.activeElement.blur();
                         m.hide();
                     },
@@ -184,6 +169,4 @@ use zap\facades\Url;
         },true)
         m.show();
     }
-
-
 </script>
