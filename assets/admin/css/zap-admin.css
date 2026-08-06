@@ -15215,7 +15215,7 @@ html.maximized-card {
 }
 .card-header > .card-tools {
   float: right;
-  margin-right: -0.5rem;
+  /* margin-right: -0.5rem; */
 }
 .card-header > .card-tools .input-group,
 .card-header > .card-tools .nav,

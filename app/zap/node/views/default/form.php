@@ -22,8 +22,8 @@ $this->view->page_subtitle = $title ?? '';
     <div class="row g-3">
         <div class="col-lg-9">
             <div class="card card-outline card-success">
-                <div class="card-header ps-3 pt-0 pb-0 pe-0">
-                    <ul class="nav nav-underline flex-grow-0" role="tablist">
+                <div class="card-header d-flex align-items-center ps-3 pt-0 pb-0 pe-0">
+                    <ul class="nav nav-underline me-auto" role="tablist">
                         <li class="nav-item">
                             <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab1" type="button">
                                 <i class="fa fa-file-alt me-1"></i>常规
