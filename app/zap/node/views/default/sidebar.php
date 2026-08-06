@@ -99,18 +99,18 @@ function renderTree($items, $catalogId, $expandIdsMap, $level = 0) {
            data-catalog-id="<?php echo $item['id']; ?>"
            style="padding-left: <?php echo $paddingLeft; ?>rem;">
             <?php if ($hasChildren): ?>
-            <span class="tree-toggle me-1" onclick="toggleTreeNode(event, this)" style="cursor:pointer;width:16px;text-align:center;flex-shrink:0;">
+            <span class="tree-toggle me-2" onclick="toggleTreeNode(event, this)" style="cursor:pointer;width:16px;text-align:center;flex-shrink:0;">
                 <i class="fa fa-caret-<?php echo $isExpanded ? 'down' : 'right'; ?>"></i>
             </span>
             <?php else: ?>
-            <span style="width:16px" class="me-1 flex-shrink-0"></span>
+            <span style="width:16px" class="me-2 flex-shrink-0"></span>
             <?php endif; ?>
             <?php if ($isLinkUrl): ?>
-            <i class="fa fa-link me-1 text-primary" style="width:14px;flex-shrink:0;"></i>
+            <i class="fa fa-link me-2 text-primary" style="width:14px;flex-shrink:0;"></i>
             <?php elseif ($nodeType === 'page'): ?>
-            <i class="far fa-file me-1 text-info" style="width:14px;flex-shrink:0;"></i>
+            <i class="far fa-file me-2 text-info" style="width:14px;flex-shrink:0;"></i>
             <?php else: ?>
-            <i class="far fa-folder me-1 text-warning" style="width:14px;flex-shrink:0;"></i>
+            <i class="far fa-folder me-2 text-warning" style="width:14px;flex-shrink:0;"></i>
             <?php endif; ?>
             <span class="flex-grow-1 text-truncate"><?php echo htmlspecialchars($item['title']); ?></span>
         </a>
@@ -128,7 +128,7 @@ function renderTree($items, $catalogId, $expandIdsMap, $level = 0) {
 <div class="p-2">
     <a href="<?php echo Url::action("Node@{$_controller}", ['cid' => 0]); ?>"
        class="btn btn-outline-secondary btn-sm w-100 <?php echo !$catalogId ? 'active' : ''; ?>">
-        <i class="fa fa-home me-1"></i>全部内容
+        <i class="fa fa-home me-2"></i>全部内容
     </a>
 </div>
 
