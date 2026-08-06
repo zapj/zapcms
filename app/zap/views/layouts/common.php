@@ -68,7 +68,7 @@
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col-sm-6">
-                            <h1 class="mb-0 fs-3"><?php echo htmlspecialchars($page_title); ?></h1>
+                            <h1 class="mb-0 fs-5"><?php echo htmlspecialchars($page_title); ?></h1>
                             <?php if (!empty($page_subtitle)): ?>
                             <small class="text-muted"><?php echo htmlspecialchars($page_subtitle); ?></small>
                             <?php endif; ?>

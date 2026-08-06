@@ -53,7 +53,7 @@ $footerCatalogMenu = $catalogMenu;
                 <i class="fa fa-bars"></i>
             </button>
             <a href="<?php echo home_url(); ?>" class="navbar-brand">
-                <img src="<?php echo themes_url('basic');?>/img/zap_logo_green.svg" width="160px" alt="ZAP CMS Logo">
+                <img src="<?php echo themes_url('basic');?>/img/zap_logo_green.svg" width="120px" alt="ZAP CMS Logo">
             </a>
             <div class="collapse navbar-collapse" id="bs-navbar-collapse">
                 <ul class="nav navbar-nav main-navbar-nav">

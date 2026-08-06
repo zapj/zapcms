@@ -67,7 +67,7 @@ class Node extends Model
     public function getAllTypesCount(){
         $resultNodeTypes = static::createQuery()
             ->select('node_type,count(id) as total')
-            ->whereNotIn('node_type',["'catalog'"])
+            ->whereNotIn('node_type', ['catalog'])
             ->groupBy('node_type')
             ->get(FETCH_KEY_PAIR);
 //        SELECT node_type,count(id) FROM `zap_catalog` GROUP BY node_type
