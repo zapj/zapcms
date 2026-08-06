@@ -11,12 +11,12 @@ $this->layout('layouts/common');
     <?php
     $box_colors = ['text-bg-primary', 'text-bg-success', 'text-bg-warning', 'text-bg-info', 'text-bg-danger', 'text-bg-secondary'];
     $box_icons  = [
-        'bi bi-file-earmark-text',
-        'bi bi-grid-3x3-gap',
-        'bi bi-camera',
-        'bi bi-collection',
-        'bi bi-images',
-        'bi bi-folder2',
+        'fa fa-file-alt',
+        'fa fa-th',
+        'fa fa-camera',
+        'fa fa-layer-group',
+        'fa fa-images',
+        'fa fa-folder',
     ];
     $color_idx  = 0;
     $icon_idx   = 0;
@@ -35,7 +35,7 @@ $this->layout('layouts/common');
             </div>
             <i class="<?php echo $icon; ?> small-box-icon fs-1"></i>
             <a href="<?php echo url_action("Node@{$type}"); ?>" class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
-                管理 <?php echo $title; ?> <i class="bi bi-arrow-right-short"></i>
+                管理 <?php echo $title; ?> <i class="fa fa-chevron-right"></i>
             </a>
         </div>
     </div>
@@ -50,7 +50,7 @@ $this->layout('layouts/common');
         <div class="card mb-4">
             <div class="card-header">
                 <h3 class="card-title">
-                    <i class="bi bi-file-earmark card-header-icon text-primary"></i> 单页管理
+                    <i class="fa fa-file card-header-icon text-primary"></i> 单页管理
                 </h3>
                 <div class="card-tools">
                     <span class="badge text-bg-secondary"><?php echo count($pages); ?> 个页面</span>
@@ -59,7 +59,7 @@ $this->layout('layouts/common');
             <div class="card-body p-0">
                 <?php if (empty($pages)): ?>
                 <div class="p-4 text-center text-muted">
-                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                    <i class="fa fa-inbox fs-1 d-block mb-2"></i>
                     暂无单页内容
                 </div>
                 <?php else: ?>
@@ -77,7 +77,7 @@ $this->layout('layouts/common');
                             <tr>
                                 <td class="ps-3">
                                     <a href="<?php echo url_action("Node@page/edit/{$page['id']}"); ?>" class="text-decoration-none">
-                                        <i class="bi bi-file-text text-success me-1"></i>
+                                        <i class="fa fa-file-alt text-success me-1"></i>
                                         <?php echo htmlspecialchars($page['title']); ?>
                                     </a>
                                 </td>
@@ -92,7 +92,7 @@ $this->layout('layouts/common');
                                     <a href="<?php echo url_action("Node@page/edit/{$page['id']}"); ?>"
                                        class="btn btn-sm btn-outline-primary"
                                        title="编辑">
-                                        <i class="bi bi-pencil-square"></i>
+                                        <i class="fa fa-edit"></i>
                                     </a>
                                 </td>
                             </tr>
@@ -111,33 +111,33 @@ $this->layout('layouts/common');
         <div class="card mb-4">
             <div class="card-header">
                 <h3 class="card-title">
-                    <i class="bi bi-info-circle card-header-icon text-info"></i> 网站信息
+                    <i class="fa fa-info-circle card-header-icon text-info"></i> 网站信息
                 </h3>
             </div>
             <div class="card-body p-0">
                 <div class="list-group list-group-flush">
                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-translate me-2 text-muted"></i>系统语言</span>
+                        <span><i class="fa fa-language me-2 text-muted"></i>系统语言</span>
                         <span class="fw-semibold"><?php echo req()->language(); ?></span>
                     </div>
                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-palette me-2 text-muted"></i>站点模版</span>
+                        <span><i class="fa fa-palette me-2 text-muted"></i>站点模版</span>
                         <span class="fw-semibold"><?php echo option('website.theme', 'basic'); ?></span>
                     </div>
                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-upload me-2 text-muted"></i>上传限制</span>
+                        <span><i class="fa fa-upload me-2 text-muted"></i>上传限制</span>
                         <span class="fw-semibold"><?php echo ini_get('upload_max_filesize'); ?></span>
                     </div>
                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-memory me-2 text-muted"></i>内存限制</span>
+                        <span><i class="fa fa-microchip me-2 text-muted"></i>内存限制</span>
                         <span class="fw-semibold"><?php echo ini_get('memory_limit'); ?></span>
                     </div>
                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-cpu me-2 text-muted"></i>PHP 版本</span>
+                        <span><i class="fa fa-microchip me-2 text-muted"></i>PHP 版本</span>
                         <span class="fw-semibold"><?php echo PHP_VERSION; ?></span>
                     </div>
                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-hdd-stack me-2 text-muted"></i>数据库</span>
+                        <span><i class="fa fa-database me-2 text-muted"></i>数据库</span>
                         <span class="fw-semibold"><?php echo \zap\DB::connection()->getAttribute(PDO::ATTR_DRIVER_NAME); ?></span>
                     </div>
                 </div>
@@ -149,17 +149,35 @@ $this->layout('layouts/common');
 <!--end::Main Content Row-->
 
 <!--begin::System Info-->
+<?php
+$driver = \zap\DB::connection()->getAttribute(PDO::ATTR_DRIVER_NAME);
+// 获取数据库版本
+if ($driver === 'mysql') {
+    $rows = \zap\DB::select("SELECT VERSION()");
+    $dbVer = $rows[0]['VERSION()'] ?? '';
+} elseif ($driver === 'sqlite') {
+    $dbh = new \PDO('sqlite::memory:');
+    if ($dbh) {
+        $dbVer = $dbh->query('select sqlite_version()')->fetchColumn(0);
+        $dbh = null;
+    } else {
+        $dbVer = '当前环境不支持sqlite3';
+    }
+} else {
+    $dbVer = '';
+}
+?>
 <div class="row">
     <div class="col-12">
         <div class="card mb-4">
             <div class="card-header">
                 <h3 class="card-title">
-                    <i class="bi bi-server card-header-icon text-secondary"></i> 系统信息
+                    <i class="fa fa-server card-header-icon text-secondary"></i> 系统信息
                 </h3>
                 <div class="card-tools">
                     <button type="button" class="btn btn-tool" data-lte-toggle="card-collapse" aria-label="折叠">
-                        <i data-lte-icon="expand" class="bi bi-plus-lg"></i>
-                        <i data-lte-icon="collapse" class="bi bi-dash-lg"></i>
+                        <i data-lte-icon="expand" class="fa fa-plus"></i>
+                        <i data-lte-icon="collapse" class="fa fa-minus"></i>
                     </button>
                 </div>
             </div>
@@ -169,56 +187,43 @@ $this->layout('layouts/common');
                         <tbody>
                         <tr>
                             <td class="fw-semibold" style="width: 160px;">
-                                <i class="bi bi-box-seam me-2 text-primary"></i>ZapCMS 版本
+                                <i class="fa fa-cube me-2 text-primary"></i>ZapCMS 版本
                             </td>
                             <td>v<?php echo ZAP_CMS_VERSION . '-' . ZAP_CMS_RELEASE_DATE; ?></td>
                             <td class="fw-semibold" style="width: 120px;">
-                                <i class="bi bi-code-slash me-2 text-success"></i>PHP 版本
+                                <i class="fa fa-code me-2 text-success"></i>PHP 版本
                             </td>
                             <td><?php echo PHP_VERSION . ' (' . php_sapi_name() . ')'; ?></td>
                         </tr>
                         <tr>
-                            <?php $driver = \zap\DB::connection()->getAttribute(PDO::ATTR_DRIVER_NAME); ?>
                             <td class="fw-semibold">
-                                <i class="bi bi-database me-2 text-warning"></i><?php echo $driver; ?>
+                                <i class="fa fa-database me-2 text-warning"></i><?php echo $driver; ?>
                             </td>
-                            <td>v<?php
-                                if ($driver == 'mysql') {
-                                    echo \zap\DB::value("SELECT VERSION()");
-                                } elseif ($driver == 'sqlite') {
-                                    $dbh = new \PDO('sqlite::memory:');
-                                    if ($dbh) {
-                                        echo $dbh->query('select sqlite_version()')->fetchColumn(0);
-                                        $dbh = null;
-                                    } else {
-                                        echo '当前环境不支持sqlite3';
-                                    }
-                                }
-                            ?></td>
+                            <td>v<?php echo $dbVer; ?></td>
                             <td class="fw-semibold">
-                                <i class="bi bi-shield-lock me-2 text-info"></i>OpenSSL
+                                <i class="fa fa-shield-alt me-2 text-info"></i>OpenSSL
                             </td>
                             <td><?php echo defined("OPENSSL_VERSION_TEXT") ? OPENSSL_VERSION_TEXT : '不支持'; ?></td>
                         </tr>
                         <tr>
                             <td class="fw-semibold">
-                                <i class="bi bi-image me-2 text-danger"></i>PHP GD
+                                <i class="fa fa-image me-2 text-danger"></i>PHP GD
                             </td>
                             <td><?php $gdInfo = gd_info(); echo current($gdInfo); ?></td>
                             <td class="fw-semibold">
-                                <i class="bi bi-plug me-2 text-secondary"></i>PDO 驱动
+                                <i class="fa fa-plug me-2 text-secondary"></i>PDO 驱动
                             </td>
                             <td><?php echo join(' / ', PDO::getAvailableDrivers()); ?></td>
                         </tr>
                         <tr>
                             <td class="fw-semibold">
-                                <i class="bi bi-globe2 me-2 text-primary"></i>Web Server
+                                <i class="fa fa-globe me-2 text-primary"></i>Web Server
                             </td>
                             <td colspan="3"><?php echo \zap\http\Request::server('SERVER_SOFTWARE'); ?></td>
                         </tr>
                         <tr>
                             <td class="fw-semibold">
-                                <i class="bi bi-pc-display me-2 text-success"></i>操作系统
+                                <i class="fa fa-desktop me-2 text-success"></i>操作系统
                             </td>
                             <td colspan="3"><?php echo php_uname(); ?></td>
                         </tr>

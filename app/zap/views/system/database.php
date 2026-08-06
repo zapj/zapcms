@@ -107,7 +107,7 @@ $totalTables = count($tableData);
                     <?php foreach ($dbInfoItems as $item): ?>
                     <div class="list-group-item d-flex justify-content-between align-items-center">
                         <span>
-                            <i class="bi <?php echo $item['icon']; ?> me-2 text-<?php echo $item['color']; ?>"></i>
+                            <i class="fa <?php echo $item['icon']; ?> me-2 text-<?php echo $item['color']; ?>"></i>
                             <?php echo $item['label']; ?>
                         </span>
                         <span class="fw-semibold text-break" style="max-width: 60%;"><?php echo $item['value']; ?></span>
