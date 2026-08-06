@@ -29,11 +29,6 @@ class UserController extends AdminController
 
     public function form(){
         $id = intval(Request::get('id'));
-        AdminRoles::create([
-            'admin_id'=>1,
-            'role_id'=>2,
-            'assignment_time'=>time()
-        ]);
         view('user.form',[
             'user'=>Admin::getProfile($id),
             'roles'=>Roles::findAll(),

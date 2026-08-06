@@ -1,114 +1,119 @@
 <?php
 use zap\facades\Url;
 
-IS_AJAX !== true && $this->extend('layouts/common');
+$page_title = '权限管理';
+$breadcrumbs = [
+    ['title' => '用户管理', 'url' => Url::action('User')],
+    ['title' => '权限管理'],
+];
+
+$this->layout('layouts/common');
+$permCount = count($data);
 ?>
 
-<nav class="navbar bg-body-tertiary mb-3 rounded shadow-sm">
-    <div class="container-fluid">
-        <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);"
-             aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item "><a href="<?php echo Url::action('User') ?>">用户管理</a></li>
-                <li class="breadcrumb-item active"><a href="<?php echo Url::action('User@roles') ?>">权限管理</a></li>
-            </ol>
-        </nav>
-        <div class=" text-end" >
-            <a href="<?php echo url_action('User@roles') ?>" class="btn btn-success btn-sm" ><i class="fa-solid fa-user-gear"></i> 角色管理</a>
-            <a href="<?php echo url_action('User@permissions') ?>" class="btn btn-success btn-sm" >权限管理</a>
-            <button type="button" class="btn btn-sm btn-success" onclick="addOrEdit(0)"><i class="fa fa-plus"></i> 添加</button>
+<!--begin::Permission Table Card-->
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center flex-wrap gap-2">
+                <h3 class="card-title flex-grow-1">
+                    <i class="fa fa-shield-halved card-header-icon text-danger"></i> 权限列表
+                    <span class="badge text-bg-danger ms-2"><?php echo $permCount; ?></span>
+                </h3>
+                <div class="d-flex gap-2">
+                    <a href="<?php echo url_action('User@roles') ?>" class="btn btn-sm btn-outline-secondary">
+                        <i class="fa fa-user-gear me-1"></i>角色管理
+                    </a>
+                    <button type="button" class="btn btn-sm btn-success" onclick="addOrEdit(0)">
+                        <i class="fa fa-plus me-1"></i>添加权限
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <form id="reqForm">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center" style="width: 40px;">
+                                        <input class="form-check-input" type="checkbox" onclick="checkAll(this)"/>
+                                    </th>
+                                    <th>权限名称</th>
+                                    <th class="d-none d-md-table-cell">描述</th>
+                                    <th class="d-none d-lg-table-cell">修改时间</th>
+                                    <th class="d-none d-lg-table-cell">创建时间</th>
+                                    <th class="text-center" style="width: 140px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <?php if (empty($data)): ?>
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="fa fa-inbox fs-1 d-block mb-2"></i>暂无偿限
+                                </td>
+                            </tr>
+                            <?php else: ?>
+                            <?php foreach ($data as $item):
+                                $level = intval($item['level']);
+                            ?>
+                            <tr>
+                                <td class="text-center">
+                                    <input name="data[<?php echo $item['perm_id']; ?>][perm_id]"
+                                           value="<?php echo $item['perm_id']; ?>"
+                                           class="form-check-input zap_catalog" type="checkbox"/>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center" style="padding-left:<?php echo $level * 20; ?>px;">
+                                        <?php if ($level > 0): ?>
+                                        <span class="text-muted me-2">&#9492;</span>
+                                        <?php endif; ?>
+                                        <span class="fw-semibold"><?php echo htmlspecialchars($item['title']); ?></span>
+                                        <small class="text-muted ms-2">ID:<?php echo $item['perm_id']; ?></small>
+                                        <?php if (!empty($item['perm_key'])): ?>
+                                        <code class="ms-2 small"><?php echo htmlspecialchars($item['perm_key']); ?></code>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                                <td class="d-none d-md-table-cell text-muted">
+                                    <?php echo htmlspecialchars($item['description']) ?: '-'; ?>
+                                </td>
+                                <td class="d-none d-lg-table-cell text-muted">
+                                    <?php echo date('Y-m-d H:i', $item['updated_at']); ?>
+                                </td>
+                                <td class="d-none d-lg-table-cell text-muted">
+                                    <?php echo date('Y-m-d H:i', $item['created_at']); ?>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-primary"
+                                                onclick="addOrEdit(<?php echo $item['perm_id']; ?>,<?php echo $item['pid']; ?>)" title="编辑">
+                                            <i class="fa fa-edit"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-success"
+                                                onclick="addOrEdit(0,<?php echo $item['perm_id']; ?>)" title="添加子权限">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                            <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center p-3 flex-wrap gap-2">
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="remove()">
+                            <i class="fa fa-trash me-1"></i>删除选中
+                        </button>
+                        <?php echo $pageHelper->render(7,'pagination justify-content-center justify-content-sm-end mb-0','page-item','page-link'); ?>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
+</div>
+<!--end::Permission Table Card-->
 
-</nav>
-<main class="container zap-main">
-
-
-    <div class="my-3 bg-body rounded shadow-sm">
-
-        <script>
-
-            function checkAll(el) {
-                $('.zap_catalog').prop('checked', $(el).prop('checked'));
-            }
-        </script>
-        <form action="" method="post" id="reqForm">
-
-            <div class="table-responsive">
-                <table class="table table-hover text-nowrap">
-                    <thead>
-                    <tr class="table-secondary">
-                        <th scope="col" style="width: 50px">
-                            <label>
-                                <input class="form-check-input" type="checkbox" onclick="checkAll(this)"/>
-                            </label>
-                        </th>
-
-                        <th scope="col">权限名称</th>
-                        <th scope="col">描述</th>
-                        <th scope="col">修改时间</th>
-                        <th scope="col">创建时间</th>
-
-
-                        <th scope="col">操作</th>
-
-
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php
-                    foreach ($data as $item){
-                        ?>
-                        <tr>
-                            <td class="w-auto">
-                                <input name="data[<?php echo $item['perm_id']; ?>][perm_id]"
-                                       value="<?php echo $item['perm_id']; ?>"
-                                       class="form-check-input zap_catalog" type="checkbox"/>
-                            </td>
-
-
-                            <td class="w-50">
-                                <div style="padding-left:<?php echo $item['level'] * 0.5; ?>rem!important;">
-                                <?php echo $item['title']; ?>
-                                    <small class="text-black-50">ID:<?php echo $item['perm_id']; ?></small>
-                                    <small class="text-black-50"><?php echo $item['perm_key']; ?></small>
-                                </div>
-                            </td>
-
-                            <td class="text-black-50"><?php echo $item['description']; ?></td>
-                            <td class="text-black-50"><?php echo date(Z_DATE_TIME,$item['updated_at']); ?></td>
-                            <td class="text-black-50"><?php echo date(Z_DATE_TIME,$item['created_at']); ?></td>
-
-                            <td>
-                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addOrEdit(<?php echo $item['perm_id'],',',$item['pid']; ?>)">修改</button>
-                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addOrEdit(0,<?php echo $item['perm_id']; ?>)">添加</button>
-
-                            </td>
-
-                        </tr>
-
-                        <?php
-                    };
-                    ?>
-
-
-                    </tbody>
-
-
-                </table>
-                <div class="pb-2 ps-2 pe-3">
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="remove()">删除</button>
-                </div>
-                <?php echo $pageHelper->render(7,'pagination  justify-content-center','page-item' ,'page-link'); ?>
-
-            </div>
-        </form>
-
-
-    </div>
-
-
-</main>
 <script>
     $(function (){
         Zap.EnableToolTip();
@@ -117,7 +122,7 @@ IS_AJAX !== true && $this->extend('layouts/common');
     function remove(){
         const checkedList = $('.zap_catalog:checked').serialize();
         if(checkedList.length === 0){
-            ZapToast.alert('请选选择需要删除的权限',{bgColor:bgWarning});
+            ZapToast.alert('请选择需要删除的权限',{bgColor:bgWarning,position:Toast_Pos_Center});
             return;
         }
         $.ajax({
@@ -125,7 +130,7 @@ IS_AJAX !== true && $this->extend('layouts/common');
             method:'post',
             data:checkedList,
             success:function (data){
-                ZapToast.alert(data.msg,{bgColor:data.code===0?bgSuccess:bgDanger});
+                ZapToast.alert(data.msg,{bgColor:data.code===0?bgSuccess:bgDanger,position:Toast_Pos_Center});
                 Zap.reload();
             }
         })
@@ -148,7 +153,7 @@ IS_AJAX !== true && $this->extend('layouts/common');
                     method:'post',
                     data:$('#addPermission form').serialize(),
                     success:function (data){
-                        ZapToast.alert(data.msg,{bgColor:data.code===0?bgSuccess:bgDanger});
+                        ZapToast.alert(data.msg,{bgColor:data.code===0?bgSuccess:bgDanger,position:Toast_Pos_Center});
                         Zap.reload();
                     }
                 }).always(function(){
@@ -158,6 +163,4 @@ IS_AJAX !== true && $this->extend('layouts/common');
         },true)
         m.show();
     }
-
-
 </script>
