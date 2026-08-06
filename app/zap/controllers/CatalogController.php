@@ -17,8 +17,15 @@ class CatalogController extends AdminController
 {
     function index(){
         $data = [];
-        $menu = new Catalog();
+        $menu = Catalog::instance();
         $data['menu'] = $menu;
+        $page_title = '栏目管理';
+        $breadcrumbs = [
+            ['title' => '首页', 'url' => url_action('Index')],
+            ['title' => '栏目管理', 'url' => url_action('Catalog')],
+        ];
+        $data['page_title'] = $page_title;
+        $data['breadcrumbs'] = $breadcrumbs;
         View::render("catalog.index",$data);
     }
 
@@ -41,7 +48,7 @@ class CatalogController extends AdminController
         }
 
         $catalog['show_position'] = join(',', $catalog['show_position'] ?? []);
-        $menu = new Catalog();
+        $menu = Catalog::instance();
         if($catalogId){
             $menu->update($catalog,$catalogId);
         }else{
@@ -54,7 +61,7 @@ class CatalogController extends AdminController
     public function remove()
     {
         $catalog = Request::post('catalog',[]);
-        $menu = new Catalog();
+        $menu = Catalog::instance();
         foreach ($catalog as $id=>$row){
             $menu->remove($id);
         }

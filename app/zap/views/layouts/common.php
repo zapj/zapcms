@@ -62,18 +62,44 @@
 
         <!-- 主内容区 -->
         <main class="app-main">
+            <!--begin::App Content Header-->
+            <?php if (!empty($page_title)): ?>
+            <div class="app-content-header">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <h1 class="mb-0 fs-3"><?php echo htmlspecialchars($page_title); ?></h1>
+                            <?php if (!empty($page_subtitle)): ?>
+                            <small class="text-muted"><?php echo htmlspecialchars($page_subtitle); ?></small>
+                            <?php endif; ?>
+                        </div>
+                        <div class="col-sm-6">
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb float-sm-end">
+                                    <?php if (!empty($breadcrumbs)): ?>
+                                        <?php $last = count($breadcrumbs) - 1; ?>
+                                        <?php foreach ($breadcrumbs as $i => $crumb): ?>
+                                            <?php if ($i === $last): ?>
+                                            <li class="breadcrumb-item active" aria-current="page"><?php echo htmlspecialchars($crumb['title']); ?></li>
+                                            <?php else: ?>
+                                            <li class="breadcrumb-item"><a href="<?php echo htmlspecialchars($crumb['url'] ?? '#'); ?>"><?php echo htmlspecialchars($crumb['title']); ?></a></li>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <li class="breadcrumb-item"><a href="<?php echo url_action('Dashboard'); ?>">首页</a></li>
+                                        <li class="breadcrumb-item active" aria-current="page"><?php echo htmlspecialchars($page_title); ?></li>
+                                    <?php endif; ?>
+                                </ol>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+            <!--end::App Content Header-->
+
             <div class="app-content">
                 <div class="container-fluid px-4 py-3">
-                    <!-- 面包屑导航 -->
-                    <?php if (!empty($page_title)): ?>
-                    <div class="mb-3">
-                        <h4 class="mb-0 fw-semibold"><?php echo htmlspecialchars($page_title); ?></h4>
-                        <?php if (!empty($page_subtitle)): ?>
-                        <small class="text-muted"><?php echo htmlspecialchars($page_subtitle); ?></small>
-                        <?php endif; ?>
-                    </div>
-                    <?php endif; ?>
-                    
                     <?php echo $this->block('content');?>
                 </div>
             </div>
@@ -82,9 +108,9 @@
         <!-- 页脚 -->
         <footer class="app-footer">
             <div class="float-end d-none d-sm-block">
-                <b><?php echo ZAP_CMS_VERSION; ?></b>
+                <b>v<?php echo ZAP_CMS_VERSION; ?></b>
             </div>
-            <strong>&copy; <a href="https://zap.cn" class="text-decoration-none">ZapCMS</a> <?php echo date('Y');?></strong>
+            <strong>&copy; <a href="https://zap.cn" class="text-decoration-none">ZapCMS</a> <?php echo date('Y');?></strong>. All rights reserved.  
         </footer>
     </div>
 

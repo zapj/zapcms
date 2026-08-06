@@ -293,7 +293,6 @@ class UrlHelper
                 // active_rule matching: regex against controller/method
                 // e.g. "User/.*" → matches user/list, user/edit, user/anything
                 $matched = ($action === $currentAction || @preg_match("#^{$action}$#i", $currentAction));
-                echo '<!-- preg:', $action, ' match: ', $matched ? 'true' : 'false', " -->\n";
             }
         } elseif (is_array($action)) {
             $matched = in_array($currentAction, (array)$action);

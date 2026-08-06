@@ -46,6 +46,9 @@ IS_AJAX !== true && $this->layout('layouts/common');
                         </tr>
                     </thead>
                     <tbody>
+                    <?php if (empty($menu)): ?>
+                        <tr><td colspan="6" class="text-center py-4">暂无数据</td></tr>
+                    <?php else: ?>
                     <?php
                     $menu->forEachAll(function ($admin_menu) {
                         $level = $admin_menu['level'];
@@ -91,6 +94,7 @@ IS_AJAX !== true && $this->layout('layouts/common');
                         <?php
                     });
                     ?>
+                    <?php endif; ?>
                     </tbody>
                 </table>
             </div>

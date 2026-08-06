@@ -1,9 +1,9 @@
 <aside class="app-sidebar bg-dark shadow" data-bs-theme="dark">
     <!-- 侧边栏品牌区域 -->
     <div class="sidebar-brand">
-        <a href="<?php echo \zap\facades\Url::action('System@index'); ?>" class="brand-link text-decoration-none">
+        <a href="<?php echo \zap\facades\Url::action('Index'); ?>" class="brand-link text-decoration-none">
             <img src="<?php echo base_url();?>/assets/admin/img/zap_logo_white.svg" alt="ZAP" class="brand-image opacity-75 shadow" width="26" height="26" onerror="this.style.display='none'">
-            <span class="brand-text fw-light ms-2">ZAP CMS</span>
+            <span class="brand-text fw-light ms-2">CMS</span>
         </a>
     </div>
 
@@ -11,6 +11,12 @@
     <div class="sidebar-wrapper">
         <nav class="mt-2">
             <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
+                <li class="nav-item">
+                    <a href="<?php echo \zap\facades\Url::action('Index'); ?>" class="nav-link">
+                            <i class="nav-icon fa fa-dashboard"></i>
+                            <p>控制面板</p>
+                        </a>
+                </li>
                 <?php
                 use zap\facades\Url;
                 use zap\cms\AdminMenu;

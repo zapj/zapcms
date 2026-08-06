@@ -46,6 +46,7 @@ class AbstractNodeType
     //controller actions
     public function index(){
         $data['title'] = $this->getTitle("%s管理");
+        $data['page_title'] = $data['title'];
         $conditions = [
             'where'=>[
                 'n.node_type'=>$this->nodeType,
