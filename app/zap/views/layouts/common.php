@@ -31,7 +31,7 @@
                         </a>
                     </li>
                     <li class="nav-item d-none d-md-block">
-                        <a href="<?php echo base_url();?>" class="nav-link" target="_blank">
+                        <a href="<?php echo base_url('/');?>" class="nav-link" target="_blank">
                             <i class="fa fa-external-link-alt me-1"></i> 访问网站
                         </a>
                     </li>

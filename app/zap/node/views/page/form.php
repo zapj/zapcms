@@ -9,7 +9,7 @@ Asset::library('jqueryvalidation');
 !IS_AJAX && $this->extend('layouts/common');
 
 $this->view->page_title = !empty($sub_title) ? $sub_title : ($title ?? '编辑');
-$this->view->page_subtitle = $title ?? '';
+// $this->view->page_subtitle = $title ?? '';
 ?>
 <form id="zapForm">
     <input type="hidden" value="<?php echo $node->id; ?>" name="node_id">
