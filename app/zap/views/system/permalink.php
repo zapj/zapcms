@@ -7,27 +7,27 @@ $presets = [
     'plain' => [
         'label'    => '朴素型',
         'structure' => '/?p=%post_id%',
-        'example'   => home_url() . '/?p=123',
+        'example'   => rtrim(home_url(), '/') . '/?p=123',
     ],
     'day_name' => [
         'label'    => '日期和名称型',
         'structure' => '/%year%/%monthnum%/%day%/%postname%/',
-        'example'   => home_url() . '/2024/01/15/sample-post/',
+        'example'   => rtrim(home_url(), '/') . '/2024/01/15/sample-post/',
     ],
     'month_name' => [
         'label'    => '月份和名称型',
         'structure' => '/%year%/%monthnum%/%postname%/',
-        'example'   => home_url() . '/2024/01/sample-post/',
+        'example'   => rtrim(home_url(), '/') . '/2024/01/sample-post/',
     ],
     'numeric' => [
         'label'    => '数字型',
         'structure' => '/archives/%post_id%',
-        'example'   => home_url() . '/archives/123',
+        'example'   => rtrim(home_url(), '/') . '/archives/123',
     ],
     'post_name' => [
         'label'    => '文章名称型',
         'structure' => '/%postname%/',
-        'example'   => home_url() . '/sample-post/',
+        'example'   => rtrim(home_url(), '/') . '/sample-post/',
     ],
 ];
 
@@ -50,30 +50,8 @@ $structureTags = [
     '%node_type%' => '内容类型（article, product 等）',
 ];
 
-include view('layouts.partials.header');
+$this->layout('layouts/common');
 ?>
-
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="page-title-box d-flex align-items-center justify-content-between">
-                <h4 class="mb-0"><?php echo e($page_title ?? '固定链接设置'); ?></h4>
-                <div class="page-title-right">
-                    <ol class="breadcrumb m-0">
-                        <?php if (!empty($breadcrumbs)): ?>
-                            <?php foreach ($breadcrumbs as $crumb): ?>
-                                <?php if (!empty($crumb['url'])): ?>
-                                    <li class="breadcrumb-item"><a href="<?php echo $crumb['url']; ?>"><?php echo $crumb['title']; ?></a></li>
-                                <?php else: ?>
-                                    <li class="breadcrumb-item active"><?php echo $crumb['title']; ?></li>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </ol>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div class="row">
         <div class="col-lg-8">
@@ -96,10 +74,10 @@ include view('layouts.partials.header');
                                    value="<?php echo $key; ?>"
                                    <?php echo $currentPreset === $key ? 'checked' : ''; ?>>
                             <label class="form-check-label w-100" for="preset_<?php echo $key; ?>">
-                                <strong><?php echo e($preset['label']); ?></strong>
-                                <code class="ms-2 text-muted"><?php echo e($preset['structure']); ?></code>
+                                <strong><?php echo htmlspecialchars($preset['label']); ?></strong>
+                                <code class="ms-2 text-muted"><?php echo htmlspecialchars($preset['structure']); ?></code>
                                 <br>
-                                <small class="text-muted">示例：<code class="text-success"><?php echo e($preset['example']); ?></code></small>
+                                <small class="text-muted">示例：<code class="text-success"><?php echo htmlspecialchars($preset['example']); ?></code></small>
                             </label>
                         </div>
                         <?php endforeach; ?>
@@ -117,10 +95,10 @@ include view('layouts.partials.header');
 
                         <div class="mb-3 ms-4" id="custom_structure_box" style="<?php echo $currentPreset === 'custom' ? '' : 'display:none;'; ?>">
                             <div class="input-group">
-                                <span class="input-group-text"><?php echo e(home_url()); ?></span>
+                                <span class="input-group-text"><?php echo htmlspecialchars(rtrim(home_url(), '/')); ?></span>
                                 <input type="text" class="form-control font-monospace"
                                        id="custom_structure" name="custom_structure"
-                                       value="<?php echo e($currentPreset === 'custom' ? $currentStructure : '/%postname%/'); ?>"
+                                       value="<?php echo htmlspecialchars($currentPreset === 'custom' ? $currentStructure : '/%postname%/'); ?>"
                                        placeholder="/%postname%/">
                             </div>
                             <div class="form-text">请以 <code>/</code> 开头，并使用下方支持的标签</div>
@@ -159,9 +137,9 @@ include view('layouts.partials.header');
                     <div class="mb-3">
                         <label for="catalog_prefix" class="form-label fw-semibold">栏目前缀</label>
                         <div class="input-group">
-                            <span class="input-group-text" id="catalog_prefix_url"><?php echo e(home_url()); ?>/</span>
+                            <span class="input-group-text" id="catalog_prefix_url"><?php echo htmlspecialchars(rtrim(home_url(), '/')); ?>/</span>
                             <input type="text" class="form-control" id="catalog_prefix"
-                                   name="catalog_prefix" value="<?php echo e($currentCatalogPrefix); ?>"
+                                   name="catalog_prefix" value="<?php echo htmlspecialchars($currentCatalogPrefix); ?>"
                                    placeholder="catalog">
                         </div>
                         <div class="form-text">只能使用字母、数字、下划线和连字符</div>
@@ -169,7 +147,7 @@ include view('layouts.partials.header');
 
                     <div id="catalog_preview" class="alert alert-info mb-0">
                         <i class="fa-solid fa-eye me-1"></i>
-                        预览：<code id="catalog_preview_url"><?php echo e(home_url()); ?>/<?php echo e($currentCatalogPrefix); ?>/products</code>
+                        预览：<code id="catalog_preview_url"><?php echo htmlspecialchars(rtrim(home_url(), '/')); ?>/<?php echo htmlspecialchars($currentCatalogPrefix); ?>/products</code>
                     </div>
                 </div>
             </div>
@@ -215,7 +193,6 @@ include view('layouts.partials.header');
             </div>
         </div>
     </div>
-</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -355,4 +332,4 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 </style>
 
-<?php include view('layouts.partials.footer'); ?>
+

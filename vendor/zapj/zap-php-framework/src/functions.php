@@ -594,6 +594,21 @@ if (!function_exists('_e')) {
     }
 }
 
+if (!function_exists('e')) {
+    /**
+     * HTML 转义（防 XSS）—— 模板中推荐的短函数名
+     *
+     * @param string|null $html    待转义文本
+     * @param string|null $charset 字符集，默认 UTF-8
+     *
+     * @example <?php echo e($preset['label']); ?>
+     */
+    function e(?string $html, ?string $charset = null): string
+    {
+        return _e($html ?? '', $charset);
+    }
+}
+
 if (!function_exists('esc')) {
     /**
      * _e 的语义化别名

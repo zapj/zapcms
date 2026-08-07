@@ -3,7 +3,7 @@
 namespace app\zap\controllers;
 
 use zap\cms\AdminController;
-use zap\cms\DB;
+use zap\DB;
 use zap\cms\ZapPackageManager;
 use zap\cms\ZapUpdate;
 use zap\http\Request;
