@@ -8,13 +8,15 @@ namespace zap\commands;
 use zap\cms\CreateTables;
 use zap\db\Schema;
 use zap\console\Command;
+use zap\console\Input;
+use zap\console\Output;
 
 /**
  * php console zap:CreateSchema -c sqlite
  */
 class CreateSchema extends Command
 {
-    function execute(): int
+    function execute(Input $input, Output $output): int
     {
         $connection = $this->input->getParam('c','my_test');
         Schema::connection($connection);

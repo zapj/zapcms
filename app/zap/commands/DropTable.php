@@ -7,14 +7,15 @@ namespace zap\commands;
 
 use zap\db\Schema;
 use zap\console\Command;
-use zap\console\Output;
+use zap\console\Output; 
+use zap\console\Input;
 
 /**
  * php console zap:DropTable -c sqlite
  */
 class DropTable extends Command
 {
-    function execute(): int
+    function execute(Input $input, Output $output): int
     {
         Schema::verbose($this->input->hasParam('v'));
         $connection = $this->input->getParam('c');
