@@ -1,3 +1,6 @@
+<?php
+use \zap\facades\Url;
+?>
 <!DOCTYPE html>
 <html lang="zh">
 <head>
@@ -108,9 +111,9 @@
         <!-- 页脚 -->
         <footer class="app-footer">
             <div class="float-end d-none d-sm-block">
-                <b>v<?php echo ZAP_CMS_VERSION; ?></b>
+                Current Version <a href="<?php echo url_action('update'); ?>" ><b>v<?php echo ZAP_CMS_VERSION; ?></b></a>
             </div>
-            <strong>&copy; <a href="https://zap.cn" class="text-decoration-none">ZapCMS</a> <?php echo date('Y');?></strong>. All rights reserved.  
+            <strong>Copyright &copy; <a href="https://zap.cn/product/zapcms" class="text-decoration-none" target="_blank">ZapCMS</a> 2014 ~ <?php echo date('Y');?></strong>. All rights reserved.  
         </footer>
     </div>
 

@@ -3,279 +3,376 @@
 use zap\facades\Url;
 
 !IS_AJAX && $this->layout('layouts/common');
+
+$this->view->page_title = '系统更新';
+$this->view->page_subtitle = '检查更新 & 一键升级 & 更新历史';
+$this->view->breadcrumbs = [
+    ['title' => '系统', 'url' => '#'],
+    ['title' => '系统更新'],
+];
 ?>
-<nav class="navbar bg-body-tertiary mb-3 rounded shadow-sm">
-    <div class="container-fluid">
-        <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);"
-             aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item active"><a href="<?php echo Url::action('Update') ?>">系统更新</a></li>
-            </ol>
-        </nav>
-        <div class="text-end">
-            <button type="button" class="btn btn-outline-primary btn-sm" onclick="checkUpdate()">
-                <i class="fa-solid fa-arrows-rotate"></i> 重新检查
-            </button>
-        </div>
-    </div>
-</nav>
 
-<main class="container zap-main">
-    <!-- 系统状态卡片 -->
-    <div class="row mt-3">
-        <div class="col-md-4">
-            <div class="card mb-3 shadow-sm <?php echo ($update_info['has_update'] ?? false) ? 'border-warning' : 'border-success' ?>">
-                <div class="card-body text-center">
-                    <h6 class="card-title"><i class="fa-solid fa-server"></i> 当前版本</h6>
-                    <h4 class="mt-3 mb-3">
-                        <span class="badge bg-primary" style="font-size: 1.2rem;">v<?php echo htmlspecialchars(ZAP_CMS_VERSION) ?></span>
-                    </h4>
+<!--begin::Status Cards-->
+<div class="row">
+    <!-- 当前版本 -->
+    <div class="col-lg-4 col-sm-6">
+        <div class="position-relative rounded shadow-sm p-3 mb-3 text-white overflow-hidden" style="background-color:<?php echo ($update_info['has_update'] ?? false) ? '#ffc107' : '#28a745'; ?>;min-height:110px;">
+            <div class="pe-5">
+                <h4 class="fw-bold mb-1">v<?php echo htmlspecialchars(ZAP_CMS_VERSION); ?></h4>
+                <p class="mb-2 opacity-75 small">
                     <?php if ($update_info && $update_info['has_update']): ?>
-                        <div class="alert alert-warning py-2 mb-2">
-                            <i class="fa-solid fa-circle-exclamation"></i> 发现新版本: <strong>v<?php echo htmlspecialchars($update_info['latest_version']) ?></strong>
-                        </div>
+                        新版本 v<?php echo htmlspecialchars($update_info['latest_version']); ?>
                         <?php if ($update_info['is_critical'] ?? false): ?>
-                            <span class="badge bg-danger mb-2">重要安全更新</span>
+                            <span class="badge bg-danger ms-1">安全更新</span>
                         <?php endif; ?>
-                        <button class="btn btn-warning btn-sm mt-2" onclick="showUpdateConfirm()">
-                            <i class="fa-solid fa-cloud-download-alt"></i> 立即更新
-                        </button>
                     <?php elseif ($update_info): ?>
-                        <div class="text-success">
-                            <i class="fa-solid fa-circle-check"></i> 已是最新版本
-                        </div>
+                        已是最新版本
                     <?php else: ?>
-                        <div class="text-muted">
-                            <i class="fa-solid fa-circle-question"></i> 检查更新失败
-                            <p class="small mt-1">可能原因：API地址无法访问</p>
-                        </div>
+                        检查更新失败
                     <?php endif; ?>
-                </div>
+                </p>
             </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card mb-3 shadow-sm <?php echo $file_permissions_ok ? 'border-success' : 'border-danger' ?>">
-                <div class="card-body text-center">
-                    <h6 class="card-title"><i class="fa-solid fa-folder-open"></i> 文件权限</h6>
-                    <h4 class="mt-3 mb-3">
-                        <?php if ($file_permissions_ok): ?>
-                            <span class="text-success"><i class="fa-solid fa-check-circle fa-2x"></i></span>
-                            <p class="small">目录可写，可以正常更新</p>
-                        <?php else: ?>
-                            <span class="text-danger"><i class="fa-solid fa-times-circle fa-2x"></i></span>
-                            <p class="small">部分目录不可写，可能影响更新</p>
-                        <?php endif; ?>
-                    </h4>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card mb-3 shadow-sm <?php echo $disk_space_ok ? 'border-success' : 'border-danger' ?>">
-                <div class="card-body text-center">
-                    <h6 class="card-title"><i class="fa-solid fa-hard-drive"></i> 磁盘空间</h6>
-                    <h4 class="mt-3 mb-3">
-                        <?php if ($disk_space_ok): ?>
-                            <span class="text-success"><i class="fa-solid fa-check-circle fa-2x"></i></span>
-                            <p class="small">磁盘空间充足</p>
-                        <?php else: ?>
-                            <span class="text-danger"><i class="fa-solid fa-times-circle fa-2x"></i></span>
-                            <p class="small">磁盘空间不足（需至少50MB）</p>
-                        <?php endif; ?>
-                    </h4>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 自动更新弹窗 -->
-    <?php if ($update_info && $update_info['has_update'] && $update_info['download_url']): ?>
-    <div class="card mb-3 shadow-sm">
-        <div class="card-header">
-            <h6 class="mb-0"><i class="fa-solid fa-cloud-download-alt"></i> 在线更新（推荐）</h6>
-        </div>
-        <div class="card-body">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <p class="mb-1">
-                        当前版本: <code>v<?php echo htmlspecialchars($update_info['current_version']) ?></code>
-                        <i class="fa-solid fa-arrow-right mx-2"></i>
-                        最新版本: <code class="text-success">v<?php echo htmlspecialchars($update_info['latest_version']) ?></code>
-                    </p>
-                    <?php if ($update_info['changelog']): ?>
-                        <details class="mt-2">
-                            <summary class="text-muted small">更新日志</summary>
-                            <pre class="border p-2 mt-1 small" style="max-height: 200px; overflow-y: auto; background: #f8f9fa;"><?php echo htmlspecialchars($update_info['changelog']) ?></pre>
-                        </details>
-                    <?php endif; ?>
-                    <?php if ($update_info['release_date']): ?>
-                        <p class="small text-muted mb-0">发布日期: <?php echo htmlspecialchars($update_info['release_date']) ?></p>
-                    <?php endif; ?>
-                </div>
-                <div class="col-md-4 text-md-end mt-2 mt-md-0">
-                    <button class="btn btn-warning" onclick="showUpdateConfirm()">
-                        <i class="fa-solid fa-cloud-download-alt"></i> 一键更新到 v<?php echo htmlspecialchars($update_info['latest_version']) ?>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <?php endif; ?>
-
-    <!-- 手动上传更新 -->
-    <div class="card mb-3 shadow-sm">
-        <div class="card-header">
-            <h6 class="mb-0"><i class="fa-solid fa-upload"></i> 手动上传更新包</h6>
-        </div>
-        <div class="card-body">
-            <p class="text-muted small">如果在线更新不可用，您可以下载更新ZIP包后手动上传。</p>
-            <form id="manualUpdateForm" enctype="multipart/form-data" onsubmit="return false;">
-                <div class="row g-2 align-items-end">
-                    <div class="col-md-4">
-                        <label for="updateZip" class="form-label">选择ZIP更新包</label>
-                        <input class="form-control form-control-sm" type="file" id="updateZip" name="update_zip" accept=".zip">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="manualVersion" class="form-label">目标版本号</label>
-                        <input type="text" class="form-control form-control-sm" id="manualVersion" name="version" placeholder="例如 1.1.0">
-                    </div>
-                    <div class="col-md-2">
-                        <button type="button" class="btn btn-outline-primary btn-sm w-100" onclick="manualUpdate()">
-                            <i class="fa-solid fa-upload"></i> 上传更新
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- 插件更新 -->
-    <div class="card mb-3 shadow-sm">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h6 class="mb-0"><i class="fa-solid fa-puzzle-piece"></i> 插件更新</h6>
-            <button class="btn btn-outline-primary btn-sm" onclick="checkPluginUpdates()">
-                <i class="fa-solid fa-arrows-rotate"></i> 检查插件更新
-            </button>
-        </div>
-        <div class="card-body">
-            <div id="pluginUpdateArea">
-                <?php if (!empty($plugin_updates)): ?>
-                    <div class="alert alert-info py-2">
-                        <i class="fa-solid fa-circle-info"></i>
-                        发现 <?php echo count($plugin_updates) ?> 个插件有可用更新
-                    </div>
-                    <?php foreach ($plugin_updates as $pu): ?>
-                        <div class="border rounded p-2 mb-2">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong><?php echo htmlspecialchars($pu['title']) ?></strong>
-                                    <span class="ms-2 small">
-                                        <code><?php echo htmlspecialchars($pu['current_version']) ?></code>
-                                        <i class="fa-solid fa-arrow-right mx-1"></i>
-                                        <code class="text-success"><?php echo htmlspecialchars($pu['latest_version']) ?></code>
-                                    </span>
-                                </div>
-                                <button class="btn btn-sm btn-outline-primary" onclick="doPluginUpdate('<?php echo htmlspecialchars($pu['name']) ?>', '<?php echo htmlspecialchars($pu['download_url']) ?>', '<?php echo htmlspecialchars($pu['latest_version']) ?>')">
-                                    <i class="fa-solid fa-download"></i> 更新
-                                </button>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <p class="text-muted small mb-0">点击上方按钮检查插件更新</p>
-                <?php endif; ?>
-            </div>
-        </div>
-    </div>
-
-    <!-- 更新历史 -->
-    <div class="card mb-3 shadow-sm">
-        <div class="card-header">
-            <h6 class="mb-0"><i class="fa-solid fa-clock-rotate-left"></i> 更新历史</h6>
-        </div>
-        <div class="card-body p-0">
-            <?php if (!empty($update_history)): ?>
-                <table class="table table-sm table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>目标</th>
-                            <th>旧版本</th>
-                            <th>新版本</th>
-                            <th>状态</th>
-                            <th>时间</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($update_history as $history): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($history['target']) ?></td>
-                            <td><code><?php echo htmlspecialchars($history['from_version']) ?></code></td>
-                            <td><code class="text-success"><?php echo htmlspecialchars($history['to_version']) ?></code></td>
-                            <td>
-                                <span class="badge bg-<?php echo $history['status'] === 'success' ? 'success' : 'danger' ?>">
-                                    <?php echo $history['status'] === 'success' ? '成功' : '失败' ?>
-                                </span>
-                            </td>
-                            <td class="small text-muted"><?php echo date('Y-m-d H:i', $history['created_at']) ?></td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+            <i class="fa-solid fa-code-branch position-absolute opacity-25" style="font-size:4rem;right:15px;top:10px;"></i>
+            <?php if (($update_info['has_update'] ?? false) && ($update_info['download_url'] ?? false)): ?>
+            <a href="#" class="stretched-link rounded-bottom d-block text-center text-decoration-none small py-1 text-black" onclick="showUpdateConfirm();return false;"
+               style="background:rgba(0,0,0,.1);margin:0 -1rem -1rem -1rem;">
+                立即更新 <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
             <?php else: ?>
-                <div class="text-center py-3 text-muted small">暂无更新记录</div>
+            <div class="rounded-bottom d-block text-center small py-1 text-white-50" onclick="checkUpdate();"
+                 style="background:rgba(0,0,0,.1);margin:0 -1rem -1rem -1rem;cursor:pointer;">
+                <i class="fa-solid fa-arrows-rotate me-1"></i>重新检查
+            </div>
             <?php endif; ?>
         </div>
     </div>
 
-    <!-- 系统环境信息 -->
-    <div class="card mb-3 shadow-sm">
-        <div class="card-header" data-bs-toggle="collapse" data-bs-target="#sysInfo" role="button" aria-expanded="false">
-            <h6 class="mb-0"><i class="fa-solid fa-circle-info"></i> 系统环境信息 <i class="fa-solid fa-chevron-down float-end"></i></h6>
-        </div>
-        <div id="sysInfo" class="collapse">
-            <div class="card-body">
-                <table class="table table-sm table-bordered small">
-                    <tbody>
-                        <?php foreach ($system_info as $key => $value): ?>
-                        <tr>
-                            <td class="fw-bold" style="width: 180px;"><?php echo htmlspecialchars($key) ?></td>
-                            <td><?php echo is_array($value) ? htmlspecialchars(implode(', ', array_keys(array_filter($value)))) : htmlspecialchars($value) ?></td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+    <!-- 文件权限 -->
+    <div class="col-lg-4 col-sm-6">
+        <div class="position-relative rounded shadow-sm p-3 mb-3 text-white overflow-hidden" style="background-color:<?php echo $file_permissions_ok ? '#20c997' : '#dc3545'; ?>;min-height:110px;">
+            <div class="pe-5">
+                <h4 class="fw-bold mb-2"><?php echo $file_permissions_ok ? '可写' : '不可写'; ?></h4>
+                <p class="mb-0 opacity-75 small">文件系统权限</p>
             </div>
+            <i class="fa-solid fa-folder-tree position-absolute opacity-25" style="font-size:4rem;right:15px;top:10px;"></i>
         </div>
     </div>
-</main>
+
+    <!-- 磁盘空间 -->
+    <div class="col-lg-4 col-sm-6">
+        <div class="position-relative rounded shadow-sm p-3 mb-3 text-white overflow-hidden" style="background-color:<?php echo $disk_space_ok ? '#17a2b8' : '#dc3545'; ?>;min-height:110px;">
+            <div class="pe-5">
+                <h4 class="fw-bold mb-2"><?php echo $disk_space_ok ? '充足' : '不足'; ?></h4>
+                <p class="mb-0 opacity-75 small">磁盘空间</p>
+            </div>
+            <i class="fa-solid fa-hard-drive position-absolute opacity-25" style="font-size:4rem;right:15px;top:10px;"></i>
+        </div>
+    </div>
+</div>
+<!--end::Status Cards-->
+
+<!-- 更新不可用提示 -->
+<?php if ($update_info && !$update_info['has_update']): ?>
+<div class="alert border-start border-4 border-success shadow-sm mb-4 bg-white">
+    <h6 class="mb-1"><i class="fa-solid fa-circle-check text-success me-2"></i>系统已是最新版本</h6>
+    <p class="mb-0 text-muted small">当前版本 v<?php echo htmlspecialchars(ZAP_CMS_VERSION); ?> 已经是最新版本，请保持关注后续更新。</p>
+</div>
+<?php elseif (!$update_info && empty($update_info)): ?>
+<div class="alert border-start border-4 border-warning shadow-sm mb-4 bg-white">
+    <h6 class="mb-1"><i class="fa-solid fa-triangle-exclamation text-warning me-2"></i>无法获取更新信息</h6>
+    <p class="mb-0 text-muted small">可能原因：更新 API 地址无法访问，或当前网络环境受限。您可以尝试 <a href="#" onclick="checkUpdate();return false;" class="text-decoration-underline">重新检查</a> 或使用手动上传更新。</p>
+</div>
+<?php endif; ?>
+
+<div class="row">
+    <div class="col-lg-8">
+
+        <!-- 在线更新 -->
+        <?php if ($update_info && $update_info['has_update']): ?>
+        <div class="card shadow-sm mb-4" style="border-top:3px solid #ffc107;">
+            <div class="card-header bg-transparent d-flex align-items-center">
+                <h5 class="mb-0">
+                    <i class="fa-solid fa-cloud-download-alt text-warning me-2"></i>在线更新
+                </h5>
+                <div class="ms-auto">
+                    <?php if ($update_info['is_critical'] ?? false): ?>
+                    <span class="badge bg-danger me-1">重要</span>
+                    <?php endif; ?>
+                    <span class="badge bg-warning text-dark">推荐</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center flex-wrap mb-3">
+                    <span class="fw-bold text-muted me-2">更新路径：</span>
+                    <code class="bg-light px-2 py-1 rounded me-2">v<?php echo htmlspecialchars($update_info['current_version']); ?></code>
+                    <i class="fa-solid fa-arrow-right-long text-success mx-2"></i>
+                    <code class="bg-success text-white px-2 py-1 rounded">v<?php echo htmlspecialchars($update_info['latest_version']); ?></code>
+                </div>
+
+                <?php if ($update_info['changelog']): ?>
+                <div class="mb-3">
+                    <h6 class="fw-bold border-bottom pb-1">
+                        <i class="fa-solid fa-clipboard-list me-1"></i>更新日志
+                    </h6>
+                    <div class="border rounded p-3 bg-light" style="max-height:240px;overflow-y:auto;font-size:0.85rem;line-height:1.8;">
+                        <?php echo nl2br(htmlspecialchars($update_info['changelog'])); ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <?php if ($update_info['release_date']): ?>
+                <p class="text-muted small mb-3">
+                    <i class="fa-regular fa-calendar me-1"></i>发布日期：<?php echo htmlspecialchars($update_info['release_date']); ?>
+                </p>
+                <?php endif; ?>
+
+                <button class="btn btn-warning btn-lg w-100" onclick="showUpdateConfirm()">
+                    <i class="fa-solid fa-rocket me-1"></i>一键更新到 v<?php echo htmlspecialchars($update_info['latest_version']); ?>
+                </button>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- 手动上传更新 -->
+        <div class="card shadow-sm mb-4" style="border-top:3px solid #6c757d;">
+            <div class="card-header bg-transparent d-flex align-items-center">
+                <h5 class="mb-0">
+                    <i class="fa-solid fa-file-zipper text-secondary me-2"></i>手动上传更新包
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">
+                    <i class="fa-solid fa-circle-info me-1"></i>如果在线更新不可用，请从官网下载更新 ZIP 包后选择文件上传。
+                </p>
+                <form id="manualUpdateForm" enctype="multipart/form-data" onsubmit="return false;">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <label class="input-group-text" for="updateZip"><i class="fa-solid fa-file-zipper"></i></label>
+                                <input class="form-control" type="file" id="updateZip" name="update_zip" accept=".zip">
+                            </div>
+                            <div class="form-text">支持 .zip 格式的更新包</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <label class="input-group-text" for="manualVersion"><i class="fa-solid fa-tag"></i></label>
+                                <input type="text" class="form-control" id="manualVersion" name="version"
+                                       placeholder="目标版本号，如 1.2.0">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-outline-primary w-100" onclick="manualUpdate()">
+                                <i class="fa-solid fa-upload me-1"></i>上传
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 插件更新 -->
+        <div class="card shadow-sm mb-4" style="border-top:3px solid #6610f2;">
+            <div class="card-header bg-transparent d-flex align-items-center">
+                <h5 class="mb-0">
+                    <i class="fa-solid fa-puzzle-piece text-primary me-2"></i>插件更新
+                </h5>
+                <div class="ms-auto">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="checkPluginUpdates()">
+                        <i class="fa-solid fa-arrows-rotate me-1"></i>检查插件更新
+                    </button>
+                </div>
+            </div>
+            <div class="card-body" id="pluginUpdateWrapper">
+                <div id="pluginUpdateArea">
+                    <?php if (!empty($plugin_updates)): ?>
+                        <div class="alert border-start border-4 border-info shadow-sm mb-3 bg-white py-2">
+                            <i class="fa-solid fa-bell text-info me-1"></i>发现 <strong><?php echo count($plugin_updates); ?></strong> 个插件有可用更新
+                        </div>
+                        <?php foreach ($plugin_updates as $pu): ?>
+                        <div class="d-flex align-items-center p-3 border rounded mb-2 bg-white shadow-sm">
+                            <div class="flex-shrink-0 me-3">
+                                <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width:44px;height:44px;">
+                                    <i class="fa-solid fa-puzzle-piece text-primary fa-lg"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 min-w-0">
+                                <strong class="d-block text-truncate"><?php echo htmlspecialchars($pu['title']); ?></strong>
+                                <span class="small">
+                                    <code><?php echo htmlspecialchars($pu['current_version']); ?></code>
+                                    <i class="fa-solid fa-arrow-right-long text-muted mx-1"></i>
+                                    <code class="text-success fw-bold"><?php echo htmlspecialchars($pu['latest_version']); ?></code>
+                                </span>
+                            </div>
+                            <div class="flex-shrink-0 ms-3">
+                                <button class="btn btn-sm btn-outline-primary"
+                                        onclick="doPluginUpdate('<?php echo htmlspecialchars($pu['name']); ?>', '<?php echo htmlspecialchars($pu['download_url']); ?>', '<?php echo htmlspecialchars($pu['latest_version']); ?>')">
+                                    <i class="fa-solid fa-download me-1"></i>更新
+                                </button>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="text-center py-4 text-muted">
+                            <i class="fa-solid fa-cube fa-2x mb-2 d-block opacity-50"></i>
+                            <p class="mb-0">点击上方的「检查插件更新」按钮查看可用的插件更新</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-lg-4">
+
+        <!-- 更新历史 -->
+        <div class="card shadow-sm mb-4" style="border-top:3px solid #0d6efd;">
+            <div class="card-header bg-transparent">
+                <h5 class="mb-0">
+                    <i class="fa-solid fa-clock-rotate-left text-primary me-2"></i>更新历史
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <?php if (!empty($update_history)): ?>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3" style="width:70px;">目标</th>
+                                <th style="width:88px;">版本变更</th>
+                                <th style="width:52px;">状态</th>
+                                <th class="pe-3" style="width:100px;">时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($update_history as $h): ?>
+                            <tr>
+                                <td class="ps-3">
+                                    <?php if ($h['target'] === 'core'): ?>
+                                    <span class="badge bg-primary"><i class="fa-solid fa-gear me-1"></i>核心</span>
+                                    <?php else: ?>
+                                    <span class="badge bg-secondary"><i class="fa-solid fa-puzzle-piece me-1"></i><?php echo htmlspecialchars($h['target']); ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-1 small">
+                                        <code class="text-muted"><?php echo htmlspecialchars($h['from_version']); ?></code>
+                                        <i class="fa-solid fa-arrow-right-long text-muted"></i>
+                                        <code class="text-success"><?php echo htmlspecialchars($h['to_version']); ?></code>
+                                    </div>
+                                </td>
+                                <td>
+                                    <?php if ($h['status'] === 'success'): ?>
+                                    <i class="fa-solid fa-circle-check text-success" title="更新成功"></i>
+                                    <?php else: ?>
+                                    <i class="fa-solid fa-circle-xmark text-danger" title="更新失败"></i>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="pe-3 small text-muted text-nowrap"><?php echo date('m-d H:i', $h['created_at']); ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                <?php else: ?>
+                <div class="text-center py-5 text-muted">
+                    <i class="fa-solid fa-inbox fa-2x mb-2 d-block opacity-50"></i>
+                    <p class="small mb-0">暂无更新记录</p>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- 系统环境信息 -->
+        <div class="card shadow-sm mb-4" style="border-top:3px solid #198754;">
+            <div class="card-header bg-transparent d-flex align-items-center" style="cursor:pointer;"
+                 data-bs-toggle="collapse" data-bs-target="#sysInfoCollapse" role="button">
+                <h5 class="mb-0">
+                    <i class="fa-solid fa-circle-info text-success me-2"></i>系统环境
+                </h5>
+                <i class="fa-solid fa-chevron-down ms-auto small text-muted"></i>
+            </div>
+            <div id="sysInfoCollapse" class="collapse">
+                <div class="card-body p-0">
+                    <table class="table table-sm table-striped small mb-0">
+                        <tbody>
+                            <?php foreach ($system_info as $key => $value): ?>
+                            <tr>
+                                <td class="fw-bold ps-3 text-muted" style="width:40%;"><?php echo htmlspecialchars($key); ?></td>
+                                <td class="pe-3 text-break"><?php echo is_array($value) ? htmlspecialchars(implode(', ', array_keys(array_filter($value)))) : htmlspecialchars($value); ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
 
 <!-- 更新确认模态框 -->
 <div class="modal fade" id="updateConfirmModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="fa-solid fa-triangle-exclamation text-warning"></i> 确认系统更新</h5>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-warning bg-opacity-10">
+                <h5 class="modal-title">
+                    <i class="fa-solid fa-triangle-exclamation text-warning me-2"></i>确认系统更新
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="alert alert-warning">
-                    <p class="mb-1"><strong>请在更新前注意以下事项：</strong></p>
-                    <ul class="mb-0 small">
-                        <li>系统将自动备份当前版本文件</li>
-                        <li>更新期间网站可能短暂无法访问</li>
-                        <li>建议在非高峰时段进行更新</li>
-                        <li>建议提前备份数据库</li>
+                <div class="border-start border-4 border-warning rounded p-3 mb-3 bg-warning bg-opacity-10">
+                    <h6 class="mb-2"><i class="fa-solid fa-exclamation-circle me-1"></i>更新前请确认：</h6>
+                    <ul class="mb-0 ps-3 small">
+                        <li>更新包将自动下载并解压覆盖现有文件</li>
+                        <li>更新期间网站将短暂不可访问</li>
+                        <li>建议先在非高峰时段执行更新</li>
+                        <li>强烈建议提前备份数据库与文件</li>
                     </ul>
                 </div>
-                <p class="mb-0">
-                    将更新至版本: <strong id="confirmVersion" class="text-success"><?php echo htmlspecialchars($update_info['latest_version'] ?? '') ?></strong>
-                </p>
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="fw-bold text-muted small">目标版本：</span>
+                    <span id="confirmVersion" class="badge bg-success fs-6">
+                        v<?php echo htmlspecialchars($update_info['latest_version'] ?? ''); ?>
+                    </span>
+                </div>
+                <div id="updateProgress" class="d-none">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                        <span id="updateStatusText" class="small">正在准备更新...</span>
+                    </div>
+                    <div class="progress" style="height:6px;">
+                        <div id="updateProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-warning"
+                             style="width:0%"></div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
                 <button type="button" class="btn btn-warning" id="confirmUpdateBtn" onclick="doSystemUpdate()">
-                    <i class="fa-solid fa-check"></i> 确认更新
+                    <i class="fa-solid fa-check me-1"></i>确认更新
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 插件更新确认模态框 -->
+<div class="modal fade" id="pluginUpdateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fa-solid fa-puzzle-piece me-2"></i>插件更新</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="mb-0">确定要更新插件 <strong id="pluginUpdateName"></strong> 到版本 <strong id="pluginUpdateVersion" class="text-success"></strong> 吗？</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary btn-sm" id="confirmPluginUpdateBtn">
+                    <i class="fa-solid fa-download me-1"></i>确定更新
                 </button>
             </div>
         </div>
@@ -283,27 +380,32 @@ use zap\facades\Url;
 </div>
 
 <script>
+    // 存储待更新的插件信息
+    let pendingPlugin = null;
+
     function showUpdateConfirm() {
         const modal = new bootstrap.Modal('#updateConfirmModal');
         modal.show();
     }
 
     function checkUpdate() {
-        const load = Zap.loading('检查中...');
+        const load = Zap.loading('正在检查核心更新...');
+
         $.ajax({
-            url: '<?php echo Url::action('Update@ajaxCheckCore') ?>',
+            url: '<?php echo Url::action('Update@ajaxCheckCore'); ?>',
             method: 'GET',
             dataType: 'json',
             success: function (data) {
                 if (data.code === 0 && data.data && data.data.has_update) {
-                    ZapToast.alert('发现新版本 v' + data.data.latest_version, {bgColor: bgWarning, position: Toast_Pos_Center});
+                    ZapToast.alert('发现新版本 v' + data.data.latest_version + '，页面即将刷新',
+                        {bgColor: bgWarning, position: Toast_Pos_Center});
+                    setTimeout(() => location.reload(), 1500);
                 } else {
                     ZapToast.alert('当前已是最新版本', {bgColor: bgSuccess, position: Toast_Pos_Center});
                 }
-                setTimeout(() => location.reload(), 1500);
             },
             error: function () {
-                ZapToast.alert('检查更新失败', {bgColor: bgDanger, position: Toast_Pos_Center});
+                ZapToast.alert('检查更新失败，请稍后重试', {bgColor: bgDanger, position: Toast_Pos_Center});
             }
         }).always(function () {
             load.dispose();
@@ -311,37 +413,66 @@ use zap\facades\Url;
     }
 
     function doSystemUpdate() {
-        <?php if (!($update_info['download_url'] ?? false)): ?>
-            ZapToast.alert('更新地址不可用', {bgColor: bgDanger, position: Toast_Pos_Center});
-            return;
-        <?php endif; ?>
-
         const btn = $('#confirmUpdateBtn');
-        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> 更新中...');
+        const progressDiv = $('#updateProgress');
+        const progressBar = $('#updateProgressBar');
+        const statusText = $('#updateStatusText');
 
-        const modal = bootstrap.Modal.getInstance('#updateConfirmModal');
+        btn.prop('disabled', true).addClass('d-none');
+        progressDiv.removeClass('d-none');
+
+        // 模拟进度
+        let progress = 0;
+        const messages = ['正在准备更新...', '正在下载更新包...', '正在解压文件...', '正在安装更新...', '更新即将完成...'];
+        let msgIdx = 0;
+        const progressTimer = setInterval(function () {
+            progress += Math.random() * 12;
+            if (progress > 85) progress = 85;
+            progressBar.css('width', progress + '%');
+            if (progress > (msgIdx + 1) * 18 && msgIdx < messages.length - 1) {
+                msgIdx++;
+                statusText.text(messages[msgIdx]);
+            }
+        }, 800);
+
+        statusText.text(messages[0]);
 
         $.ajax({
-            url: '<?php echo Url::action('Update@doUpdate') ?>',
+            url: '<?php echo Url::action('Update@doUpdate'); ?>',
             method: 'POST',
             dataType: 'json',
             data: {
-                download_url: '<?php echo addslashes($update_info['download_url'] ?? '') ?>',
-                version: '<?php echo addslashes($update_info['latest_version'] ?? '') ?>'
+                download_url: '<?php echo addslashes($update_info['download_url'] ?? ''); ?>',
+                version: '<?php echo addslashes($update_info['latest_version'] ?? ''); ?>'
             },
             success: function (data) {
+                clearInterval(progressTimer);
                 if (data.code === 0) {
-                    modal.hide();
-                    ZapToast.alert('更新成功！系统将刷新页面', {bgColor: bgSuccess, position: Toast_Pos_Center});
-                    setTimeout(() => location.reload(), 3000);
+                    progressBar.css('width', '100%').removeClass('bg-warning').addClass('bg-success');
+                    statusText.text('更新成功！');
+                    const modal = bootstrap.Modal.getInstance('#updateConfirmModal');
+                    setTimeout(function () {
+                        modal.hide();
+                        ZapToast.alert('系统更新成功，页面即将刷新', {bgColor: bgSuccess, position: Toast_Pos_Center});
+                        setTimeout(() => location.reload(), 2000);
+                    }, 800);
                 } else {
-                    ZapToast.alert(data.msg || '更新失败', {bgColor: bgDanger, position: Toast_Pos_Center});
-                    btn.prop('disabled', false).html('<i class="fa-solid fa-check"></i> 确认更新');
+                    progressBar.removeClass('progress-bar-animated bg-warning').addClass('bg-danger');
+                    statusText.text('更新失败');
+                    ZapToast.alert(data.msg || '更新失败，请查看日志', {bgColor: bgDanger, position: Toast_Pos_Center});
+                    btn.prop('disabled', false).removeClass('d-none');
+                    progressDiv.addClass('d-none');
+                    progressBar.css('width', '0%').removeClass('bg-danger').addClass('progress-bar-animated bg-warning');
                 }
             },
             error: function () {
-                ZapToast.alert('请求失败', {bgColor: bgDanger, position: Toast_Pos_Center});
-                btn.prop('disabled', false).html('<i class="fa-solid fa-check"></i> 确认更新');
+                clearInterval(progressTimer);
+                progressBar.removeClass('progress-bar-animated bg-warning').addClass('bg-danger');
+                statusText.text('请求失败');
+                ZapToast.alert('网络请求失败，请检查网络连接', {bgColor: bgDanger, position: Toast_Pos_Center});
+                btn.prop('disabled', false).removeClass('d-none');
+                progressDiv.addClass('d-none');
+                progressBar.css('width', '0%').removeClass('bg-danger').addClass('progress-bar-animated bg-warning');
             }
         });
     }
@@ -351,7 +482,7 @@ use zap\facades\Url;
         const versionInput = document.getElementById('manualVersion');
 
         if (!fileInput.files.length) {
-            ZapToast.alert('请选择ZIP更新包', {bgColor: bgWarning, position: Toast_Pos_Center});
+            ZapToast.alert('请选择 ZIP 更新包', {bgColor: bgWarning, position: Toast_Pos_Center});
             return;
         }
         if (!versionInput.value.trim()) {
@@ -359,12 +490,12 @@ use zap\facades\Url;
             return;
         }
 
-        const load = Zap.loading('正在上传更新...');
+        const load = Zap.loading('正在上传并安装更新，请稍后...');
         const formData = new FormData(document.getElementById('manualUpdateForm'));
         formData.append('version', versionInput.value.trim());
 
         $.ajax({
-            url: '<?php echo Url::action('Update@manualUpdate') ?>',
+            url: '<?php echo Url::action('Update@manualUpdate'); ?>',
             method: 'POST',
             data: formData,
             dataType: 'json',
@@ -379,7 +510,7 @@ use zap\facades\Url;
                 }
             },
             error: function () {
-                ZapToast.alert('上传失败', {bgColor: bgDanger, position: Toast_Pos_Center});
+                ZapToast.alert('上传失败，网络异常', {bgColor: bgDanger, position: Toast_Pos_Center});
             }
         }).always(function () {
             load.dispose();
@@ -387,40 +518,49 @@ use zap\facades\Url;
     }
 
     function checkPluginUpdates() {
-        const load = Zap.loading('检查中...');
+        const wrapper = $('#pluginUpdateWrapper');
+        const load = Zap.loading('正在检查插件更新...');
+
         $.ajax({
-            url: '<?php echo Url::action('Update@ajaxCheckPlugins') ?>',
+            url: '<?php echo Url::action('Update@ajaxCheckPlugins'); ?>',
             method: 'GET',
             dataType: 'json',
             success: function (data) {
                 let html = '';
                 if (data.code === 0 && data.data.length > 0) {
-                    html += `<div class="alert alert-info py-2"><i class="fa-solid fa-circle-info"></i> 发现 ${data.count} 个插件有可用更新</div>`;
+                    html += '<div class="alert border-start border-4 border-info shadow-sm mb-3 py-2 bg-white"><i class="fa-solid fa-bell text-info me-1"></i>发现 <strong>' +
+                        data.data.length + '</strong> 个插件有可用更新</div>';
                     data.data.forEach(function (item) {
-                        html += `
-                        <div class="border rounded p-2 mb-2">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>${escapeHtml(item.title)}</strong>
-                                    <span class="ms-2 small">
-                                        <code>${escapeHtml(item.current_version)}</code>
-                                        <i class="fa-solid fa-arrow-right mx-1"></i>
-                                        <code class="text-success">${escapeHtml(item.latest_version)}</code>
-                                    </span>
-                                </div>
-                                <button class="btn btn-sm btn-outline-primary" onclick="doPluginUpdate('${escapeHtml(item.name)}', '${escapeHtml(item.download_url)}', '${escapeHtml(item.latest_version)}')">
-                                    <i class="fa-solid fa-download"></i> 更新
-                                </button>
-                            </div>
-                        </div>`;
+                        html +=
+                            '<div class="d-flex align-items-center p-3 border rounded mb-2 bg-white shadow-sm">' +
+                            '<div class="flex-shrink-0 me-3">' +
+                            '<div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width:44px;height:44px;">' +
+                            '<i class="fa-solid fa-puzzle-piece text-primary fa-lg"></i>' +
+                            '</div></div>' +
+                            '<div class="flex-grow-1 min-w-0">' +
+                            '<strong class="d-block text-truncate">' + escapeHtml(item.title) + '</strong>' +
+                            '<span class="small">' +
+                            '<code>' + escapeHtml(item.current_version) + '</code>' +
+                            ' <i class="fa-solid fa-arrow-right-long text-muted mx-1"></i> ' +
+                            '<code class="text-success fw-bold">' + escapeHtml(item.latest_version) + '</code>' +
+                            '</span></div>' +
+                            '<div class="flex-shrink-0 ms-3">' +
+                            '<button class="btn btn-sm btn-outline-primary" onclick="doPluginUpdate(\'' +
+                            escapeHtml(item.name) + '\', \'' + escapeHtml(item.download_url) + '\', \'' +
+                            escapeHtml(item.latest_version) + '\')">' +
+                            '<i class="fa-solid fa-download me-1"></i>更新</button>' +
+                            '</div></div>';
                     });
                 } else {
-                    html = '<p class="text-success small mb-0"><i class="fa-solid fa-check"></i> 所有插件都是最新版本</p>';
+                    html =
+                        '<div class="text-center py-4 text-muted"><i class="fa-solid fa-circle-check text-success fa-2x mb-2 d-block"></i><p class="mb-0">所有插件都是最新版本</p></div>';
                 }
                 $('#pluginUpdateArea').html(html);
             },
             error: function () {
-                $('#pluginUpdateArea').html('<p class="text-danger small mb-0">检查失败，请稍后重试</p>');
+                $('#pluginUpdateArea').html(
+                    '<div class="text-center py-4 text-danger"><i class="fa-solid fa-circle-exclamation fa-2x mb-2 d-block"></i><p class="mb-0">检查失败，请稍后重试</p></div>'
+                    );
             }
         }).always(function () {
             load.dispose();
@@ -428,25 +568,49 @@ use zap\facades\Url;
     }
 
     function doPluginUpdate(name, downloadUrl, version) {
-        if (!confirm('确定要更新此插件到 v' + version + ' 吗？')) {
-            return;
-        }
-        const load = Zap.loading('正在更新...');
+        // 使用模态框确认（更友好的体验）
+        pendingPlugin = {name: name, downloadUrl: downloadUrl, version: version};
+        $('#pluginUpdateName').text(name);
+        $('#pluginUpdateVersion').text('v' + version);
+
+        const pluginModal = new bootstrap.Modal('#pluginUpdateModal');
+        pluginModal.show();
+
+        // 绑定确认按钮（先解绑再绑定，防止多次绑定）
+        $('#confirmPluginUpdateBtn').off('click').on('click', function () {
+            pluginModal.hide();
+            executePluginUpdate();
+        });
+    }
+
+    function executePluginUpdate() {
+        if (!pendingPlugin) return;
+
+        const load = Zap.loading('正在更新插件...');
+
         $.ajax({
-            url: '<?php echo Url::action('Plugin@update') ?>',
+            url: '<?php echo Url::action('Plugin@update'); ?>',
             method: 'POST',
             dataType: 'json',
-            data: {name: name, download_url: downloadUrl, version: version},
+            data: {
+                name: pendingPlugin.name,
+                download_url: pendingPlugin.downloadUrl,
+                version: pendingPlugin.version
+            },
             success: function (data) {
                 if (data.code === 0) {
-                    ZapToast.alert('更新成功！', {bgColor: bgSuccess, position: Toast_Pos_Center});
+                    ZapToast.alert('插件更新成功！', {bgColor: bgSuccess, position: Toast_Pos_Center});
                     setTimeout(() => location.reload(), 1500);
                 } else {
-                    ZapToast.alert(data.msg || '更新失败', {bgColor: bgDanger, position: Toast_Pos_Center});
+                    ZapToast.alert(data.msg || '插件更新失败', {bgColor: bgDanger, position: Toast_Pos_Center});
                 }
+            },
+            error: function () {
+                ZapToast.alert('请求失败，请稍后重试', {bgColor: bgDanger, position: Toast_Pos_Center});
             }
         }).always(function () {
             load.dispose();
+            pendingPlugin = null;
         });
     }
 
@@ -455,4 +619,8 @@ use zap\facades\Url;
         div.textContent = text;
         return div.innerHTML;
     }
+
+    $(function () {
+        // 更新历史表格启用 tooltip（如有需要）
+    });
 </script>
