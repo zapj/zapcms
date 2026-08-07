@@ -167,16 +167,88 @@ function home_url(): string
 /**
  * 生成 Node 内容页链接
  *
+ * 策略：
+ *   第一步用 ID 查 slug，有 slug → /{slug}
+ *   无 slug → /node/{type}?nodeId={id}
+ *
  * @param int    $nodeId 节点ID
  * @param string $type   节点类型
  * @return string
  *
- * @example node_url(42)           → /node/default?nodeId=42
- * @example node_url(42, 'article') → /node/article?nodeId=42
+ * @example node_url(42)           → /my-article-slug  (如有 slug)
+ * @example node_url(42, 'article') → /node/article?nodeId=42  (无 slug 时回退)
  */
 function node_url(int $nodeId, string $type = 'default'): string
 {
+    static $cache = [];
+    if (isset($cache[$nodeId])) {
+        $node = $cache[$nodeId];
+    } else {
+        $node = Node::createQuery()->select('id', 'slug', 'node_type')->where('id', $nodeId)->first();
+        $cache[$nodeId] = $node ?: false;
+    }
+
+    if ($node && !empty($node['slug']) && $node['slug'] !== '--zap-link-url') {
+        return site_url($node['slug']);
+    }
+
     return base_url("node/{$type}?nodeId={$nodeId}");
+}
+
+/**
+ * 解析链接：根据 link_type、link_to、link_object 智能判定并返回完整 URL
+ *
+ * link_type 判定规则：
+ *   - catalog  → link_to 存的是 slug，生成 /{slug}
+ *   - node     → link_to 存的是 slug，node 的 slug 全局唯一
+ *   - custom_link → link_to 是完整 URL 或路径
+ *
+ * @param array $linkRow { link_type, link_to, link_object }
+ * @return string 完整 URL
+ */
+function resolve_link_url(array $linkRow): string
+{
+    $linkType   = $linkRow['link_type']   ?? '';
+    $linkTo     = $linkRow['link_to']     ?? '';
+    $linkObject = (int) ($linkRow['link_object'] ?? 0);
+
+    switch ($linkType) {
+        case 'catalog':
+            // link_to 存的是 slug
+            if (!empty($linkTo) && $linkTo !== '--zap-link-url') {
+                return site_url($linkTo);
+            }
+            if ($linkObject > 0) {
+                $catalog = Node::createQuery()->select('id', 'slug')->where('id', $linkObject)->first();
+                if ($catalog && !empty($catalog['slug']) && $catalog['slug'] !== '--zap-link-url') {
+                    return site_url($catalog['slug']);
+                }
+                return site_url('catalog/' . $linkObject);
+            }
+            return home_url();
+
+        case 'node':
+            // link_to 存的是节点的 slug（node slug 全局唯一，Router 据此定位）
+            if (!empty($linkTo) && $linkTo !== '--zap-link-url') {
+                return site_url($linkTo);
+            }
+            if ($linkObject > 0) {
+                $node = Node::createQuery()->select('id', 'slug', 'node_type')->where('id', $linkObject)->first();
+                if ($node && !empty($node['slug']) && $node['slug'] !== '--zap-link-url') {
+                    return site_url($node['slug']);
+                }
+                return site_url('node/default?nodeId=' . $linkObject);
+            }
+            return home_url();
+
+        case 'custom_link':
+        default:
+            // 外部链接或绝对路径
+            if (preg_match('#^(https?://|//|mailto:|tel:)#i', $linkTo)) {
+                return $linkTo;
+            }
+            return site_url($linkTo);
+    }
 }
 
 /**
@@ -190,7 +262,7 @@ function url_link(string $path): string
     if (preg_match('#^(https?://|//|mailto:|tel:)#i', $path)) {
         return $path;
     }
-    return base_url('/' . ltrim($path, '/'));
+    return site_url($path);
 }
 
 /**
@@ -208,6 +280,52 @@ function catalog_link(string $url, string $title, array $attrs = []): string
         $attrStr .= ' ' . $k . '="' . htmlspecialchars((string) $v, ENT_QUOTES) . '"';
     }
     return '<a href="' . htmlspecialchars($url, ENT_QUOTES) . '"' . $attrStr . '>' . htmlspecialchars($title) . '</a>';
+}
+
+/**
+ * 从栏目/节点行数据中提取链接地址（兼容前端模板）
+ *
+ * 根据 link_type / node_type 自动判定：
+ *   - link-url 类型栏目 → 调用 resolve_link_url 解析
+ *   - 普通节点         → 调用 node_url
+ *   - 普通栏目         → site_url(slug)
+ *
+ * @param array $row { id, node_type, slug, link_type, link_to, link_object }
+ * @return string 完整 URL
+ */
+function smart_node_url(array $row): string
+{
+    $nodeType = $row['node_type'] ?? '';
+
+    // link-url 类型：用 resolve_link_url 解析
+    if ($nodeType === 'link-url') {
+        return resolve_link_url([
+            'link_type'   => $row['link_type']   ?? '',
+            'link_to'     => $row['link_to']     ?? '',
+            'link_object' => $row['link_object'] ?? 0,
+        ]);
+    }
+
+    // 普通栏目
+    if ($nodeType === 'catalog') {
+        $slug = $row['slug'] ?? '';
+        if (!empty($slug) && $slug !== '--zap-link-url') {
+            return site_url($slug);
+        }
+        return site_url('catalog/' . ((int) ($row['id'] ?? 0)));
+    }
+
+    // 普通内容节点
+    $id = (int) ($row['id'] ?? 0);
+    $slug = $row['slug'] ?? '';
+    if ($id > 0 && !empty($slug) && $slug !== '--zap-link-url') {
+        return site_url($slug);
+    }
+    if ($id > 0) {
+        return node_url($id);
+    }
+
+    return home_url();
 }
 
 /**

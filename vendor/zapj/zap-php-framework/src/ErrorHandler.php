@@ -216,6 +216,23 @@ class ErrorHandler
 
         if (app()->isConsole()) {
             $this->consoleError($errno, $errstr, $error_file, $error_line);
+        } elseif ($this->shouldReturnJson()) {
+            // API / AJAX 请求：输出 JSON 错误，不渲染 HTML
+            if (!headers_sent()) {
+                http_response_code(500);
+                header('Content-Type: application/json; charset=utf-8');
+            }
+            $payload = [
+                'error'   => true,
+                'code'    => 500,
+                'message' => $this->isDebug() ? "{$errorType}: {$errstr}" : '服务器内部错误',
+            ];
+            if ($this->isDebug()) {
+                $payload['file'] = $error_file;
+                $payload['line'] = $error_line;
+                $payload['type'] = $errorType;
+            }
+            echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         } else {
             $html = $this->zapHighlightFile(
                 $error_file,

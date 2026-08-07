@@ -102,6 +102,7 @@ class CatalogController extends AdminController
             $catalogs[] = [
                 'id'         => (int) $row['id'],
                 'title'      => $row['title'],
+                'slug'       => $row['slug'] ?? '',
                 'node_type'  => $row['node_type'] ?: 'catalog',
                 'mime_type'  => $row['mime_type'] ?? '',
                 'kind'       => 'catalog',
@@ -111,7 +112,8 @@ class CatalogController extends AdminController
 
         // 搜索节点（排除 catalog 类型，因为 catalog 已在上方列出）
         $nodeQuery = \zap\cms\models\Node::createQuery()
-            ->whereNotIn('node_type', ['catalog']);
+            ->whereNotIn('node_type', ['catalog'])
+            ->select('id', 'title', 'slug', 'node_type', 'mime_type', 'status');
         if ($keyword !== '') {
             $nodeQuery->where('title', 'LIKE', "%{$keyword}%");
         }
