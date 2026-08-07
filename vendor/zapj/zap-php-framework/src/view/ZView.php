@@ -2,7 +2,7 @@
 
 namespace zap\view;
 
-use Exception;
+use Throwable;
 
 class ZView
 {
@@ -13,12 +13,12 @@ class ZView
      * @param array  $data   模板数据
      * @param bool   $return true=返回字符串, false=直接输出
      * @return string|null
-     * @throws Exception
+     * @throws Throwable
      */
     public static function render($path, $data = [], $return = false): ?string
     {
         if (!is_file($path)) {
-            throw new Exception("ZView: Template file not found: {$path}");
+            throw new \Exception("ZView: Template file not found: {$path}");
         }
 
         $obLevel = ob_get_level();
@@ -35,7 +35,7 @@ class ZView
 
         try {
             include $path;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             while (ob_get_level() > $obLevel) {
                 ob_end_clean();
             }

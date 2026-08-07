@@ -1,180 +1,232 @@
-<?php
-$this->extend('layout');
-?>
+<?php $this->extend('layout'); ?>
 
+<div class="install-card card">
+    <div class="card-header">
+        <span class="check-pass me-2">&#9881;</span> 数据库与站点配置
+    </div>
+    <div class="card-body">
+        <form id="installForm" autocomplete="off">
+            <input type="hidden" name="token" value="<?= htmlspecialchars($token) ?>">
 
-    <div class="row g-5 justify-content-center">
-
-        <div class="col-md-7 col-lg-8 ">
-            <div class="card">
-                <h5 class="card-header">配置数据库</h5>
-                <div class="card-body ">
-                    <form class="needs-validation" id="dbconfig" novalidate>
-                        <div class="row g-3">
-
-                            <h6>网站设置</h6>
-                            <hr class="m-0"/>
-
-                            <div class="col-6">
-                                <label for="website-title" class="form-label">网站名称</label>
-                                <input type="text" class="form-control form-control-sm" id="website-title" name="website[title]" placeholder="ZAP CMS" value="ZAP CMS">
-                            </div>
-                            <div class="col-6">
-                                <label for="website-slogan" class="form-label">副标题</label>
-                                <input type="text" class="form-control form-control-sm" id="website-slogan" name="website[slogan]" placeholder="OpenSource CMS" value="OpenSource CMS">
-                            </div>
-
-                            <div class="col-12">
-                                <label for="website-email" class="form-label">邮箱 <span class="text-body-secondary">(可选)</span></label>
-                                <input type="email" class="form-control form-control-sm" id="website-email" name="website[email]" placeholder="you@example.com" value="admin@<?php echo $_SERVER['HTTP_HOST']; ?>">
-                            </div>
-
-                            <div class="col-6">
-                                <label for="website-username" class="form-label">用户名</label>
-                                <input type="text" class="form-control form-control-sm" id="website-username" name="website[username]" placeholder="网站用户名" value="admin">
-                            </div>
-                            <div class="col-6">
-                                <label for="website-password" class="form-label">密码</label>
-                                <input type="text" class="form-control form-control-sm" id="website-password" name="website[password]" placeholder="网站密码">
-                            </div>
-                            <h6>数据库配置</h6>
-                            <hr class="m-0"/>
-                            <div class="col-4">
-                                <label for="db-type" class="form-label">数据库类型</label>
-                                <select id="db-driver" name="db[driver]"  class="form-select form-select-sm" onchange="dbTypeChange(this);">
-                                    <option value="mysql">MySQL / MariaDB</option>
-                                    <option value="sqlite">Sqlite3</option>
-<!--                                        <option value="pgsql" disabled>PostgreSQL</option>-->
-                                </select>
-                            </div>
-                            <div class="col-md-4 sqlite3">
-                                <label for="db-host" class="form-label">主机名</label>
-                                <input type="text" class="form-control form-control-sm" id="db-host" name="db[host]" placeholder="主机名 默认localhost" value="localhost" >
-                            </div>
-                            <div class="col-md-4 sqlite3">
-                                <label for="db-port" class="form-label">端口</label>
-                                <input type="text" class="form-control form-control-sm" id="db-port" name="db[port]" placeholder="端口号 mysql默认 3306" value="3306" >
-                            </div>
-                            <div class="col-md-4">
-                                <label for="db-dbname" class="form-label">数据库名称</label>
-                                <input type="text" class="form-control form-control-sm" id="db-dbname" name="db[dbname]" placeholder="数据库名称" value="zapcms" >
-                            </div>
-
-                            <div class="col-4 sqlite3">
-                                <label for="db-user" class="form-label">用户名</label>
-                                <input type="text" class="form-control form-control-sm" id="db-user" name="db[user]" placeholder="数据库用户名 , mysql 默认 root" value="root">
-                            </div>
-                            <div class="col-4 sqlite3">
-                                <label for="db-password" class="form-label">密码</label>
-                                <input type="text" class="form-control form-control-sm" id="db-password" name="db[password]" placeholder="数据库密码" value="root">
-                            </div>
-
-                            <div class="col-4">
-                                <label for="db-table-prefix" class="form-label">表前缀</label>
-                                <input type="text" class="form-control form-control-sm" id="db-table-prefix" name="db[prefix]" placeholder="表前缀" value="zap_">
-                            </div>
-
-
-
-
-                            <div class="col-md-12 text-black-50 overflow-y-auto d-none" id="installConsole" style="height: 100px;font-size: 12px">
-
-                            </div>
-                        </div>
-
-                    </form>
+            <!-- 站点信息 -->
+            <h6 class="fw-bold mb-3">站点信息</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label for="websiteTitle" class="form-label small fw-semibold">网站名称</label>
+                    <input type="text" class="form-control form-control-sm" id="websiteTitle"
+                           name="website[title]" placeholder="我的网站" value="ZAP CMS" required>
                 </div>
-                <div class="card-footer text-center">
-                    <button href="index.php?action=done" type="button" class="btn btn-success" onclick="installZapCMS(this)">立刻安装</button>
+                <div class="col-md-6">
+                    <label for="websiteSlogan" class="form-label small fw-semibold">副标题</label>
+                    <input type="text" class="form-control form-control-sm" id="websiteSlogan"
+                           name="website[slogan]" placeholder="副标题" value="OpenSource CMS">
+                </div>
+                <div class="col-md-6">
+                    <label for="websiteEmail" class="form-label small fw-semibold">邮箱 <span class="text-muted fw-normal">(可选)</span></label>
+                    <input type="email" class="form-control form-control-sm" id="websiteEmail"
+                           name="website[email]" placeholder="admin@example.com"
+                           value="admin@<?= htmlspecialchars($_SERVER['HTTP_HOST'] ?? 'localhost') ?>">
+                </div>
+                <div class="col-md-3">
+                    <label for="adminUser" class="form-label small fw-semibold">管理员用户名</label>
+                    <input type="text" class="form-control form-control-sm" id="adminUser"
+                           name="website[username]" placeholder="admin" value="admin" required minlength="3">
+                </div>
+                <div class="col-md-3">
+                    <label for="adminPass" class="form-label small fw-semibold">管理员密码</label>
+                    <div class="input-group input-group-sm">
+                        <input type="password" class="form-control form-control-sm" id="adminPass"
+                               name="website[password]" placeholder="输入密码" required minlength="6">
+                        <button class="btn btn-outline-secondary" type="button" id="toggleAdminPass" tabindex="-1">&#128065;</button>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <hr>
+
+            <!-- 数据库 -->
+            <h6 class="fw-bold mb-3">数据库配置</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label for="dbDriver" class="form-label small fw-semibold">数据库类型</label>
+                    <select class="form-select form-select-sm" id="dbDriver" name="db[driver]">
+                        <option value="mysql">MySQL / MariaDB</option>
+                        <option value="sqlite">SQLite</option>
+                    </select>
+                </div>
+                <div class="col-md-4 mysql-only">
+                    <label for="dbHost" class="form-label small fw-semibold">主机</label>
+                    <input type="text" class="form-control form-control-sm" id="dbHost"
+                           name="db[host]" placeholder="localhost" value="localhost">
+                </div>
+                <div class="col-md-4 mysql-only">
+                    <label for="dbPort" class="form-label small fw-semibold">端口</label>
+                    <input type="text" class="form-control form-control-sm" id="dbPort"
+                           name="db[port]" placeholder="3306" value="3306">
+                </div>
+                <div class="col-md-4">
+                    <label for="dbName" class="form-label small fw-semibold">数据库名</label>
+                    <input type="text" class="form-control form-control-sm" id="dbName"
+                           name="db[dbname]" placeholder="zapcms" value="zapcms">
+                </div>
+                <div class="col-md-4 mysql-only">
+                    <label for="dbUser" class="form-label small fw-semibold">用户名</label>
+                    <input type="text" class="form-control form-control-sm" id="dbUser"
+                           name="db[username]" placeholder="root" value="root">
+                </div>
+                <div class="col-md-4 mysql-only">
+                    <label for="dbPass" class="form-label small fw-semibold">密码</label>
+                    <div class="input-group input-group-sm">
+                        <input type="password" class="form-control form-control-sm" id="dbPass"
+                               name="db[password]" placeholder="数据库密码" value="root">
+                        <button class="btn btn-outline-secondary" type="button" id="toggleDbPass" tabindex="-1">&#128065;</button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label for="dbPrefix" class="form-label small fw-semibold">表前缀</label>
+                    <input type="text" class="form-control form-control-sm" id="dbPrefix"
+                           name="db[prefix]" placeholder="zap_" value="zap_">
+                </div>
+            </div>
+
+            <!-- 安装控制台 -->
+            <div id="consoleWrap" class="d-none">
+                <label class="form-label small fw-semibold">安装日志</label>
+                <div class="install-console" id="installConsole"></div>
+            </div>
+        </form>
     </div>
+    <div class="card-footer d-flex justify-content-between align-items-center">
+        <a href="index.php?action=check" class="btn btn-outline-secondary btn-sm">&larr; 上一步</a>
+        <button type="button" class="btn btn-success px-4" id="installBtn" onclick="installZapCMS()">
+            开始安装
+        </button>
+    </div>
+</div>
+
 <script>
-    function dbTypeChange(select){
-        var sqlite3List = document.querySelectorAll('.sqlite3');
-        if(select.value === 'sqlite'){
-            sqlite3List.forEach(function (v){
-                v.classList.add('d-none')
-            });
-        }else{
-            sqlite3List.forEach(function (v){
-                v.classList.remove('d-none')
-            });
-        }
+(function(){
+    var driverSelect = document.getElementById('dbDriver');
+    var mysqlFields  = document.querySelectorAll('.mysql-only');
+
+    function toggleMysqlFields(){
+        var isMysql = driverSelect.value !== 'sqlite';
+        mysqlFields.forEach(function(el){ el.classList.toggle('d-none', !isMysql); });
     }
+    driverSelect.addEventListener('change', toggleMysqlFields);
+    // 初始状态（默认 MySQL）
+    // toggleMysqlFields();  // 如果默认选中 mysql 就调用
 
-    function installZapCMS(btn){
-        btn.disabled = true;
-        var installError = false;
-        const myConsole = document.getElementById('installConsole');
-        myConsole.classList.remove('d-none');
-        myConsole.innerHTML = '';
-        myConsole.prepend(createDiv("开始安装...",'green',true));
-        myConsole.prepend(createDiv("测试数据库连接",'green',true));
-
-        $.ajax({
-            url: 'index.php?action=checkDatabaseConnection',
-            data: $('#dbconfig').serialize(),
-            method:'post',
-            async:false,
-            success: function (data) {
-                if (data.code === 1) {
-                    myConsole.prepend(createDiv(`${data.msg} , ${data.exception}`, 'red', true));
-                    installError = true;
-                } else {
-                    myConsole.prepend(createDiv(data.msg, 'green', true));
-                }
-            },
-            error:function(){
-                btn.disabled = false;
-            }
-        });
-
-        if(installError){
-            myConsole.prepend(createDiv("安装失败!!!",'red',true));
-            return false;
-        }
-
-        $.ajax({
-            url: 'index.php?action=createDBSchemaBaseData',
-            data: $('#dbconfig').serialize(),
-            method:'post',
-            success: function (data) {
-                if (data.code === 1) {
-                    myConsole.prepend(createDiv(`${data.msg} , ${data.exception}`, 'red', true));
-                    installError = true;
-                } else {
-                    myConsole.prepend(createDiv(data.msg, 'green', true));
-                }
-            }
-        }).always(function(){
-            btn.disabled = false;
-        });
-
-
-        if(installError){
-            myConsole.prepend(createDiv("安装失败!!!",'red',true));
-            return false;
-        }
-        location.href='index.php?action=done';
-
-    }
-
-    function createDiv(text,color,bold){
-        bold = bold || true;
-        color = color || 'black';
-        const li = document.createElement("div");
-        if(color){
-            li.style.color = color;
-        }
-        // if(bold){
-        //     li.style.fontWeight = "bold";
-        // }
-        li.innerHTML = '>' + text;
-        return li;
-    }
-
-
+    // 密码可见性切换
+    document.getElementById('toggleAdminPass').addEventListener('click', function(){
+        var inp = document.getElementById('adminPass');
+        inp.type = inp.type === 'password' ? 'text' : 'password';
+    });
+    document.getElementById('toggleDbPass').addEventListener('click', function(){
+        var inp = document.getElementById('dbPass');
+        inp.type = inp.type === 'password' ? 'text' : 'password';
+    });
+})();
 </script>
 
+<script>
+function installZapCMS(){
+    var btn = document.getElementById('installBtn');
+    var form = document.getElementById('installForm');
+    var consoleEl = document.getElementById('installConsole');
+    var wrapEl = document.getElementById('consoleWrap');
+
+    // 前端基础校验
+    var adminUser = form.querySelector('[name="website[username]"]').value.trim();
+    var adminPass = form.querySelector('[name="website[password]"]').value.trim();
+    if (!adminUser || !adminPass) {
+        alert('请填写管理员用户名和密码');
+        return;
+    }
+    if (adminPass.length < 6) {
+        alert('管理员密码至少 6 位');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '安装中...';
+    wrapEl.classList.remove('d-none');
+    consoleEl.innerHTML = '';
+    log('开始安装 ZAP CMS', 'info');
+
+    // ── 第 1 步：检测数据库连接 ──
+    log('检测数据库连接...', 'info');
+    $.ajax({
+        url: 'index.php?action=checkDatabaseConnection',
+        data: $(form).serialize(),
+        method: 'POST'
+    }).then(function(data){
+        if (data.code !== 0) {
+            log('数据库连接失败: ' + (data.msg || ''), 'err');
+            if (data.detail) log('  ↳ ' + data.detail, 'err');
+            throw new Error('db_connect');
+        }
+        log('数据库连接成功', 'ok');
+
+        // ── 第 2 步：建表写配置 ──
+        log('创建数据表 & 导入初始数据...', 'info');
+        return $.ajax({
+            url: 'index.php?action=createDBSchemaBaseData',
+            data: $(form).serialize(),
+            method: 'POST'
+        });
+    }).then(function(data){
+        if (data.code !== 0) {
+            log('安装失败: ' + (data.msg || ''), 'err');
+            if (data.detail) log('  ↳ ' + data.detail, 'err');
+            throw new Error('install_fail');
+        }
+        log('数据表创建完成', 'ok');
+        log('初始数据导入完成', 'ok');
+        log('配置文件写入完成', 'ok');
+        log('安装成功！即将跳转...', 'end');
+
+        // 跳转到完成页
+        setTimeout(function(){
+            location.href = 'index.php?action=done';
+        }, 800);
+
+    }).catch(function(err){
+        if (err && err.message === 'db_connect' || err.message === 'install_fail') {
+            // 已在上面记录了错误
+        } else if (err && err.statusText === 'error') {
+            // jQuery 网络层错误
+            log('网络请求失败', 'err');
+        }
+    }).always(function(){
+        btn.disabled = false;
+        btn.textContent = '开始安装';
+    });
+}
+
+function log(msg, type){
+    var consoleEl = document.getElementById('installConsole');
+    var now = new Date();
+    var time = ('0' + now.getHours()).slice(-2) + ':'
+             + ('0' + now.getMinutes()).slice(-2) + ':'
+             + ('0' + now.getSeconds()).slice(-2);
+    var cls = '';
+    switch(type){
+        case 'ok':   cls = 'ok';   break;
+        case 'err':  cls = 'err';  break;
+        case 'info': cls = 'info'; break;
+        case 'end':  cls = 'end';  break;
+    }
+    var div = document.createElement('div');
+    div.className = 'console-line ' + cls;
+    div.innerHTML = '<span class="time">[' + time + ']</span>' + escapeHtml(msg);
+    consoleEl.appendChild(div);
+    consoleEl.scrollTop = consoleEl.scrollHeight;
+}
+
+function escapeHtml(str){
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+}
+</script>

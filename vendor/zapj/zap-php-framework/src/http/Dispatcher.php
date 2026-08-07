@@ -2,7 +2,7 @@
 
 namespace zap\http;
 
-use \Exception;
+use \Throwable;
 use zap\exception\NotFoundException;
 use zap\view\View;
 
@@ -68,7 +68,7 @@ class Dispatcher
                 ZView::render(__DIR__ . '/../resources/views/errors/exception.php', ['e' => $e]);
             }
             $handled = true;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             if (config('config.debug', false)) {
                 (new \zap\util\Printer($e))->display();
             } else {

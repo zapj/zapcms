@@ -47,6 +47,14 @@ class DB
         return self::connection($name);
     }
 
+    /**
+     * 获取 PDO 连接实例（供 Schema / TableSchema 等 schema 构建器使用）
+     */
+    public static function getPDO(?string $name = null): ZPDO
+    {
+        return self::connection($name);
+    }
+
     // ==================================================================
     //  事务
     // ==================================================================

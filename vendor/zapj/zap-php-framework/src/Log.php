@@ -41,7 +41,7 @@ class Log
         if(config('config.log',false)) {
             try {
                 call_user_func_array([app()->getLogger(), $name], $arguments);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 error_log(sprintf(
                     '[Log] Failed to write log: %s in %s:%d',
                     $e->getMessage(),

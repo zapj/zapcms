@@ -1,127 +1,45 @@
 <?php
 $this->layout('layout');
+$items   = $checks['items'];
+$allPass = $checks['allPass'];
+$passCount = count(array_filter($items, fn($c) => $c['pass']));
+$total     = count($items);
 ?>
 
-
-<div class="row g-5 justify-content-center">
-
-            <div class="col-md-7 col-lg-8 ">
-                <div class="card">
-                    <h5 class="card-header">检查服务器环境</h5>
-                    <div class="card-body p-0">
-                        <form class="needs-validation" novalidate>
-                            <table class="table table-bordered table-hover">
-
-                                <tbody>
-                                <tr>
-                                    <td>PHP 版本</td>
-                                    <th><?php echo PHP_VERSION; ?>
-                                        <?php
-                                        if (version_compare(PHP_VERSION, '7.4.0') >= 0) {
-                                            echo '<strong class="fw-bold fs-5 text-success">√</strong>';
-                                        } else {
-                                            echo '<strong class="fw-bold fs-5 text-danger">╳ 最低版本不能低于 7.4</strong>';
-                                        }
-                                        ?>
-                                    </th>
-
-                                </tr>
-                                <tr>
-                                    <td>PHP PDO</td>
-                                    <th><?php $allDrivers = PDO::getAvailableDrivers();
-                                        echo join('/', $allDrivers) ?>
-
-                                        <?php
-                                        if (!in_array('mysql', $allDrivers) &&
-                                            !in_array('pgsql', $allDrivers) &&
-                                            !in_array('sqlite', $allDrivers)) {
-                                            echo '<strong class="fw-bold fs-5 text-danger">╳ 仅支持PDO（pgsql/sqlite/mysql）</strong>';
-                                        } else {
-
-                                            echo '<strong class="fw-bold fs-5 text-success">√</strong>';
-                                        }
-                                        ?>
-                                    </th>
-
-                                </tr>
-                                <tr>
-                                    <td>PHP GD扩展</td>
-                                    <th><?php echo function_exists('gd_info') ? current(gd_info()) : '不支持'; ?>
-                                        <?php
-                                        if (!function_exists('gd_info')) {
-                                            echo '<strong class="fw-bold fs-5 text-danger">╳ 不支持 gd 扩展，无法处理图片</strong>';
-                                        } else {
-
-                                            echo '<strong class="fw-bold fs-5 text-success">√</strong>';
-                                        }
-                                        ?>
-                                    </th>
-
-                                </tr>
-                                <tr>
-                                    <td colspan="2">目录写入权限</td>
-                                </tr>
-
-                                <tr>
-                                    <td>storage</td>
-                                    <th><?php if ((is_dir(base_path('storage')) && is_writeable(base_path('storage')))) {
-                                            echo '<strong class="fw-bold fs-5 text-success">√</strong>';
-                                        } else {
-                                            echo '<strong class="fw-bold fs-5 text-danger">╳ </strong>';
-                                        } ?></th>
-
-                                </tr>
-
-                                <tr>
-                                    <td>var</td>
-                                    <th><?php if ((is_dir(base_path('var')) && is_writeable(base_path('var')))) {
-                                            echo '<strong class="fw-bold fs-5 text-success">√</strong>';
-                                        } else {
-                                            echo '<strong class="fw-bold fs-5 text-danger">╳ </strong>';
-                                        } ?></th>
-
-                                </tr>
-
-                                <tr>
-                                    <td>themes</td>
-                                    <th><?php if ((is_dir(base_path('themes')) && is_writeable(base_path('themes')))) {
-                                            echo '<strong class="fw-bold fs-5 text-success">√</strong>';
-                                        } else {
-                                            echo '<strong class="fw-bold fs-5 text-danger">╳ </strong>';
-                                        } ?></th>
-
-                                </tr>
-
-                                <tr>
-                                    <td>config/database.php</td>
-                                    <th><?php if ((is_file(base_path('config/database.php')) && is_writeable(base_path('config/database.php')))) {
-                                            echo '<strong class="fw-bold fs-5 text-success">√</strong>';
-                                        } else {
-                                            echo '<strong class="fw-bold fs-5 text-danger">╳ </strong>';
-                                        } ?></th>
-
-                                </tr>
-
-                                <tr>
-                                    <td>config/config.php</td>
-                                    <th><?php if ((is_file(base_path('config/config.php')) && is_writeable(base_path('config/config.php')))) {
-                                            echo '<strong class="fw-bold fs-5 text-success">√</strong>';
-                                        } else {
-                                            echo '<strong class="fw-bold fs-5 text-danger">╳ </strong>';
-                                        } ?></th>
-
-                                </tr>
-
-                                </tbody>
-
-                            </table>
-
-
-                        </form>
-                    </div>
-                    <div class="card-footer text-center">
-                        <a href="index.php?action=database" class="btn btn-success">下一步</a>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="install-card card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><span class="check-pass me-2">&#9881;</span> 服务器环境检测</span>
+        <span class="badge <?= $allPass ? 'bg-success' : 'bg-danger' ?>">
+            <?= $passCount ?> / <?= $total ?> 通过
+        </span>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-borderless check-table mb-0">
+            <tbody>
+            <?php foreach ($items as $item): ?>
+            <tr>
+                <td class="ps-3"><?= htmlspecialchars($item['label']) ?></td>
+                <td class="text-secondary small"><?= htmlspecialchars($item['value']) ?></td>
+                <td class="text-end pe-3">
+                    <?php if ($item['pass']): ?>
+                        <span class="check-pass" title="通过">&#10003;</span>
+                    <?php else: ?>
+                        <span class="check-fail" title="<?= htmlspecialchars($item['failMsg']) ?>">&#10007;</span>
+                    <?php endif; ?>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer text-center">
+        <?php if ($allPass): ?>
+            <a href="index.php?action=database" class="btn btn-success px-4">下一步 &rarr;</a>
+        <?php else: ?>
+            <button class="btn btn-secondary px-4" disabled>
+                环境未就绪，请修复后再继续
+            </button>
+            <div class="text-danger small mt-2">请根据上方标记的 &#10007; 项修复服务器配置后刷新本页</div>
+        <?php endif; ?>
+    </div>
+</div>

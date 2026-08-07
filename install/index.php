@@ -1,169 +1,334 @@
 <?php
+/**
+ * ZAP CMS 安装向导
+ *
+ * 支持 4 个步骤：
+ *   ?action=index     — 使用协议
+ *   ?action=check     — 环境检测
+ *   ?action=database  — 数据库配置 & 执行安装
+ *   ?action=done      — 完成页
+ * 以及两个 API 端点：
+ *   ?action=checkDatabaseConnection   — AJAX：测试数据库连接
+ *   ?action=createDBSchemaBaseData    — AJAX：建表写配置
+ */
 
 require '../vendor/autoload.php';
 
-$app = new \zap\App(realpath('../'));
-
-$action = $_GET['action'] ?? 'index';
-$action = $action . "Action";
-
-if (function_exists($action)) {
-    config_set('config.theme', false);
-    \zap\view\View::paths(realpath('views/'));
-    call_user_func($action);
-} else {
-    exit('404 Page Not found');
+/**
+ * 输出 JSON 响应并退出。
+ * 替代框架 response()->withJson() — 安装脚本不经过路由器，需自己发送。
+ */
+function json_response(array $data): void
+{
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($data, JSON_UNESCAPED_UNICODE);
+    exit;
 }
 
+// ── 已是完整安装则直接跳首页 ──────────────────────────────
+if (is_file('../var/install.lock')) {
+    header('Location: ../');
+    exit();
+}
+
+$app = new \zap\App(realpath('../'));
+
+// ── 路由 ─────────────────────────────────────────────────
+$action = $_GET['action'] ?? 'index';
+
+// 纯 API 端点不走视图布局
+$apiActions = ['checkDatabaseConnection', 'createDBSchemaBaseData'];
+$isApi = in_array($action, $apiActions, true);
+
+if (!$isApi) {
+    config_set('config.theme', false);
+    \zap\view\View::paths(realpath('views/'));
+}
+
+$method = $action . 'Action';
+if (!function_exists($method)) {
+    exit('404 Page Not Found');
+}
+
+call_user_func($method);
+
+// ───────────────────────────────────────────────────────────
+//  页面方法
+// ───────────────────────────────────────────────────────────
 
 function indexAction()
 {
-    $data = [];
-    view("index", $data);
+    view("index", ['step' => 1]);
 }
 
 function checkAction()
 {
-    $data = [];
-    view("check", $data);
+    view("check", ['step' => 2, 'checks' => buildEnvChecks()]);
 }
 
 function databaseAction()
 {
-    $data = [];
-    view("database", $data);
+    $token = bin2hex(random_bytes(16));
+    session()->set('install_token', $token);
+    view("database", ['step' => 3, 'token' => $token]);
 }
 
 function doneAction()
 {
-    $data = [
-        'url'=>session()->get('install_url'),
-        'username'=>session()->get('install_username'),
-        'password'=>session()->get('install_password'),
-    ];
-    view("done", $data);
+    if (!session()->get('install_done')) {
+        header('Location: index.php?action=database');
+        exit();
+    }
+
+    view("done", [
+        'step' => 4,
+        'adminUrl' => session()->get('install_admin_url'),
+        'username' => session()->get('install_username'),
+        'password' => session()->get('install_password'),
+    ]);
 }
 
+// ───────────────────────────────────────────────────────────
+//  API 方法
+// ───────────────────────────────────────────────────────────
 
 function checkDatabaseConnectionAction()
 {
-    $db = \zap\http\Request::post('db', []);
-    $website = \zap\http\Request::post('website', []);
-    $dbname = $db['dbname'] ?? 'zapcms';
-    $host = $db['host'] ?? 'localhost';
+    $token = \zap\http\Request::post('token', '');
+    if (!$token || !hash_equals(session()->get('install_token', ''), $token)) {
+        json_response(['code' => 1, 'msg' => '无效的请求令牌，请刷新页面重试']);
+    }
+
+    $db       = \zap\http\Request::post('db', []);
+    $driver   = $db['driver'] ?? 'mysql';
+    $dbname   = $db['dbname'] ?? 'zapcms';
+    $host     = $db['host'] ?? 'localhost';
     $username = $db['username'] ?? 'root';
     $password = $db['password'] ?? '';
-    $port = $db['port'] ?? '3306';
-    $driver = $db['driver'] ?? 'mysql';
-    $dbOptions = [
+    $port     = $db['port'] ?? '3306';
+
+    $options = [
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
     ];
-    $pdo = null;
+
     try {
-        if ($driver === 'mysql') {
-            $dbOptions[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES utf8";
-            $pdo = new PDO("mysql:host={$host};port={$port}", $username, $password, $dbOptions);
-            $pdo->query("USE {$dbname}");
-            response()->withJson(['code' => 0, 'msg' => '数据库连接成功']);
-        } else if ($driver === 'sqlite') {
-            $db_file = var_path("data/{$dbname}.db");
-            if (!is_writable(var_path("data"))) {
-                response()->withJson(['code' => 1, 'msg' => '数据库创建失败,' . var_path("data") . '  目录不可写入']);
+        if ($driver === 'sqlite') {
+            $dbFile  = var_path("data/{$dbname}.db");
+            $dataDir = var_path('data');
+            if (!is_dir($dataDir)) {
+                @mkdir($dataDir, 0755, true);
             }
-            $pdo = new PDO("sqlite:{$db_file}", null, null, $dbOptions);
-            response()->withJson(['code' => 0, 'msg' => '数据库连接成功']);
-        } else {
-            response()->withJson(['code' => 1, 'msg' => '暂不支持该驱动类型']);
+            if (!is_writable($dataDir)) {
+                json_response(['code' => 1, 'msg' => '数据目录不可写入: ' . $dataDir]);
+            }
+            new PDO("sqlite:{$dbFile}", null, null, $options);
+            json_response(['code' => 0, 'msg' => 'SQLite 数据库连接成功']);
         }
+
+        // MySQL / MariaDB
+        $options[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES utf8mb4";
+        $dsn = "mysql:host={$host};port={$port};charset=utf8mb4";
+
+        try {
+            $pdo = new PDO($dsn, $username, $password, $options);
+            $pdo->exec("CREATE DATABASE IF NOT EXISTS `{$dbname}` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+        } catch (PDOException $e) {
+            if ((int) $e->getCode() === 2002) {
+                json_response(['code' => 1, 'msg' => "无法连接 {$host}:{$port}", 'detail' => $e->getMessage()]);
+            }
+            throw $e;
+        }
+
+        new PDO("mysql:host={$host};port={$port};dbname={$dbname};charset=utf8mb4", $username, $password, $options);
+        json_response(['code' => 0, 'msg' => '数据库连接成功']);
     } catch (PDOException $e) {
-        if (intval($e->getCode()) === 2002) {
-            response()->withJson(['code' => 1, 'msg' => '数据库链接失败', 'exception' => "{$host}:{$port} 主机名无法解析"]);
-        } else if (intval($e->getCode()) === 42000) {
-            try {
-                $pdo->query("CREATE DATABASE IF NOT EXISTS {$dbname}");
-                response()->withJson(['code' => 0, 'msg' => "数据库链接成功,数据库{$dbname}已创建"]);
-            } catch (PDOException $e) {
-                response()->withJson(['code' => 1, 'msg' => '数据库不存在，创建失败', 'exception' => $e->getMessage()]);
-            }
-            response()->withJson(['code' => 1, 'msg' => '数据库链接失败', 'exception' => $e->getMessage()]);
+        $code = (int) $e->getCode();
+        if ($code === 1045 || $code === 1044) {
+            json_response(['code' => 1, 'msg' => '用户名或密码错误', 'detail' => $e->getMessage()]);
+        } else {
+            json_response(['code' => 1, 'msg' => '数据库连接失败', 'detail' => $e->getMessage()]);
         }
-        response()->withJson(['code' => 1, 'msg' => '数据库链接失败' . $e->getCode(), 'exception' => $e->getMessage()]);
     }
 }
 
 function createDBSchemaBaseDataAction()
 {
-    $db = \zap\http\Request::post('db', []);
-    $website = \zap\http\Request::post('website', []);
-    $dbname = $db['dbname'] ?? 'zapcms';
-    $host = $db['host'] ?? 'localhost';
-    $username = $db['username'] ?? 'root';
-    $password = $db['password'] ?? '';
-    $port = $db['port'] ?? '3306';
-    $driver = $db['driver'] ?? 'mysql';
-    $prefix = $db['prefix'] ?? '';
-
-    $website_username = $website['username'] ?? 'admin';
-    $website_password = $website['password'] ?? '';
-
-    config_set('database', [
-        'default' => 'default',
-        'connections' => []
-    ]);
-    if ($driver === 'mysql') {
-        config_set('database.connections.default', [
-            'driver' => 'mysql',
-            'host' => $host,
-            'port' => $port,
-            'dbname' => $dbname,
-            'user' => $username,
-            'password' => $password,
-            'prefix' => $prefix,
-            'charset' => 'utf8',
-            'collate' => 'utf8_general_ci',
-        ]);
-    } else if ($driver === 'sqlite') {
-        config_set('database.connections.default', [
-            'driver' => 'sqlite',
-            'dsn' => sprintf("sqlite:%s", var_path("data/{$dbname}.db")),
-            'prefix' => $prefix,
-            'charset' => 'utf8',
-            'collate' => 'utf8_general_ci',
-        ]);
-        config_set('db.dbpath',"data/{$dbname}.db");
+    $token = \zap\http\Request::post('token', '');
+    if (!$token || !hash_equals(session()->get('install_token', ''), $token)) {
+        json_response(['code' => 1, 'msg' => '无效的请求令牌，请刷新页面重试']);
     }
 
+    $db       = \zap\http\Request::post('db', []);
+    $website  = \zap\http\Request::post('website', []);
+    $driver   = $db['driver'] ?? 'mysql';
+    $dbname   = $db['dbname'] ?? 'zapcms';
+    $host     = $db['host'] ?? 'localhost';
+    $username = $db['username'] ?? 'root';
+    $password = $db['password'] ?? '';
+    $port     = $db['port'] ?? '3306';
+    $prefix   = $db['prefix'] ?? '';
+
+    $websiteTitle    = $website['title'] ?? 'ZAP CMS';
+    $websiteSlogan   = $website['slogan'] ?? 'OpenSource CMS';
+    $websiteEmail    = $website['email'] ?? 'admin@localhost';
+    $websiteUsername = $website['username'] ?? 'admin';
+    $websitePassword = $website['password'] ?? '';
+
+    $errors = [];
+    if (empty($websiteUsername)) $errors[] = '管理员用户名不能为空';
+    if (empty($websitePassword)) $errors[] = '管理员密码不能为空';
+    if (!empty($errors)) {
+        json_response(['code' => 1, 'msg' => implode('<br>', $errors)]);
+    }
+
+    // 写临时数据库配置
+    config_set('database', ['default' => 'default', 'connections' => []]);
+
+    if ($driver === 'sqlite') {
+        config_set('database.connections.default', [
+            'driver'  => 'sqlite',
+            'dsn'     => sprintf("sqlite:%s", var_path("data/{$dbname}.db")),
+            'prefix'  => $prefix,
+            'charset' => 'utf8',
+            'collate' => 'utf8_general_ci',
+        ]);
+        config_set('db.dbpath', "data/{$dbname}.db");
+    } else {
+        config_set('database.connections.default', [
+            'driver'   => 'mysql',
+            'host'     => $host,
+            'port'     => $port,
+            'dbname'   => $dbname,
+            'user'     => $username,
+            'password' => $password,
+            'prefix'   => $prefix,
+            'charset'  => 'utf8mb4',
+            'collate'  => 'utf8mb4_unicode_ci',
+        ]);
+    }
 
     try {
         ob_start();
-//        \zap\db\Schema::connection('default');
         $schema = new \zap\cms\CreateTables();
         $schema->createSchema();
         $schema->installBaseData();
         $schema->installDemoData();
         $output = ob_get_clean();
 
-        //写入配置文件
-
         if (is_file(config_path('database.php'))) {
             rename(config_path('database.php'), config_path('backup.database.php'));
         }
-        $database = config('database');
-        \zap\cms\ZapConfig::createConfig($database, config_path('database.php'));
-        //更新站点名称
-        \zap\cms\Option::update('website.title', $website['title'] ?? 'ZAP CMS');
-        \zap\cms\Option::update('website.slogan', $website['slogan'] ?? 'OpenSource CMS');
-        \zap\cms\Option::update('website.email',$website['email'] ?? 'admin@'. $_SERVER['HTTP_HOST'] ?? 'localhost');
-        \zap\DB::update('admin', ['username' => $website_username, 'password' => \zap\util\Password::hash($website_password)], ['id' => 1]);
-        session()->set('install_url','http://'.$_SERVER['HTTP_HOST']. Z_ADMIN_PREFIX);
-        session()->set('install_username',$website_username);
-        session()->set('install_password',$website_password);
-        response()->withJson(['code' => 0, 'msg' => "<br/><strong>安装完成</strong><br/>" . nl2br($output)]);
+        \zap\cms\ZapConfig::createConfig(config('database'), config_path('database.php'));
+
+        \zap\cms\Option::update('website.title', $websiteTitle);
+        \zap\cms\Option::update('website.slogan', $websiteSlogan);
+        \zap\cms\Option::update('website.email', $websiteEmail);
+
+        \zap\DB::update('admin', [
+            'username' => $websiteUsername,
+            'password' => \zap\util\Password::hash($websitePassword),
+        ], ['id' => 1]);
+
+        $lockDir = var_path('');
+        if (!is_dir($lockDir)) {
+            @mkdir($lockDir, 0755, true);
+        }
+        file_put_contents(var_path('install.lock'), date('Y-m-d H:i:s'));
+
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        session()->set('install_done', true);
+        session()->set('install_admin_url', $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . Z_ADMIN_PREFIX);
+        session()->set('install_username', $websiteUsername);
+        session()->set('install_password', $websitePassword);
+
+        session()->forget('install_token');
+
+        json_response(['code' => 0, 'msg' => '安装完成！']);
 
     } catch (PDOException $e) {
-        response()->withJson(['code' => 1, 'msg' => '创建表结构与导入基础数据失败', 'exception' => $e->getMessage()]);
+        json_response(['code' => 1, 'msg' => '创建表结构与导入数据失败', 'detail' => $e->getMessage()]);
+    } catch (\Throwable $e) {
+        json_response(['code' => 1, 'msg' => '安装过程发生错误', 'detail' => $e->getMessage()]);
+    }
+}
+
+// ───────────────────────────────────────────────────────────
+//  辅助函数
+// ───────────────────────────────────────────────────────────
+
+function buildEnvChecks(): array
+{
+    $allDrivers  = PDO::getAvailableDrivers();
+    $hasPdoDriver = in_array('mysql', $allDrivers)
+        || in_array('pgsql', $allDrivers)
+        || in_array('sqlite', $allDrivers);
+
+    $checkWritable = function (string $path): bool {
+        $full = base_path($path);
+        return is_dir($full) && is_writable($full);
+    };
+
+    $checkFileWritable = function (string $path): bool {
+        $full = base_path($path);
+        return is_file($full) && is_writable($full);
+    };
+
+    $items = [
+        [
+            'label'   => 'PHP 版本 ≥ 7.4',
+            'value'   => PHP_VERSION,
+            'pass'    => version_compare(PHP_VERSION, '7.4.0') >= 0,
+            'failMsg' => '需要 PHP 7.4 或更高版本',
+        ],
+        [
+            'label'   => 'PDO 扩展',
+            'value'   => implode(', ', $allDrivers) ?: '无',
+            'pass'    => $hasPdoDriver,
+            'failMsg' => '至少需要 PDO MySQL / SQLite / PostgreSQL 之一',
+        ],
+        [
+            'label'   => 'GD 图像扩展',
+            'value'   => function_exists('gd_info') ? current(gd_info()) : '不支持',
+            'pass'    => function_exists('gd_info'),
+            'failMsg' => '不支持 GD 扩展，无法处理图片',
+        ],
+        [
+            'label'   => 'storage/ 目录可写',
+            'value'   => $checkWritable('storage') ? '可写' : '不可写',
+            'pass'    => $checkWritable('storage'),
+            'failMsg' => 'storage/ 目录不可写入',
+        ],
+        [
+            'label'   => 'var/ 目录可写',
+            'value'   => $checkWritable('var') ? '可写' : '不可写',
+            'pass'    => $checkWritable('var'),
+            'failMsg' => 'var/ 目录不可写入',
+        ],
+        [
+            'label'   => 'themes/ 目录可写',
+            'value'   => $checkWritable('themes') ? '可写' : '不可写',
+            'pass'    => $checkWritable('themes'),
+            'failMsg' => 'themes/ 目录不可写入',
+        ],
+        [
+            'label'   => 'config/database.php 可写',
+            'value'   => $checkFileWritable('config/database.php') ? '可写' : '不可写或不存在',
+            'pass'    => $checkFileWritable('config/database.php'),
+            'failMsg' => 'config/database.php 不可写入',
+        ],
+        [
+            'label'   => 'config/config.php 可写',
+            'value'   => $checkFileWritable('config/config.php') ? '可写' : '不可写或不存在',
+            'pass'    => $checkFileWritable('config/config.php'),
+            'failMsg' => 'config/config.php 不可写入',
+        ],
+    ];
+
+    $allPass = true;
+    foreach ($items as $item) {
+        if (!$item['pass']) $allPass = false;
     }
 
-
+    return ['items' => $items, 'allPass' => $allPass];
 }

@@ -233,6 +233,7 @@ class ErrorHandler
                 $payload['type'] = $errorType;
             }
             echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            exit(1);
         } else {
             $html = $this->zapHighlightFile(
                 $error_file,

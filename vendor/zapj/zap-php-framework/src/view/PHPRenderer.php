@@ -2,7 +2,7 @@
 
 namespace zap\view;
 
-use \Exception;
+use \Throwable;
 
 class PHPRenderer extends ViewRenderer
 {
@@ -58,7 +58,7 @@ class PHPRenderer extends ViewRenderer
                 trigger_error("Template File: {$template} not found", E_USER_ERROR);
             }
             include $template;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             while (ob_get_level() > $obLevel) {
                 ob_end_clean();
             }
@@ -92,7 +92,7 @@ class PHPRenderer extends ViewRenderer
                 return '';
             }
             include $template;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             while (ob_get_level() > $obLevel) {
                 ob_end_clean();
             }

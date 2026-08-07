@@ -13,7 +13,7 @@ class Password
      */
     public static function hash(string $password, $algo = PASSWORD_DEFAULT, array $options = []): string
     {
-        if (is_string($algo)) {
+        if (is_string($algo) && defined($algo)) {
             $algo = constant($algo);
         }
         return password_hash($password, $algo, $options);
@@ -32,7 +32,7 @@ class Password
      */
     public static function needsRehash(string $hash, $algo = PASSWORD_DEFAULT, array $options = []): bool
     {
-        if (is_string($algo)) {
+        if (is_string($algo) && defined($algo)) {
             $algo = constant($algo);
         }
         return password_needs_rehash($hash, $algo, $options);

@@ -44,8 +44,8 @@ function check_database_error(\PDOException $e): void
     }
 }
 
-// Install — 配置文件不存在时直接进入安装流程
-if (!is_file('config/database.php') ) {
+// Install — 未安装时进入安装流程
+if (!is_file('config/database.php') || !is_file('var/install.lock')) {
     header('Location: install/index.php');
     exit();
 }
