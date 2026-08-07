@@ -162,7 +162,7 @@ class Sitemap
     /**
      * 从节点行数据生成完整 URL
      *
-     * 策略：slug 优先 → 回退参数形式
+     * 策略：slug 优先 → 使用固定链接结构 → 回退参数形式
      */
     protected function buildUrl(array $entry): string
     {
@@ -171,20 +171,24 @@ class Sitemap
         $id       = (int) ($entry['id'] ?? 0);
 
         // link-url 栏目不纳入 sitemap
-        if ($nodeType === 'link-url') {
+        if ($nodeType === 'link-url' || $slug === '--zap-link-url') {
             return '';
         }
 
-        // slug 优先（全局唯一，Router 据此定位）
-        if (!empty($slug) && $slug !== '--zap-link-url') {
-            return site_url($slug);
+        // 使用 build_permalink（支持固定链接结构）
+        if (function_exists('build_permalink')) {
+            return \build_permalink($entry);
         }
 
-        // 回退
-        if ($nodeType === 'catalog') {
-            return site_url('catalog/' . $id);
+        // 回退：slug 优先
+        if (!empty($slug)) {
+            return \site_url($slug);
         }
-        return site_url('node/' . $nodeType . '?nodeId=' . $id);
+
+        if ($nodeType === 'catalog') {
+            return \site_url('catalog/' . $id);
+        }
+        return \site_url('node/' . $nodeType . '?nodeId=' . $id);
     }
 
     // ==================== 元数据计算 ====================

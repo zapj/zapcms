@@ -389,13 +389,15 @@ class CreateTables
             $table->batchInert([
                 [1, '内容管理', 0, '1,', 1, 'fa fa-cube', 'Node', '_self', 'action', '(node/.*)', '1', 1, 1697786443, 1694683755],
                 [2, '栏目', 0, '2,', 1, 'fa fa-square-poll-horizontal', 'Catalog', '_self', 'action', 'catalog/.*', '1', 2, 1694684638, 1694684638],
-                [3, '系统管理', 0, '3,', 1, 'fa fa-gear', '', '_self', 'action', '(admin-menu/.*|system/.*|user/.*)', '1', 4, 1694684685, 1694684685],
-                [4, '基础设置', 3, '3,4,', 2, 'fa-solid fa-angle-right', 'System@settings', '_self', 'action', '(system/.*)', '1,2', 0, 1694684704, 1694684704],
-                [5, '系统菜单设置', 3, '3,5,', 2, 'fa-solid fa-angle-right', 'AdminMenu', '_self', 'action', '(admin-menu/.*|system/.*)', '1,2', 1, 1694684714, 1694684714],
+                [3, '设置', 0, '3,', 1, 'fa fa-gear', '', '_self', 'action', '(admin-menu/.*|system/.*|user/.*)', '1', 4, 1694684685, 1694684685],
+                [4, '基础设置', 3, '3,4,', 2, 'fa-solid fa-angle-right', 'System@settings', '_self', 'action', '(system/settings.*)', '1,2', 0, 1694684704, 1694684704],
+                [5, '系统菜单设置', 3, '3,5,', 2, 'fa-solid fa-angle-right', 'AdminMenu', '_self', 'action', '(admin-menu/.*)', '1,2', 1, 1694684714, 1694684714],
                 [7, '主题', 0, '7,', 1, 'fa-solid fa-wand-magic-sparkles', 'Theme', '_self', 'action', '(theme/.*)', '1', 3, 1697790328, 1697700805],
-                [8, '用户管理', 3, '38,', 2, 'fa-solid fa-chevron-right', 'User', '_self', 'action', '(user/.*)', '1', 2, 1697700876, 1697700876],
+                [8, '用户管理', 3, '3,8,', 2, 'fa-solid fa-chevron-right', 'User', '_self', 'action', '(user/.*)', '1', 2, 1697700876, 1697700876],
                 [9, '插件', 0, '9,', 1, 'fa-solid fa-puzzle-piece', 'Plugin', '_self', 'action', '(plugin/.*)', '1', 5, time(), time()],
-                [10, '系统更新', 3, '3,10,', 2, 'fa-solid fa-arrows-rotate', 'Update', '_self', 'action', '(update/.*)', '1,2', 3, time(), time()]
+                [10, '系统更新', 3, '3,10,', 2, 'fa-solid fa-arrows-rotate', 'Update', '_self', 'action', '(update/.*)', '1,2', 3, time(), time()],
+                [11, 'Sitemap', 3, '3,11,', 2, 'fa-solid fa-sitemap', 'System@sitemap', '_self', 'action', '(system/sitemap.*)', '1,2', 4, time(), time()],
+                [12, '固定链接设置', 3, '3,12,', 2, 'fa-solid fa-link', 'System@permalink', '_self', 'action', '(system/permalink.*)', '1,2', 5, time(), time()]
             ]);
         });
 
@@ -527,6 +529,10 @@ class CreateTables
                 [64, 'mail.port', '25', 0, 0],
                 [65, 'mail.timeout', '5', 0, 0],
 
+                // permalink settings (WordPress-like)
+                [80, 'permalink.structure', '/%postname%/', 0, 1],
+                [81, 'permalink.catalog_prefix', 'catalog', 0, 1],
+
                 [1034, 'basic_home.slide', '[{\"img_path\":\"\\/themes\\/basic\\/img\\/banner1.png\",\"link\":\"https:\\/\\/zap.cn\"},{\"img_path\":\"\\/themes\\/basic\\/img\\/banner2.png\",\"link\":\"https:\\/\\/zap.cn\"}]', 0, 0],
                 [1036, 'basic_home.service_title', '服务项目', 0, 0],
                 [1037, 'basic_home.service_subtitle', 'SERVICES', 0, 0],
@@ -589,6 +595,8 @@ class CreateTables
                 [1, 'admin_menu_8', '', 1698571937],
                 [1, 'admin_menu_9', '', 1698571937],
                 [1, 'admin_menu_10', '', 1698571937],
+                [1, 'admin_menu_11', '', 1698571937],
+                [1, 'admin_menu_12', '', 1698571937],
                 [1, 'user', 'modify,access', 1698571937],
                 [2, 'admin_menu_1', '', 1698571949],
                 [2, 'admin_menu_2', '', 1698571949],

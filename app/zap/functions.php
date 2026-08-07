@@ -165,18 +165,93 @@ function home_url(): string
 }
 
 /**
+ * 获取固定链接结构
+ *
+ * @return string 如 '/%postname%/' 或 '/%year%/%monthnum%/%postname%/'
+ */
+function get_permalink_structure(): string
+{
+    static $structure = null;
+    if ($structure === null) {
+        $structure = option('permalink.structure', '/%postname%/');
+    }
+    return $structure;
+}
+
+/**
+ * 获取栏目前缀
+ *
+ * @return string 如 'catalog', 'shop', 'category'
+ */
+function get_catalog_prefix(): string
+{
+    static $prefix = null;
+    if ($prefix === null) {
+        $prefix = option('permalink.catalog_prefix', 'catalog');
+        if (empty($prefix)) {
+            $prefix = 'catalog';
+        }
+    }
+    return $prefix;
+}
+
+/**
+ * 根据固定链接结构生成 Node 内容页链接
+ *
+ * @param array $node { id, slug, node_type, add_time 或 pub_time }
+ * @return string
+ *
+ * 支持标签：%year%, %monthnum%, %day%, %postname%, %post_id%, %node_type%
+ */
+function build_permalink(array $node): string
+{
+    $structure = get_permalink_structure();
+    $slug = $node['slug'] ?? '';
+    $id   = (int)($node['id'] ?? 0);
+
+    // 如果有 slug 且不是占位符，优先使用 slug 格式 /{slug}/
+    // 但只有当结构是简单的 /%postname%/ 时才直接用 slug
+    if (!empty($slug) && $slug !== '--zap-link-url') {
+        if ($structure === '/%postname%/') {
+            return site_url($slug);
+        }
+        // 自定义结构时也用 slug 替换 %postname%
+    }
+
+    // 提取时间信息
+    $pubTime = !empty($node['pub_time']) ? strtotime($node['pub_time']) : 0;
+    $addTime = !empty($node['add_time']) ? strtotime($node['add_time']) : 0;
+    $time    = max($pubTime, $addTime) ?: time();
+
+    // 替换标签
+    $replacements = [
+        '%year%'      => date('Y', $time),
+        '%monthnum%'  => date('m', $time),
+        '%day%'       => date('d', $time),
+        '%postname%'  => (!empty($slug) && $slug !== '--zap-link-url') ? $slug : $id,
+        '%post_id%'   => $id,
+        '%node_type%' => $node['node_type'] ?? 'default',
+    ];
+
+    $uri = str_replace(array_keys($replacements), array_values($replacements), $structure);
+
+    return site_url($uri);
+}
+
+/**
  * 生成 Node 内容页链接
  *
  * 策略：
- *   第一步用 ID 查 slug，有 slug → /{slug}
- *   无 slug → /node/{type}?nodeId={id}
+ *   优先使用固定链接结构（支持自定义格式）
+ *   有 slug → /{slug} （文章名称型结构时）
+ *   无 slug → 按结构拼接
  *
  * @param int    $nodeId 节点ID
  * @param string $type   节点类型
  * @return string
  *
- * @example node_url(42)           → /my-article-slug  (如有 slug)
- * @example node_url(42, 'article') → /node/article?nodeId=42  (无 slug 时回退)
+ * @example node_url(42)           → /my-article-slug  (文章名称型)
+ * @example node_url(42, 'article') → /2024/01/my-article-slug/  (月份和名称型)
  */
 function node_url(int $nodeId, string $type = 'default'): string
 {
@@ -184,15 +259,28 @@ function node_url(int $nodeId, string $type = 'default'): string
     if (isset($cache[$nodeId])) {
         $node = $cache[$nodeId];
     } else {
-        $node = Node::createQuery()->select('id', 'slug', 'node_type')->where('id', $nodeId)->first();
+        $node = Node::createQuery()
+            ->select('id', 'slug', 'node_type', 'add_time', 'pub_time')
+            ->where('id', $nodeId)
+            ->first();
         $cache[$nodeId] = $node ?: false;
     }
 
-    if ($node && !empty($node['slug']) && $node['slug'] !== '--zap-link-url') {
-        return site_url($node['slug']);
+    if (!$node) {
+        return base_url("node/{$type}?nodeId={$nodeId}");
     }
 
-    return base_url("node/{$type}?nodeId={$nodeId}");
+    $slug = $node['slug'] ?? '';
+    $structure = get_permalink_structure();
+
+    // 文章名称型且有 slug：直接用 slug
+    if ($structure === '/%postname%/' && !empty($slug) && $slug !== '--zap-link-url') {
+        return site_url($slug);
+    }
+
+    // 使用固定链接结构生成
+    $node['node_type'] = $node['node_type'] ?: $type;
+    return build_permalink($node);
 }
 
 /**
@@ -215,29 +303,36 @@ function resolve_link_url(array $linkRow): string
     switch ($linkType) {
         case 'catalog':
             // link_to 存的是 slug
+            $catalogPrefix = get_catalog_prefix();
             if (!empty($linkTo) && $linkTo !== '--zap-link-url') {
-                return site_url($linkTo);
+                return site_url($catalogPrefix . '/' . $linkTo);
             }
             if ($linkObject > 0) {
                 $catalog = Node::createQuery()->select('id', 'slug')->where('id', $linkObject)->first();
                 if ($catalog && !empty($catalog['slug']) && $catalog['slug'] !== '--zap-link-url') {
-                    return site_url($catalog['slug']);
+                    return site_url($catalogPrefix . '/' . $catalog['slug']);
                 }
-                return site_url('catalog/' . $linkObject);
+                return site_url($catalogPrefix . '/' . $linkObject);
             }
             return home_url();
 
         case 'node':
-            // link_to 存的是节点的 slug（node slug 全局唯一，Router 据此定位）
-            if (!empty($linkTo) && $linkTo !== '--zap-link-url') {
-                return site_url($linkTo);
-            }
+            // link_to 存的是节点的 slug
             if ($linkObject > 0) {
-                $node = Node::createQuery()->select('id', 'slug', 'node_type')->where('id', $linkObject)->first();
-                if ($node && !empty($node['slug']) && $node['slug'] !== '--zap-link-url') {
-                    return site_url($node['slug']);
+                $node = Node::createQuery()
+                    ->select('id', 'slug', 'node_type', 'add_time', 'pub_time')
+                    ->where('id', $linkObject)
+                    ->first();
+                if ($node) {
+                    return build_permalink($node);
                 }
-                return site_url('node/default?nodeId=' . $linkObject);
+            }
+            if (!empty($linkTo) && $linkTo !== '--zap-link-url') {
+                $structure = get_permalink_structure();
+                if ($structure === '/%postname%/') {
+                    return site_url($linkTo);
+                }
+                return site_url(str_replace('%postname%', $linkTo, $structure));
             }
             return home_url();
 
@@ -309,23 +404,15 @@ function smart_node_url(array $row): string
     // 普通栏目
     if ($nodeType === 'catalog') {
         $slug = $row['slug'] ?? '';
+        $catalogPrefix = get_catalog_prefix();
         if (!empty($slug) && $slug !== '--zap-link-url') {
-            return site_url($slug);
+            return site_url($catalogPrefix . '/' . $slug);
         }
-        return site_url('catalog/' . ((int) ($row['id'] ?? 0)));
+        return site_url($catalogPrefix . '/' . ((int) ($row['id'] ?? 0)));
     }
 
-    // 普通内容节点
-    $id = (int) ($row['id'] ?? 0);
-    $slug = $row['slug'] ?? '';
-    if ($id > 0 && !empty($slug) && $slug !== '--zap-link-url') {
-        return site_url($slug);
-    }
-    if ($id > 0) {
-        return node_url($id);
-    }
-
-    return home_url();
+    // 普通内容节点：使用固定链接结构
+    return build_permalink($row);
 }
 
 /**

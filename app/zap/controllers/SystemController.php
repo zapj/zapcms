@@ -140,5 +140,80 @@ class SystemController extends AdminController
         }
     }
 
+    /**
+     * Sitemap 管理页面
+     */
+    public function sitemap()
+    {
+        $siteUrl = rtrim(config('config.site_url', base_url()), '/');
+        $types = ['catalog', 'page', 'article', 'product', 'faq'];
+
+        $sitemaps = [];
+        foreach ($types as $type) {
+            $count = \app\zap\cms\models\Node::createQuery()
+                ->where('node_type', $type)
+                ->where('status', 'publish')
+                ->count();
+            if ($count > 0) {
+                $sitemaps[] = [
+                    'type'   => $type,
+                    'url'    => $siteUrl . '/sitemap-' . $type . '.xml',
+                    'count'  => $count,
+                ];
+            }
+        }
+
+        $data = [
+            'page_title'    => 'Sitemap',
+            'page_subtitle' => 'XML 站点地图管理与查看',
+            'breadcrumbs'   => [
+                ['title' => '控制台', 'url' => \zap\facades\Url::action('Index')],
+                ['title' => '设置'],
+                ['title' => 'Sitemap'],
+            ],
+            'sitemap_index_url' => $siteUrl . '/sitemap.xml',
+            'sitemaps' => $sitemaps,
+        ];
+
+        \view('system.sitemap', $data);
+    }
+
+    /**
+     * 固定链接设置页面
+     */
+    public function permalink()
+    {
+        if (Request::isPost()) {
+            $structure     = Request::post('permalink_structure', '/%postname%/');
+            $catalogPrefix = Request::post('catalog_prefix', 'catalog');
+
+            // 基本清理
+            $structure = '/' . trim(trim($structure), '/') . '/';
+            $catalogPrefix = preg_replace('/[^a-zA-Z0-9_-]/', '', $catalogPrefix) ?: 'catalog';
+
+            Option::update('permalink.structure', $structure, 0, 1);
+            Option::update('permalink.catalog_prefix', $catalogPrefix, 0, 1);
+
+            // 清除配置缓存
+            \zap\facades\Cache::delete('permalink.structure');
+            \zap\facades\Cache::delete('permalink.catalog_prefix');
+
+            Response::json(['code' => 0, 'msg' => '固定链接设置已保存']);
+        }
+
+        $data = [
+            'page_title'    => '固定链接设置',
+            'page_subtitle' => '自定义网站链接结构，优化 SEO',
+            'breadcrumbs'   => [
+                ['title' => '控制台', 'url' => \zap\facades\Url::action('Index')],
+                ['title' => '设置'],
+                ['title' => '固定链接设置'],
+            ],
+            'current_structure'     => option('permalink.structure', '/%postname%/'),
+            'current_catalog_prefix' => option('permalink.catalog_prefix', 'catalog'),
+        ];
+
+        \view('system.permalink', $data);
+    }
 
 }
