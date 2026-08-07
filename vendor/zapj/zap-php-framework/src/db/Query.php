@@ -2,8 +2,7 @@
 
 namespace zap\db;
 
-use zap\util\Arr;
-use zap\util\Pagination;
+use zap\helpers\Pagination;
 
 class Query
 {

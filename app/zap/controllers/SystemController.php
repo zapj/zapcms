@@ -181,7 +181,7 @@ class SystemController extends AdminController
 
         $sitemaps = [];
         foreach ($types as $type) {
-            $count = \app\zap\cms\models\Node::createQuery()
+            $count = \zap\cms\models\Node::createQuery()
                 ->where('node_type', $type)
                 ->where('status', 'publish')
                 ->count();

@@ -22,6 +22,10 @@ class SitemapController extends Controller
      */
     public function generate(string $type = 'sitemap.xml')
     {
+        // 设置正确的 Content-Type，避免浏览器以 HTML 解析
+        header('Content-Type: application/xml; charset=UTF-8');
+        header('X-Robots-Tag: noindex');
+
         $sitemap = new Sitemap();
 
         // 提取类型名：sitemap[-type].xml
@@ -30,7 +34,7 @@ class SitemapController extends Controller
         } else {
             $typeName = '';
         }
-
+        
         // 空类型 → 索引
         if ($typeName === '') {
             echo $sitemap->createIndex();
@@ -42,7 +46,7 @@ class SitemapController extends Controller
             http_response_code(404);
             return;
         }
-
+       
         echo $sitemap->createUrlSet($typeName);
     }
 }

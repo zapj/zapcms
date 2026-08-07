@@ -1,27 +1,4 @@
-<?php include view('layouts.partials.header');?>
-
-<div class="container-fluid">
-    <!-- 页面标题 -->
-    <div class="row">
-        <div class="col-12">
-            <div class="page-title-box d-flex align-items-center justify-content-between">
-                <h4 class="mb-0"><?php echo e($page_title ?? 'Sitemap'); ?></h4>
-                <div class="page-title-right">
-                    <ol class="breadcrumb m-0">
-                        <?php if (!empty($breadcrumbs)): ?>
-                            <?php foreach ($breadcrumbs as $crumb): ?>
-                                <?php if (!empty($crumb['url'])): ?>
-                                    <li class="breadcrumb-item"><a href="<?php echo $crumb['url']; ?>"><?php echo $crumb['title']; ?></a></li>
-                                <?php else: ?>
-                                    <li class="breadcrumb-item active"><?php echo $crumb['title']; ?></li>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </ol>
-                </div>
-            </div>
-        </div>
-    </div>
+<?php $this->layout('layouts/common');?>
 
     <div class="row">
         <div class="col-lg-8">
@@ -39,8 +16,8 @@
                         <label class="form-label fw-semibold">Sitemap 索引地址</label>
                         <div class="input-group">
                             <input type="text" class="form-control" readonly
-                                   value="<?php echo e($sitemap_index_url); ?>">
-                            <a href="<?php echo e($sitemap_index_url); ?>" target="_blank"
+                                   value="<?php echo htmlspecialchars($sitemap_index_url); ?>">
+                            <a href="<?php echo htmlspecialchars($sitemap_index_url); ?>" target="_blank"
                                class="btn btn-outline-secondary">
                                 <i class="fa-solid fa-arrow-up-right-from-square"></i> 查看
                             </a>
@@ -76,14 +53,14 @@
                                     <?php foreach ($sitemaps as $item): ?>
                                     <tr>
                                         <td>
-                                            <span class="badge bg-primary"><?php echo e($item['type']); ?></span>
+                                            <span class="badge bg-primary"><?php echo htmlspecialchars($item['type']); ?></span>
                                         </td>
-                                        <td><?php echo e($item['count']); ?> 条</td>
+                                        <td><?php echo htmlspecialchars($item['count']); ?> 条</td>
                                         <td>
-                                            <code class="text-break"><?php echo e($item['url']); ?></code>
+                                            <code class="text-break"><?php echo htmlspecialchars($item['url']); ?></code>
                                         </td>
                                         <td class="text-center">
-                                            <a href="<?php echo e($item['url']); ?>" target="_blank"
+                                            <a href="<?php echo htmlspecialchars($item['url']); ?>" target="_blank"
                                                class="btn btn-sm btn-outline-secondary">
                                                 <i class="fa-solid fa-eye"></i> 查看
                                             </a>
@@ -142,11 +119,20 @@
                            class="btn btn-outline-info btn-sm">
                             <i class="fa-brands fa-microsoft me-1"></i> Bing Webmaster Tools
                         </a>
+                        <a href="https://ziyuan.baidu.com/linksubmit/index" target="_blank"
+                           class="btn btn-outline-warning btn-sm">
+                            <i class="fa-brands fa-baidu me-1"></i> 百度站长平台
+                        </a>
+                        <a href="https://ziyuan.so.com/site/submit" target="_blank"
+                           class="btn btn-outline-success btn-sm">
+                            <i class="fa-solid fa-magnifying-glass me-1"></i> 360站长平台
+                        </a>
+                        <a href="https://www.sogou.com/webmasters" target="_blank"
+                           class="btn btn-outline-dark btn-sm">
+                            <i class="fa-solid fa-magnifying-glass me-1"></i> 搜狗站长平台
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
-<?php include view('layouts.partials.footer');?>

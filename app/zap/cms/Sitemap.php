@@ -6,7 +6,7 @@
 namespace zap\cms;
 
 use zap\cms\models\Node;
-
+use zap\DB;
 /**
  * Sitemap 生成器
  *
@@ -38,6 +38,22 @@ class Sitemap
         'product' => 'product',
         'faq'     => 'faq',
     ];
+
+    /**
+     * 获取带表前缀的 node 表名
+     */
+    private static function nodeTable(): string
+    {
+        return Node::tableName();
+    }
+
+    /**
+     * 获取带表前缀的 catalog 表名
+     */
+    private static function catalogTable(): string
+    {
+        return 'catalog';
+    }
 
     // ==================== 对外 API ====================
 
@@ -124,8 +140,7 @@ class Sitemap
             return $this->emptyUrlSetXml();
         }
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<urlset xmlns="' . self::NS . '">' . "\n";
+        $body = [];
 
         foreach ($entries as $entry) {
             $url  = $this->buildUrl($entry);
@@ -137,18 +152,20 @@ class Sitemap
             $changefreq = $this->changelog($type, $entry);
             $priority   = $this->priority($type, $entry);
 
-            $xml .= "  <url>\n";
-            $xml .= '    <loc>' . $this->xmlEscape($url) . "</loc>\n";
-            if ($lastmod > 0) {
-                $xml .= '    <lastmod>' . $this->formatW3c($lastmod) . "</lastmod>\n";
-            }
-            $xml .= '    <changefreq>' . $changefreq . "</changefreq>\n";
-            $xml .= '    <priority>' . number_format($priority, 1) . "</priority>\n";
-            $xml .= "  </url>\n";
+            $body[] = "  <url>\n"
+                . '    <loc>' . $this->xmlEscape($url) . "</loc>\n"
+                . ($lastmod > 0 ? '    <lastmod>' . $this->formatW3c($lastmod) . "</lastmod>\n" : '')
+                . '    <changefreq>' . $changefreq . "</changefreq>\n"
+                . '    <priority>' . number_format($priority, 1) . "</priority>\n"
+                . "  </url>";
         }
 
-        $xml .= '</urlset>';
-        return $xml;
+        return implode("\n", [
+            '<?xml version="1.0" encoding="UTF-8"?>',
+            '<urlset xmlns="' . self::NS . '">',
+            ...$body,
+            '</urlset>'
+        ]);
     }
 
     protected function emptyUrlSetXml(): string
@@ -207,10 +224,10 @@ class Sitemap
      */
     protected function getNewestPubTime(string $nodeType): int
     {
-        $table = Node::getTableName();
-        $sql = "SELECT MAX(COALESCE(update_time, pub_time, add_time)) AS t FROM {$table}"
+        $table = static::nodeTable();
+        $sql = "SELECT MAX(COALESCE(update_time, pub_time, add_time)) AS t FROM {{$table}}"
              . " WHERE node_type = ? AND status = ?";
-        $row = db()->fetch($sql, [$nodeType, Node::STATUS_PUBLISH]);
+        $row = DB::fetch($sql, [$nodeType, Node::STATUS_PUBLISH]);
         return (int) ($row['t'] ?? 0);
     }
 
@@ -255,33 +272,34 @@ class Sitemap
      */
     protected function fetchPublishedByType(string $nodeType, int $limit = 10000): array
     {
-        $table = Node::getTableName();
-
+        $table        = static::nodeTable();
+        $catalogTable = static::catalogTable();
+    
         if ($nodeType === 'catalog') {
             // catalog 表的 level 字段需要在节点表之外 JOIN 获取
             $sql = "SELECT n.id, n.slug, n.node_type, n.mime_type, c.level, n.add_time, n.pub_time, n.update_time"
-                 . " FROM {$table} n"
-                 . " LEFT JOIN catalog c ON c.id = n.id"
+                 . " FROM {{$table}} n"
+                 . " LEFT JOIN {{$catalogTable}} c ON c.id = n.id"
                  . " WHERE n.node_type = ? AND n.status = ?"
                  . " AND n.slug IS NOT NULL AND n.slug != ''"
                  . " ORDER BY n.sort_order ASC, n.id ASC"
                  . " LIMIT " . (int) $limit;
         } else {
             $sql = "SELECT id, slug, node_type, mime_type, add_time, pub_time, update_time"
-                 . " FROM {$table}"
+                 . " FROM {{$table}}"
                  . " WHERE node_type = ? AND status = ?"
                  . " ORDER BY COALESCE(update_time, pub_time, add_time) DESC"
                  . " LIMIT " . (int) $limit;
         }
 
-        return db()->fetchAll($sql, [$nodeType, Node::STATUS_PUBLISH]) ?: [];
+        return DB::fetchAll($sql, [$nodeType, Node::STATUS_PUBLISH]) ?: [];
     }
 
     protected function countPublishedByType(string $nodeType): int
     {
-        $table = Node::getTableName();
-        $row = db()->fetch(
-            "SELECT COUNT(*) AS c FROM {$table} WHERE node_type = ? AND status = ?",
+        $table = static::nodeTable();
+        $row = DB::fetch(
+            "SELECT COUNT(*) AS c FROM {{$table}} WHERE node_type = ? AND status = ?",
             [$nodeType, Node::STATUS_PUBLISH]
         );
         return (int) ($row['c'] ?? 0);

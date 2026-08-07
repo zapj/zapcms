@@ -10,7 +10,7 @@
 
 namespace app;
 
-use Twig\Error\Error;
+use Twig\Error\Error as TwigError;
 use zap\cms\models\Node;
 use zap\DB;
 use zap\exception\NotFoundException;
@@ -124,8 +124,11 @@ class Startup
             }
         } catch (ViewNotFoundException $e) {
             echo $e->getMessage();
-        } catch (Error $e) {
+        } catch (\Error $e) {
             echo $e->getMessage();
+        } catch (\Throwable $e) {
+            http_response_code(500);
+            echo '[' . get_class($e) . '] ' . $e->getMessage();
         }
     }
 
@@ -162,6 +165,13 @@ class Startup
         $pageState = pageState();
 
         if (($segment = current($this->router->params)) !== false) {
+            
+            // Sitemap 路由匹配（必须在 switch 外部，避免 PHP switch 宽松比较 bug）
+            if (preg_match('/^sitemap([A-Za-z0-9_-]+)?.xml$/i', $segment)) {
+                $this->resetRoute('Sitemap', 'generate');
+                return;
+            }
+
             switch ($segment) {
                 case 'tags':
                     $pageState->tags = true;
@@ -170,9 +180,6 @@ class Startup
                 case 'tag':
                     $pageState->tag = true;
                     $this->resetRoute('node', 'tag');
-                    return;
-                case preg_match('/^sitemap([A-Za-z0-9_-]+)?.xml$/i', $segment) === 1:
-                    $this->resetRoute('Sitemap', 'generate');
                     return;
             }
         }
