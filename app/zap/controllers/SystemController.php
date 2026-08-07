@@ -4,6 +4,7 @@ namespace app\zap\controllers;
 
 use app\zap\cms\backup\Database;
 use zap\cms\AdminController;
+use zap\cms\Mailer;
 use zap\cms\Option;
 use zap\http\Request;
 use zap\http\Response;
@@ -29,6 +30,36 @@ class SystemController extends AdminController
             'options'=> Option::getArray($keyPrefix,'REGEXP')
         ];
         View::render("system.settings",$data);
+    }
+
+    /**
+     * 发送测试邮件
+     */
+    public function mailTest()
+    {
+        if (!Request::isPost()) {
+            Response::json(['code' => 1, 'msg' => '非法请求']);
+            return;
+        }
+
+        $testEmail = Request::post('test_email', '');
+
+        if (empty($testEmail) || !filter_var($testEmail, FILTER_VALIDATE_EMAIL)) {
+            Response::json(['code' => 1, 'msg' => '请输入有效的邮箱地址']);
+            return;
+        }
+
+        try {
+            $siteName = option('website.title', 'ZAP CMS');
+            $subject  = "[{$siteName}] SMTP 测试邮件";
+            $body     = "<h3>邮件发送测试成功！</h3><p>这是一封来自 <strong>{$siteName}</strong> 的 SMTP 配置测试邮件。</p><p>如果您能收到此邮件，说明 SMTP 邮件配置正确。</p><hr><p style='color:#999;font-size:12px;'>此邮件由系统自动发送，请勿回复。</p>";
+
+            Mailer::send($testEmail, $subject, $body);
+
+            Response::json(['code' => 0, 'msg' => "测试邮件已发送至 {$testEmail}，请检查收件箱"]);
+        } catch (\Exception $e) {
+            Response::json(['code' => 1, 'msg' => '邮件发送失败: ' . $e->getMessage()]);
+        }
     }
 
     public function sysInfo()

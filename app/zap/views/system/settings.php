@@ -7,7 +7,7 @@ Asset::library('jqueryvalidation');
 $this->layout('layouts/common');
 
 $this->view->page_title = '系统设置';
-$this->view->page_subtitle = '站点信息 & 第三方代码';
+$this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置';
 ?>
 
 <form id="zapForm">
@@ -29,6 +29,13 @@ $this->view->page_subtitle = '站点信息 & 第三方代码';
                                     data-bs-target="#third-party-tab-pane" type="button" role="tab"
                                     aria-controls="third-party-tab-pane" aria-selected="false">
                                 <i class="fa fa-code me-1"></i>第三方代码
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" id="smtp-tab" data-bs-toggle="tab"
+                                    data-bs-target="#smtp-tab-pane" type="button" role="tab"
+                                    aria-controls="smtp-tab-pane" aria-selected="false">
+                                <i class="fa fa-envelope me-1"></i>邮件设置
                             </button>
                         </li>
                     </ul>
@@ -116,6 +123,82 @@ $this->view->page_subtitle = '站点信息 & 第三方代码';
                             </div>
                         </div>
                     </div>
+
+                    <div class="tab-pane fade" id="smtp-tab-pane" role="tabpanel" aria-labelledby="smtp-tab"
+                         tabindex="0">
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label for="website.smtp_host" class="form-label small">SMTP 服务器 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-sm" id="website.smtp_host"
+                                       name="options[website.smtp_host]"
+                                       placeholder="例如 smtp.qq.com"
+                                       value="<?php echo $options['website.smtp_host'] ?? '';?>" />
+                            </div>
+                            <div class="col-md-3">
+                                <label for="website.smtp_port" class="form-label small">端口</label>
+                                <input type="number" class="form-control form-control-sm" id="website.smtp_port"
+                                       name="options[website.smtp_port]"
+                                       placeholder="587"
+                                       value="<?php echo $options['website.smtp_port'] ?? '587';?>" />
+                            </div>
+                            <div class="col-md-3">
+                                <label for="website.smtp_encryption" class="form-label small">加密方式</label>
+                                <select class="form-select form-select-sm" id="website.smtp_encryption"
+                                        name="options[website.smtp_encryption]">
+                                    <option value="tls" <?php if(($options['website.smtp_encryption'] ?? 'tls') === 'tls') echo 'selected';?>>TLS</option>
+                                    <option value="ssl" <?php if(($options['website.smtp_encryption'] ?? '') === 'ssl') echo 'selected';?>>SSL</option>
+                                    <option value="none" <?php if(($options['website.smtp_encryption'] ?? '') === 'none') echo 'selected';?>>无加密</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="website.smtp_user" class="form-label small">邮箱账号 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-sm" id="website.smtp_user"
+                                       name="options[website.smtp_user]"
+                                       placeholder="yourname@example.com"
+                                       value="<?php echo $options['website.smtp_user'] ?? '';?>" />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="website.smtp_pass" class="form-label small">邮箱密码 / 授权码</label>
+                                <input type="password" class="form-control form-control-sm" id="website.smtp_pass"
+                                       name="options[website.smtp_pass]"
+                                       placeholder="SMTP 授权码（非邮箱登录密码）"
+                                       value="<?php echo $options['website.smtp_pass'] ?? '';?>" />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="website.smtp_from" class="form-label small">发件人地址</label>
+                                <input type="email" class="form-control form-control-sm" id="website.smtp_from"
+                                       name="options[website.smtp_from]"
+                                       placeholder="noreply@example.com"
+                                       value="<?php echo $options['website.smtp_from'] ?? '';?>" />
+                                <div class="form-text">留空则使用邮箱账号作为发件人</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="website.smtp_from_name" class="form-label small">发件人名称</label>
+                                <input type="text" class="form-control form-control-sm" id="website.smtp_from_name"
+                                       name="options[website.smtp_from_name]"
+                                       placeholder="例如：网站名称"
+                                       value="<?php echo $options['website.smtp_from_name'] ?? '';?>" />
+                            </div>
+                            <div class="col-12">
+                                <hr class="my-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="flex-grow-1">
+                                        <label for="test_email" class="form-label small mb-0">发送测试邮件到：</label>
+                                    </div>
+                                    <div>
+                                        <div class="input-group input-group-sm">
+                                            <input type="email" class="form-control form-control-sm" id="test_email"
+                                                   placeholder="输入邮箱地址" style="max-width:260px;" />
+                                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="sendTestEmail()">
+                                                <i class="fa fa-paper-plane me-1"></i>发送测试邮件
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-text">请先保存 SMTP 配置，再发送测试邮件验证配置是否正确。</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="card-footer text-center">
@@ -130,6 +213,8 @@ $this->view->page_subtitle = '站点信息 & 第三方代码';
 </form>
 
 <script>
+    var mailTestUrl = '<?php echo Url::action('System@mailTest');?>';
+
     $(function(){
         $('#zapForm').validate({ignore:''});
     })
@@ -145,6 +230,36 @@ $this->view->page_subtitle = '站点信息 & 第三方代码';
             url: '<?php echo Url::current();?>',
             method: 'post',
             data: zapForm.serialize(),
+            dataType: 'json',
+            success: function (data) {
+                if (data.code === 0) {
+                    ZapToast.alert(data.msg, {bgColor: bgSuccess, position: Toast_Pos_Center});
+                } else {
+                    ZapToast.alert(data.msg, {bgColor: bgDanger, position: Toast_Pos_Center});
+                }
+            }
+        }).always(function () {
+            load.dispose()
+        });
+    }
+
+    function sendTestEmail(){
+        const testEmail = $('#test_email').val().trim();
+        if (!testEmail) {
+            ZapToast.alert('请输入测试邮箱地址', {bgColor: bgWarning, position: Toast_Pos_Center});
+            return false;
+        }
+        // 简单邮箱校验
+        const emailReg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailReg.test(testEmail)) {
+            ZapToast.alert('请输入有效的邮箱地址', {bgColor: bgWarning, position: Toast_Pos_Center});
+            return false;
+        }
+        const load = Zap.loading('正在发送测试邮件，请稍后');
+        $.ajax({
+            url: mailTestUrl,
+            method: 'post',
+            data: {test_email: testEmail},
             dataType: 'json',
             success: function (data) {
                 if (data.code === 0) {
