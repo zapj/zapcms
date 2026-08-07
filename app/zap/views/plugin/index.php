@@ -1,322 +1,501 @@
 <?php
+/*
+ * 插件管理 - 已安装列表
+ * AdminLTE 风格卡片布局
+ */
+!IS_AJAX && $this->layout('layouts/common');
 
 use zap\facades\Url;
 
-!IS_AJAX && $this->layout('layouts/common');
+$total        = count($plugins);
+$activeCount  = count(array_filter($plugins, fn($p) => ($p['status'] ?? 0) == 1));
+$disabledCnt  = $total - $activeCount;
+
+// loaded_mods 中每个元素是 ['name' => ..., 'title' => ..., ...]
+$loadedModNames = array_column($loaded_mods, 'name');
+$unregistered   = count(array_diff($loadedModNames, $registered_names));
+
+// 判断插件是否已注册到数据库
+$isRegistered = function($mod) use ($registered_names) {
+    return in_array($mod['name'], $registered_names);
+};
+
+// 获取插件状态
+$getStatus = function($plugin) {
+    return ($plugin['status'] ?? 0) == 1 ? 1 : 0;
+};
 ?>
-<nav class="navbar bg-body-tertiary mb-3 rounded shadow-sm">
-    <div class="container-fluid">
-        <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);"
-             aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item active"><a href="<?php echo Url::action('Plugin') ?>">插件管理</a></li>
-            </ol>
-        </nav>
-        <div class="text-end">
-            <button type="button" class="btn btn-outline-primary btn-sm" onclick="checkUpdates()">
-                <i class="fa-solid fa-arrows-rotate"></i> 检查更新
-            </button>
-            <button type="button" class="btn btn-outline-success btn-sm" onclick="showUploadModal()">
-                <i class="fa-solid fa-upload"></i> 上传安装
-            </button>
-            <a href="<?php echo Url::action('Plugin@market') ?>" class="btn btn-info btn-sm">
-                <i class="fa-solid fa-store"></i> 插件市场
-            </a>
-        </div>
-    </div>
-</nav>
 
-<main class="container zap-main">
-    <div class="row mt-3">
-        <div class="col-12 mb-3 border-bottom">
-            <h5 class="pb-2 mb-0"><i class="fa-solid fa-puzzle-piece"></i> 已安装插件</h5>
-        </div>
-
-        <?php if (empty($plugins) && empty($loaded_mods)): ?>
-        <div class="col-12">
-            <div class="text-center py-5 text-muted">
-                <i class="fa-solid fa-box-open" style="font-size: 48px;"></i>
-                <p class="mt-3">暂无安装任何插件</p>
-                <a href="<?php echo Url::action('Plugin@market') ?>" class="btn btn-primary btn-sm">
-                    <i class="fa-solid fa-store"></i> 前往插件市场
-                </a>
-            </div>
-        </div>
-        <?php endif; ?>
-
-        <?php foreach ($plugins as $plugin): ?>
-        <div class="col-6 col-md-4 col-lg-3 mb-3">
-            <div class="card h-100 shadow-sm <?php echo $plugin['status'] ? '' : 'border-secondary opacity-75' ?>">
-                <div class="card-body">
-                    <h6 class="card-title mb-1">
-                        <?php echo htmlspecialchars($plugin['title'] ?: $plugin['name']) ?>
-                        <?php if (!$plugin['status']): ?>
-                            <span class="badge bg-secondary">已禁用</span>
-                        <?php else: ?>
-                            <span class="badge bg-success">运行中</span>
-                        <?php endif; ?>
-                    </h6>
-                    <p class="card-text text-muted small mb-1">
-                        <?php $desc = $plugin['description'] ?? ''; echo htmlspecialchars(mb_strlen($desc) > 80 ? mb_substr($desc, 0, 80) . '...' : $desc) ?>
-                    </p>
-                    <div class="small text-muted">
-                        <div>版本: <code><?php echo htmlspecialchars($plugin['version']) ?></code></div>
-                        <?php if ($plugin['author']): ?>
-                        <div>作者: <?php echo htmlspecialchars($plugin['author']) ?></div>
-                        <?php endif; ?>
-                        <?php if ($plugin['package_name']): ?>
-                        <div>包名: <code><?php echo htmlspecialchars($plugin['package_name']) ?></code></div>
-                        <?php endif; ?>
+<div class="container-fluid p-0">
+    <!-- 统计卡片 -->
+    <div class="row g-3 mb-3">
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-start border-success border-3 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <span class="fa-stack fa-lg text-success">
+                            <i class="fa fa-circle fa-stack-2x opacity-25"></i>
+                            <i class="fa fa-play fa-stack-1x"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="text-muted small text-uppercase fw-semibold">已启用</div>
+                        <div class="fs-3 fw-bold text-success"><?= $activeCount ?></div>
                     </div>
                 </div>
-                <div class="card-footer">
-                    <div class="btn-group btn-group-sm w-100" role="group">
-                        <?php if ($plugin['status']): ?>
-                            <button class="btn btn-outline-warning" onclick="togglePlugin('<?php echo $plugin['name'] ?>', 0)" title="禁用">
-                                <i class="fa-solid fa-pause"></i>
-                            </button>
-                        <?php else: ?>
-                            <button class="btn btn-outline-success" onclick="togglePlugin('<?php echo $plugin['name'] ?>', 1)" title="启用">
-                                <i class="fa-solid fa-play"></i>
-                            </button>
-                        <?php endif; ?>
-                        <button class="btn btn-outline-danger" onclick="uninstallPlugin('<?php echo $plugin['name'] ?>')" title="卸载">
-                            <i class="fa-solid fa-trash"></i>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-start border-warning border-3 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <span class="fa-stack fa-lg text-warning">
+                            <i class="fa fa-circle fa-stack-2x opacity-25"></i>
+                            <i class="fa fa-pause fa-stack-1x"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="text-muted small text-uppercase fw-semibold">已禁用</div>
+                        <div class="fs-3 fw-bold text-warning"><?= $disabledCnt ?></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-start border-secondary border-3 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <span class="fa-stack fa-lg text-secondary">
+                            <i class="fa fa-circle fa-stack-2x opacity-25"></i>
+                            <i class="fa fa-folder-open fa-stack-1x"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="text-muted small text-uppercase fw-semibold">未注册</div>
+                        <div class="fs-3 fw-bold text-secondary"><?= $unregistered ?></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-start border-info border-3 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        <span class="fa-stack fa-lg text-info">
+                            <i class="fa fa-circle fa-stack-2x opacity-25"></i>
+                            <i class="fa fa-plug fa-stack-1x"></i>
+                        </span>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="text-muted small text-uppercase fw-semibold">插件总数</div>
+                        <div class="fs-3 fw-bold text-info"><?= $total ?></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 插件管理卡片 -->
+    <div class="card shadow-sm">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <h5 class="card-title mb-0">
+                <i class="fa fa-puzzle-piece me-2 text-primary"></i>已安装插件
+                <small class="text-muted fw-normal">(<?= $total ?>)</small>
+            </h5>
+            <div class="btn-group">
+                <button class="btn btn-success btn-sm" onclick="uploadPlugin()" title="上传插件 ZIP 包安装">
+                    <i class="fa fa-upload me-1"></i>上传安装
+                </button>
+                <a href="<?= Url::action('Plugin@market') ?>" class="btn btn-primary btn-sm ajax-link" title="前往插件市场">
+                    <i class="fa fa-shopping-cart me-1"></i>插件市场
+                </a>
+                <button class="btn btn-outline-secondary btn-sm" onclick="refreshPlugins()" title="刷新列表">
+                    <i class="fa fa-refresh"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body p-3">
+            <?php if (empty($plugins) && empty($loaded_mods)): ?>
+                <!-- 空状态 -->
+                <div class="text-center py-5 text-muted">
+                    <i class="fa fa-puzzle-piece fa-4x mb-3 d-block opacity-25"></i>
+                    <h5>还没有安装任何插件</h5>
+                    <p class="mb-3">前往插件市场发现和安装插件，或上传本地插件包</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <a href="<?= Url::action('Plugin@market') ?>" class="btn btn-primary ajax-link">
+                            <i class="fa fa-shopping-cart me-1"></i>浏览插件市场
+                        </a>
+                        <button class="btn btn-outline-success" onclick="uploadPlugin()">
+                            <i class="fa fa-upload me-1"></i>上传安装
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
-        <?php endforeach; ?>
-
-        <?php foreach ($loaded_mods as $mod): ?>
-            <?php if (in_array($mod['name'], $registered_names)) continue; ?>
-            <div class="col-6 col-md-4 col-lg-3 mb-3">
-                <div class="card h-100 shadow-sm border-warning">
-                    <div class="card-body">
-                        <h6 class="card-title mb-1">
-                            <?php echo htmlspecialchars($mod['title']) ?>
-                            <span class="badge bg-warning text-dark">未注册</span>
-                        </h6>
-                        <div class="small text-muted">
-                            <div>名称: <code><?php echo htmlspecialchars($mod['name']) ?></code></div>
-                            <?php if ($mod['version']): ?>
-                            <div>版本: <?php echo htmlspecialchars($mod['version']) ?></div>
-                            <?php endif; ?>
-                        </div>
+            <?php else: ?>
+                <!-- 视图切换按钮 -->
+                <div class="d-flex justify-content-end mb-3">
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button class="btn btn-outline-secondary active" id="viewGrid" onclick="switchView('grid')">
+                            <i class="fa fa-th-large"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary" id="viewList" onclick="switchView('list')">
+                            <i class="fa fa-list"></i>
+                        </button>
                     </div>
                 </div>
-            </div>
-        <?php endforeach; ?>
-    </div>
-</main>
 
-<!-- 上传安装模态框 -->
-<div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+                <!-- 卡片网格视图 -->
+                <div class="row g-3" id="pluginGrid">
+                    <?php foreach ($plugins as $plugin): ?>
+                        <?= renderPluginCard($plugin, true) ?>
+                    <?php endforeach; ?>
+                    <?php foreach ($loaded_mods as $mod): ?>
+                        <?php if (!$isRegistered($mod)): ?>
+                            <?= renderPluginCard(['name' => $mod['name'], 'title' => $mod['title'], 'version' => $mod['version'] ?? '—', 'author' => $mod['author'] ?? '—', 'description' => $mod['description'] ?? '插件目录存在但未注册到数据库', 'status' => 0], false) ?>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                </div>
+
+                <!-- 表格列表视图（默认隐藏） -->
+                <div class="table-responsive d-none" id="pluginTable">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:40px"></th>
+                                <th>插件名称</th>
+                                <th>版本</th>
+                                <th>作者</th>
+                                <th>状态</th>
+                                <th style="width:200px">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($plugins as $plugin): ?>
+                            <tr>
+                                <td class="text-center">
+                                    <span class="avatar avatar-sm rounded-circle d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary fw-bold" style="width:36px;height:36px;font-size:14px;">
+                                        <?= mb_strtoupper(mb_substr($plugin['title'] ?? $plugin['name'], 0, 1)) ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold"><?= htmlspecialchars($plugin['title'] ?? $plugin['name']) ?></div>
+                                    <small class="text-muted"><?= htmlspecialchars($plugin['name']) ?></small>
+                                </td>
+                                <td><span class="badge bg-light text-dark">v<?= htmlspecialchars($plugin['version'] ?? '—') ?></span></td>
+                                <td><?= htmlspecialchars($plugin['author'] ?? '—') ?></td>
+                                <td>
+                                    <?php if ($getStatus($plugin)): ?>
+                                        <span class="badge bg-success bg-opacity-10 text-success"><i class="fa fa-check-circle me-1"></i>已启用</span>
+                                    <?php else: ?>
+                                        <span class="badge bg-warning bg-opacity-10 text-warning"><i class="fa fa-pause-circle me-1"></i>已禁用</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?= renderActionButtons($plugin['name'], $getStatus($plugin)) ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                            <?php foreach ($loaded_mods as $mod): ?>
+                            <?php if (!$isRegistered($mod)): ?>
+                            <tr class="table-secondary">
+                                <td class="text-center">
+                                    <span class="avatar avatar-sm rounded-circle d-inline-flex align-items-center justify-content-center bg-secondary text-white fw-bold" style="width:36px;height:36px;font-size:14px;">
+                                        <?= mb_strtoupper(mb_substr($mod['name'], 0, 1)) ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold text-muted"><?= htmlspecialchars($mod['name']) ?></div>
+                                    <small class="text-muted">未注册到数据库</small>
+                                </td>
+                                <td><span class="badge bg-light text-muted">—</span></td>
+                                <td class="text-muted">—</td>
+                                <td><span class="badge bg-secondary bg-opacity-10 text-secondary"><i class="fa fa-question-circle me-1"></i>未注册</span></td>
+                                <td>
+                                    <button class="btn btn-outline-info btn-sm" onclick="registerPlugin('<?= htmlspecialchars($mod['name']) ?>')">
+                                        <i class="fa fa-plus me-1"></i>注册
+                                    </button>
+                                </td>
+                            </tr>
+                            <?php endif; ?>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<!-- 确认卸载 Modal -->
+<div class="modal fade" id="uninstallModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="fa-solid fa-upload"></i> 上传插件安装</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fa fa-exclamation-triangle me-2"></i>确认卸载</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="uploadForm" enctype="multipart/form-data">
-                    <div class="mb-3">
-                        <label for="pluginZip" class="form-label">选择插件ZIP包</label>
-                        <input class="form-control" type="file" id="pluginZip" name="plugin_zip" accept=".zip">
-                        <div class="form-text">仅支持 .zip 格式的插件包，插件包应包含 plugin.json</div>
-                    </div>
-                </form>
+                <p>确定要卸载插件 <strong id="uninstallPluginName">—</strong> 吗？</p>
+                <div class="alert alert-warning mb-0">
+                    <i class="fa fa-exclamation-circle me-1"></i>
+                    此操作将删除插件目录及所有相关文件，无法恢复。
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary" onclick="uploadInstall()">
-                    <i class="fa-solid fa-check"></i> 安装
+                <button type="button" class="btn btn-danger" id="confirmUninstall">
+                    <i class="fa fa-trash me-1"></i>确认卸载
                 </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- 更新列表模态框 -->
-<div class="modal fade" id="updateModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+<!-- 上传插件 Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="fa-solid fa-arrows-rotate"></i> 插件更新检查 <span id="updateCount" class="badge bg-danger"></span></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fa fa-upload me-2"></i>上传安装插件</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" id="updateModalBody">
-                <div class="text-center py-3">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">检查中...</span>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">选择插件 ZIP 包</label>
+                        <input type="file" class="form-control" name="plugin_zip" accept=".zip" required>
+                        <div class="form-text">支持 ZIP 格式的插件包，包内需包含 plugin.json 配置文件</div>
                     </div>
-                    <p class="mt-2">正在检查更新...</p>
+                    <div class="progress d-none" style="height:6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:100%"></div>
+                    </div>
+                    <div id="uploadMsg" class="mt-2"></div>
                 </div>
-            </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-success" id="uploadBtn">
+                        <i class="fa fa-upload me-1"></i>上传并安装
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <script>
-    function showUploadModal() {
-        const modal = new bootstrap.Modal('#uploadModal');
-        modal.show();
-    }
+// ==============================
+//  插件管理 - 前端交互逻辑
+// ==============================
 
-    function uploadInstall() {
-        const fileInput = document.getElementById('pluginZip');
-        if (!fileInput.files.length) {
-            ZapToast.alert('请选择ZIP文件', {bgColor: bgWarning, position: Toast_Pos_Center});
-            return;
+let currentUninstallName = '';
+
+// —— 确认卸载对话框 ——
+function confirmUninstall(name) {
+    currentUninstallName = name;
+    document.getElementById('uninstallPluginName').textContent = name;
+    const modal = new bootstrap.Modal('#uninstallModal');
+    modal.show();
+}
+
+document.getElementById('confirmUninstall').addEventListener('click', function() {
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>卸载中…';
+
+    Zap.AjaxPost({
+        url: '<?= Url::action('Plugin@uninstall') ?>',
+        data: { name: currentUninstallName },
+        dataType: 'json',
+        success: function(res) {
+            bootstrap.Modal.getInstance('#uninstallModal').hide();
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa fa-trash me-1"></i>确认卸载';
+            if (res.code === 0) {
+                ZapToast.alert('卸载成功', { bgColor: bgSuccess });
+                setTimeout(function() { location.reload(); }, 600);
+            } else {
+                ZapToast.alert(res.msg || '卸载失败', { bgColor: bgDanger });
+            }
+        },
+        error: function() {
+            bootstrap.Modal.getInstance('#uninstallModal').hide();
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa fa-trash me-1"></i>确认卸载';
+            ZapToast.alert('网络请求失败', { bgColor: bgDanger });
         }
+    });
+});
 
-        const load = Zap.loading('正在安装...');
-        const formData = new FormData(document.getElementById('uploadForm'));
+// —— 启用/禁用 ——
+function toggleStatus(name, currentStatus) {
+    const newStatus = currentStatus ? 0 : 1;
+    const actionText = newStatus ? '启用' : '禁用';
 
-        $.ajax({
-            url: '<?php echo Url::action('Plugin@uploadInstall') ?>',
-            method: 'POST',
-            data: formData,
-            dataType: 'json',
-            processData: false,
-            contentType: false,
-            success: function (data) {
-                if (data.code === 0) {
-                    ZapToast.alert(data.msg, {bgColor: bgSuccess, position: Toast_Pos_Center});
-                    setTimeout(() => location.reload(), 1000);
-                } else {
-                    ZapToast.alert(data.msg, {bgColor: bgDanger, position: Toast_Pos_Center});
-                }
-            },
-            error: function () {
-                ZapToast.alert('请求失败', {bgColor: bgDanger, position: Toast_Pos_Center});
+    Zap.AjaxPost({
+        url: '<?= Url::action('Plugin@toggleStatus') ?>',
+        data: { name: name, status: newStatus },
+        dataType: 'json',
+        success: function(res) {
+            if (res.code === 0) {
+                ZapToast.alert((newStatus ? '已启用：' : '已禁用：') + name, { bgColor: bgSuccess });
+                setTimeout(function() { location.reload(); }, 500);
+            } else {
+                ZapToast.alert(res.msg || '操作失败', { bgColor: bgDanger });
             }
-        }).always(function () {
-            load.dispose();
-        });
-    }
-
-    function uninstallPlugin(name) {
-        if (!confirm('确定要卸载插件 "' + name + '" 吗？此操作不可恢复。')) {
-            return;
+        },
+        error: function() {
+            ZapToast.alert('网络请求失败', { bgColor: bgDanger });
         }
-        const load = Zap.loading('正在卸载...');
-        $.ajax({
-            url: '<?php echo Url::action('Plugin@uninstall') ?>',
-            method: 'POST',
-            dataType: 'json',
-            data: {name: name},
-            success: function (data) {
-                if (data.code === 0) {
-                    ZapToast.alert(data.msg, {bgColor: bgSuccess, position: Toast_Pos_Center});
-                    setTimeout(() => location.reload(), 1000);
-                } else {
-                    ZapToast.alert(data.msg, {bgColor: bgDanger, position: Toast_Pos_Center});
-                }
-            },
-            error: function () {
-                ZapToast.alert('请求失败', {bgColor: bgDanger, position: Toast_Pos_Center});
-            }
-        }).always(function () {
-            load.dispose();
-        });
-    }
+    });
+}
 
-    function togglePlugin(name, status) {
-        const action = status ? '启用' : '禁用';
-        if (!confirm('确定要' + action + '此插件吗？')) {
-            return;
+// —— 注册未注册插件 ——
+function registerPlugin(name) {
+    Zap.AjaxPost({
+        url: '<?= Url::action('Plugin@uploadInstall') ?>',
+        data: { name: name },
+        dataType: 'json',
+        success: function(res) {
+            if (res.code === 0) {
+                ZapToast.alert('注册成功：' + name, { bgColor: bgSuccess });
+                setTimeout(function() { location.reload(); }, 500);
+            } else {
+                ZapToast.alert(res.msg || '注册失败，请尝试手动上传安装', { bgColor: bgWarning });
+            }
+        },
+        error: function() {
+            ZapToast.alert('网络请求失败', { bgColor: bgDanger });
         }
-        const load = Zap.loading('正在' + action + '...');
-        $.ajax({
-            url: '<?php echo Url::action('Plugin@toggleStatus') ?>',
-            method: 'POST',
-            dataType: 'json',
-            data: {name: name, status: status},
-            success: function (data) {
-                if (data.code === 0) {
-                    ZapToast.alert(data.msg, {bgColor: bgSuccess, position: Toast_Pos_Center});
-                    setTimeout(() => location.reload(), 1000);
-                } else {
-                    ZapToast.alert(data.msg, {bgColor: bgDanger, position: Toast_Pos_Center});
-                }
+    });
+}
+
+// —— 上传安装 ——
+function uploadPlugin() {
+    const modal = new bootstrap.Modal('#uploadModal');
+    modal.show();
+}
+
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const btn = document.getElementById('uploadBtn');
+    const msgEl = document.getElementById('uploadMsg');
+    const progress = this.querySelector('.progress');
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>安装中…';
+    progress.classList.remove('d-none');
+    msgEl.innerHTML = '';
+
+    Zap.AjaxPost({
+        url: '<?= Url::action('Plugin@uploadInstall') ?>',
+        data: formData,
+        processData: false,
+        contentType: false,
+        dataType: 'json',
+        success: function(res) {
+            progress.classList.add('d-none');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa fa-upload me-1"></i>上传并安装';
+            if (res.code === 0) {
+                msgEl.innerHTML = '<div class="alert alert-success py-2 mb-0"><i class="fa fa-check-circle me-1"></i>' + res.msg + '</div>';
+                ZapToast.alert('安装成功', { bgColor: bgSuccess });
+                setTimeout(function() { location.reload(); }, 800);
+            } else {
+                msgEl.innerHTML = '<div class="alert alert-danger py-2 mb-0"><i class="fa fa-times-circle me-1"></i>' + (res.msg || '安装失败') + '</div>';
+                ZapToast.alert(res.msg || '安装失败', { bgColor: bgDanger });
             }
-        }).always(function () {
-            load.dispose();
-        });
-    }
+        },
+        error: function() {
+            progress.classList.add('d-none');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa fa-upload me-1"></i>上传并安装';
+            msgEl.innerHTML = '<div class="alert alert-danger py-2 mb-0">网络请求失败</div>';
+            ZapToast.alert('网络请求失败', { bgColor: bgDanger });
+        }
+    });
+});
 
-    function checkUpdates() {
-        const modal = new bootstrap.Modal('#updateModal');
-        modal.show();
+// —— 视图切换（卡片 / 列表） ——
+function switchView(mode) {
+    document.getElementById('viewGrid').classList.toggle('active', mode === 'grid');
+    document.getElementById('viewList').classList.toggle('active', mode === 'list');
+    document.getElementById('pluginGrid').classList.toggle('d-none', mode !== 'grid');
+    document.getElementById('pluginTable').classList.toggle('d-none', mode !== 'list');
+}
 
-        $.ajax({
-            url: '<?php echo Url::action('Plugin@checkUpdates') ?>',
-            method: 'GET',
-            dataType: 'json',
-            success: function (data) {
-                let html = '';
-                if (data.code === 0 && data.data.length > 0) {
-                    $('#updateCount').text(data.count).show();
-                    data.data.forEach(function (item) {
-                        html += `
-                        <div class="card mb-2 border-warning">
-                            <div class="card-body">
-                                <h6 class="card-title">${escapeHtml(item.title)}</h6>
-                                <p class="mb-1">
-                                    <span class="badge bg-secondary">${escapeHtml(item.current_version)}</span>
-                                    <i class="fa-solid fa-arrow-right mx-1"></i>
-                                    <span class="badge bg-success">${escapeHtml(item.latest_version)}</span>
-                                </p>
-                                ${item.changelog ? `<pre class="small text-muted border p-2 mt-2" style="max-height:120px;overflow-y:auto;">${escapeHtml(item.changelog)}</pre>` : ''}
-                            </div>
-                            <div class="card-footer text-end">
-                                <button class="btn btn-primary btn-sm" onclick="doPluginUpdate('${escapeHtml(item.name)}', '${escapeHtml(item.download_url)}', '${escapeHtml(item.latest_version)}')">
-                                    <i class="fa-solid fa-download"></i> 更新
-                                </button>
-                            </div>
-                        </div>`;
-                    });
-                } else {
-                    html = '<div class="text-center py-3 text-success"><i class="fa-solid fa-circle-check fa-2x"></i><p class="mt-2">所有插件都是最新版本</p></div>';
-                    $('#updateCount').hide();
-                }
-                $('#updateModalBody').html(html);
-            },
-            error: function () {
-                $('#updateModalBody').html('<div class="text-center py-3 text-danger">检查更新失败，请确保API地址可访问</div>');
-            }
-        });
-    }
-
-    function doPluginUpdate(name, downloadUrl, version) {
-        const load = Zap.loading('正在更新插件...');
-        $.ajax({
-            url: '<?php echo Url::action('Plugin@update') ?>',
-            method: 'POST',
-            dataType: 'json',
-            data: {
-                name: name,
-                download_url: downloadUrl,
-                version: version
-            },
-            success: function (data) {
-                if (data.code === 0) {
-                    ZapToast.alert(data.msg, {bgColor: bgSuccess, position: Toast_Pos_Center});
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    ZapToast.alert(data.msg, {bgColor: bgDanger, position: Toast_Pos_Center});
-                }
-            }
-        }).always(function () {
-            load.dispose();
-        });
-    }
-
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
+// —— 刷新列表 ——
+function refreshPlugins() {
+    location.reload();
+}
 </script>
+
+<?php
+// ==============================
+//  辅助函数：渲染插件卡片
+// ==============================
+function renderPluginCard(array $plugin, bool $isRegistered): string
+{
+    $name    = htmlspecialchars($plugin['name']);
+    $title   = htmlspecialchars($plugin['title'] ?? $plugin['name']);
+    $version = htmlspecialchars($plugin['version'] ?? '—');
+    $author  = htmlspecialchars($plugin['author'] ?? '—');
+    $desc    = htmlspecialchars($plugin['description'] ?? '');
+    $status  = ($plugin['status'] ?? 0) == 1;
+
+    $iconLetter  = mb_strtoupper(mb_substr($title, 0, 1));
+    $statusBadge = $status
+        ? '<span class="badge bg-success bg-opacity-10 text-success"><i class="fa fa-check-circle me-1"></i>已启用</span>'
+        : '<span class="badge bg-warning bg-opacity-10 text-warning"><i class="fa fa-pause-circle me-1"></i>已禁用</span>';
+
+    $actions = renderActionButtons($plugin['name'], $status);
+
+    if (!$isRegistered) {
+        $iconLetter  = mb_strtoupper(mb_substr($plugin['name'], 0, 1));
+        $statusBadge = '<span class="badge bg-secondary"><i class="fa fa-question-circle me-1"></i>未注册</span>';
+        $actions     = '<button class="btn btn-outline-info btn-sm" onclick="registerPlugin(\'' . htmlspecialchars($plugin['name']) . '\')"><i class="fa fa-plus me-1"></i>注册</button>';
+    }
+
+    return <<<CARD
+    <div class="col-xl-4 col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-start mb-2">
+                    <span class="avatar rounded-circle d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary fw-bold me-3 flex-shrink-0" style="width:44px;height:44px;font-size:16px;">
+                        {$iconLetter}
+                    </span>
+                    <div class="flex-grow-1 min-w-0">
+                        <h6 class="mb-1 text-truncate" title="{$title}">{$title}</h6>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <span class="badge bg-light text-dark">v{$version}</span>
+                            <small class="text-muted text-truncate" title="{$author}"><i class="fa fa-user-o me-1"></i>{$author}</small>
+                            {$statusBadge}
+                        </div>
+                    </div>
+                </div>
+                <p class="text-muted small mb-3 text-truncate-2" style="min-height:2.5em;" title="{$desc}">{$desc}</p>
+                <div class="d-flex gap-1 flex-wrap">
+                    {$actions}
+                </div>
+            </div>
+        </div>
+    </div>
+    CARD;
+}
+
+/**
+ * 渲染操作按钮
+ */
+function renderActionButtons(string $name, bool $isActive): string
+{
+    $n = htmlspecialchars($name);
+    $html = '';
+
+    if ($isActive) {
+        $html .= '<button class="btn btn-outline-warning btn-sm" onclick="toggleStatus(\'' . $n . '\', 1)" title="禁用插件"><i class="fa fa-pause me-1"></i>禁用</button>';
+    } else {
+        $html .= '<button class="btn btn-outline-success btn-sm" onclick="toggleStatus(\'' . $n . '\', 0)" title="启用插件"><i class="fa fa-play me-1"></i>启用</button>';
+    }
+
+    $html .= ' <button class="btn btn-outline-danger btn-sm" onclick="confirmUninstall(\'' . $n . '\')" title="卸载插件"><i class="fa fa-trash me-1"></i>卸载</button>';
+
+    return $html;
+}
+?>

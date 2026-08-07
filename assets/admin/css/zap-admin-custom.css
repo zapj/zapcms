@@ -119,3 +119,25 @@
     font-size: 0.875rem;
     color: #6c757d;
 }
+
+/* ============================================================
+   Plugin Page Utilities
+   ============================================================ */
+
+/* 2-line text truncation with ellipsis */
+.text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Avatar circle */
+.avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-weight: 600;
+}

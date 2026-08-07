@@ -36,9 +36,15 @@ class PluginController extends AdminController
         $registeredNames = array_column($plugins, 'name');
 
         view('plugin.index', [
-            'plugins'         => $plugins,
-            'loaded_mods'     => $loadedMods,
+            'plugins'          => $plugins,
+            'loaded_mods'      => $loadedMods,
             'registered_names' => $registeredNames,
+            'page_title'       => '插件管理',
+            'page_subtitle'    => '管理已安装的插件，启用、禁用、卸载及更新',
+            'breadcrumbs'      => [
+                ['title' => '控制台', 'url' => \zap\facades\Url::action('Index')],
+                ['title' => '插件管理'],
+            ],
         ]);
     }
 
@@ -63,6 +69,13 @@ class PluginController extends AdminController
             'search'    => $search,
             'category'  => $category,
             'installed' => $installed ?: [],
+            'page_title'       => '插件市场',
+            'page_subtitle'    => '发现和安装更多插件扩展',
+            'breadcrumbs'      => [
+                ['title' => '控制台', 'url' => \zap\facades\Url::action('Index')],
+                ['title' => '插件管理', 'url' => \zap\facades\Url::action('Plugin@index')],
+                ['title' => '插件市场'],
+            ],
         ]);
     }
 
