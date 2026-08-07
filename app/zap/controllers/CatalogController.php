@@ -83,4 +83,51 @@ class CatalogController extends AdminController
         View::render('catalog.form',$data);
     }
 
+    /**
+     * 搜索可链接的内容（栏目 + 节点）
+     *
+     * @return void JSON
+     */
+    public function searchLinkTarget()
+    {
+        $keyword = trim((string) Request::get('keyword', ''));
+        $limit   = min(50, max(1, intval(Request::get('limit', 30))));
+
+        // 搜索栏目
+        $catalogs = [];
+        Catalog::instance()->forEachAll(function ($row) use (&$catalogs, $keyword) {
+            if ($keyword !== '' && stripos($row['title'], $keyword) === false) {
+                return;
+            }
+            $catalogs[] = [
+                'id'         => (int) $row['id'],
+                'title'      => $row['title'],
+                'node_type'  => $row['node_type'] ?: 'catalog',
+                'mime_type'  => $row['mime_type'] ?? '',
+                'kind'       => 'catalog',
+                'path_label' => str_repeat('— ', max(0, (int) $row['level'] - 1)) . $row['title'],
+            ];
+        });
+
+        // 搜索节点（排除 catalog 类型，因为 catalog 已在上方列出）
+        $nodeQuery = \zap\cms\models\Node::createQuery()
+            ->whereNotIn('node_type', ['catalog']);
+        if ($keyword !== '') {
+            $nodeQuery->where('title', 'LIKE', "%{$keyword}%");
+        }
+        $nodes = $nodeQuery->orderBy('id DESC')->limit($limit)->get(FETCH_ASSOC);
+        $nodes = $nodes ?: [];
+        foreach ($nodes as &$node) {
+            $node['kind']       = 'node';
+            $node['path_label'] = $node['title'];
+        }
+        unset($node);
+
+        Response::json([
+            'code'      => 0,
+            'catalogs'  => $catalogs,
+            'nodes'     => $nodes,
+            'total'     => count($catalogs) + count($nodes),
+        ]);
+    }
 }
