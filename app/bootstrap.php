@@ -11,6 +11,8 @@
 const ZAP_CMS_VERSION = '1.0.2';
 const ZAP_CMS_RELEASE_DATE = '2026-4-20';
 
+define('APP_ROOT', dirname(__DIR__));
+
 if (PHP_VERSION_ID < 70400) {
     exit('ZAP CMS requires PHP 7.4.0+.');
 }

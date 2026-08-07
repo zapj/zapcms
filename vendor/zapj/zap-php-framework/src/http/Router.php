@@ -226,6 +226,34 @@ class Router
     }
 
     /**
+     * 根据配置自动去除请求 URL 的后缀（如 .html）
+     *
+     * 与 appendSuffix() 配对使用：一个在输出时追加，一个在输入时去除。
+     */
+    protected static function stripSuffix(string $url): string
+    {
+        $suffix = config('config.suffix', '');
+        if (empty($suffix)) {
+            return $url;
+        }
+
+        // 分离路径和查询参数
+        $queryPos = strpos($url, '?');
+        $path = $queryPos !== false ? substr($url, 0, $queryPos) : $url;
+        $query = $queryPos !== false ? substr($url, $queryPos) : '';
+
+        // 去除后缀
+        if (str_ends_with($path, $suffix)) {
+            $path = substr($path, 0, -strlen($suffix));
+            if ($path === '') {
+                $path = '/';
+            }
+        }
+
+        return $path . $query;
+    }
+
+    /**
      * 根据配置自动追加 URL 后缀（如 .html）
      */
     protected static function appendSuffix(string $url): string
@@ -304,6 +332,9 @@ class Router
      */
     public function dispatch(string $requestUrl, string $requestMethod = 'GET'): bool
     {
+        // 去除 URL 后缀（如 .html），与生成 URL 时的 appendSuffix() 配对
+        $requestUrl = static::stripSuffix($requestUrl);
+
         // 存储请求路径（去掉查询参数）
         $this->requestPath = strtok($requestUrl, '?') ?: '/';
 

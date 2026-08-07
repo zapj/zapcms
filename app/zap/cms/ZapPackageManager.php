@@ -2,6 +2,8 @@
 
 namespace zap\cms;
 
+use zap\DB;
+
 /**
  * ZAP CMS 包管理器
  * 负责插件的下载、安装、卸载、更新以及系统核心更新
@@ -196,7 +198,7 @@ class ZapPackageManager
      * @param string $filename 保存的文件名
      * @return string|false 临时文件路径，失败返回false
      */
-    public function download(string $url, string $filename = ''): string|false
+    public function download(string $url, string $filename = '')
     {
         if (empty($filename)) {
             $filename = basename(parse_url($url, PHP_URL_PATH));
@@ -557,7 +559,7 @@ class ZapPackageManager
      * @param array $excludeDirs 排除的目录
      * @return string|false 备份目录路径
      */
-    public function backupSystem(array $excludeDirs = []): string|false
+    public function backupSystem(array $excludeDirs = [])
     {
         $defaultExclude = ['storage', 'node_modules', '.git', 'mods', 'themes'];
         $excludeDirs    = array_merge($defaultExclude, $excludeDirs);
