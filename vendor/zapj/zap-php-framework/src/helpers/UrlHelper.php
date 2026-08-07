@@ -137,6 +137,8 @@ class UrlHelper
                 $path = '';
             }
         }
+        // Strip configured URL suffix (e.g. .html) so controller name is correct
+        $path = $this->stripSuffix($path);
         $segments = $path !== '' ? explode('/', $path) : [];
         return $segments[0] ?? 'index';
     }
@@ -162,6 +164,8 @@ class UrlHelper
                 $path = '';
             }
         }
+        // Strip configured URL suffix (e.g. .html) so method name is correct
+        $path = $this->stripSuffix($path);
         $segments = $path !== '' ? explode('/', $path) : [];
         return $segments[1] ?? 'index';
     }
@@ -431,6 +435,23 @@ class UrlHelper
             return $prefix === '' || str_starts_with($current, $prefix);
         }
 
+        // Suffix-aware matching: if URLs differ only by the configured suffix (e.g. .html),
+        // still consider them a match. This handles the case where active_rule is set
+        // without the suffix but the actual URL has it, and vice versa.
+        $suffix = $this->getSuffix();
+        if (!empty($suffix)) {
+            // Strip suffix from current, compare with action
+            $currentStripped = preg_replace('/' . preg_quote($suffix, '/') . '$/', '', $current);
+            if ($currentStripped !== $current && $currentStripped === $action) {
+                return true;
+            }
+            // Strip suffix from action, compare with current
+            $actionStripped = preg_replace('/' . preg_quote($suffix, '/') . '$/', '', $action);
+            if ($actionStripped !== $action && ($actionStripped === $current || $actionStripped === $currentStripped)) {
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -443,11 +464,31 @@ class UrlHelper
     }
 
     /**
+     * Get the configured URL suffix (e.g. .html).
+     */
+    protected function getSuffix(): string
+    {
+        return config('config.suffix', '');
+    }
+
+    /**
+     * Strip the configured URL suffix from a path if present.
+     */
+    protected function stripSuffix(string $path): string
+    {
+        $suffix = $this->getSuffix();
+        if (!empty($suffix) && str_ends_with($path, $suffix)) {
+            return substr($path, 0, -strlen($suffix));
+        }
+        return $path;
+    }
+
+    /**
      * 根据配置自动追加 URL 后缀（如 .html）
      */
     protected function appendSuffix(string $url): string
     {
-        $suffix = config('config.suffix', '');
+        $suffix = $this->getSuffix();
         if (empty($suffix)) {
             return $url;
         }
