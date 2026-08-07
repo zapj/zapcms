@@ -6,7 +6,7 @@ if (!in_array(PHP_SAPI, ['cli', 'phpdbg', 'embed'], true)) {
 }
 set_time_limit(0);
 
-define("APP_PATH", dirname(__DIR__));
+define("APP_PATH", realpath(dirname(__FILE__) . '/'));
 require APP_PATH . '/vendor/autoload.php';
 
 $console = new \zap\console\Console(APP_PATH);

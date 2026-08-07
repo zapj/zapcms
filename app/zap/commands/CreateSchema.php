@@ -5,6 +5,7 @@
 
 namespace zap\commands;
 
+use zap\cms\CreateBaseData;
 use zap\cms\CreateTables;
 use zap\db\Schema;
 use zap\console\Command;
@@ -25,7 +26,7 @@ class CreateSchema extends Command
         $schema->createSchema();
 
         if($this->input->getParam('b')){
-            $schema->installBaseData();
+            CreateBaseData::install();
         }
 
         if($this->input->getParam('d')){

@@ -210,8 +210,18 @@ soap.wsdl_cache_limit = 5
 ldap.max_links = -1
 PHP_EOF
 
+
+RUN cat > /run.sh << 'RUN_EOF'
+#!/bin/sh
+# 启动php-fpm
+php-fpm7 -D
+# 启动nginx
+nginx -g "daemon off;"
+RUN_EOF
+
 RUN mkdir -p /run/nginx \
     && chmod -R 777 /app/storage \
+    && chmod +x /run.sh \
     && mv /usr/sbin/php-fpm7 /usr/sbin/php-fpm
 
 # 暴露端口
