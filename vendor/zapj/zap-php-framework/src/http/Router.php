@@ -222,7 +222,45 @@ class Router
         // 清理多余的 /
         $url = preg_replace('#/+#', '/', $url);
 
-        return $url;
+        return static::appendSuffix($url);
+    }
+
+    /**
+     * 根据配置自动追加 URL 后缀（如 .html）
+     */
+    protected static function appendSuffix(string $url): string
+    {
+        $suffix = config('config.suffix', '');
+        if (empty($suffix)) {
+            return $url;
+        }
+
+        // 处理绝对 URL（含协议头）
+        $scheme = '';
+        if (preg_match('#^(https?://[^/]+)(/.*)$#', $url, $m)) {
+            $scheme = $m[1];
+            $url    = $m[2];
+        }
+
+        // 分离路径和查询参数
+        $queryPos = strpos($url, '?');
+        $path = $queryPos !== false ? substr($url, 0, $queryPos) : $url;
+        $query = $queryPos !== false ? substr($url, $queryPos) : '';
+
+        // 已以 suffix 结尾则跳过
+        if (str_ends_with($path, $suffix)) {
+            return $scheme . $url;
+        }
+
+        // 路径为空或已是根路径则不追加
+        $path = rtrim($path, '/');
+        if ($path === '') {
+            $path = '/';
+        } else {
+            $path .= $suffix;
+        }
+
+        return $scheme . $path . $query;
     }
 
     /**

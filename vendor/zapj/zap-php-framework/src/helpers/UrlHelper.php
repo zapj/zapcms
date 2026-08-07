@@ -80,7 +80,7 @@ class UrlHelper
 
         if (!isset($namedRoutes[$name])) {
             // Fallback: treat $name as a path pattern
-            return $this->buildPath($name, $params, $absolute);
+            return $this->appendSuffix($this->buildPath($name, $params, $absolute));
         }
 
         $pattern = $namedRoutes[$name]['pattern'] ?? '';
@@ -92,7 +92,10 @@ class UrlHelper
             $uri .= (str_contains($uri, '?') ? '&' : '?') . $query;
         }
 
-        return $absolute ? rtrim($this->base(), '/') . '/' . ltrim($uri, '/') : '/' . ltrim($uri, '/');
+        $uri = '/' . ltrim($uri, '/');
+        $uri = $this->appendSuffix($uri);
+
+        return $absolute ? rtrim($this->base(), '/') . $uri : $uri;
     }
 
     /**
@@ -203,7 +206,7 @@ class UrlHelper
             $uri .= (str_contains($uri, '?') ? '&' : '?') . http_build_query($queryParams);
         }
 
-        return $uri;
+        return $this->appendSuffix($uri);
     }
 
     /**
@@ -236,7 +239,7 @@ class UrlHelper
             }
         }
 
-        return $uri;
+        return $this->appendSuffix($uri);
     }
 
     /**
@@ -437,5 +440,43 @@ class UrlHelper
     protected function quoteSlash(string $str): string
     {
         return str_replace('/', '\/', $str);
+    }
+
+    /**
+     * 根据配置自动追加 URL 后缀（如 .html）
+     */
+    protected function appendSuffix(string $url): string
+    {
+        $suffix = config('config.suffix', '');
+        if (empty($suffix)) {
+            return $url;
+        }
+
+        // 处理绝对 URL（含协议头）
+        $scheme = '';
+        if (preg_match('#^(https?://[^/]+)(/.*)$#', $url, $m)) {
+            $scheme = $m[1];
+            $url    = $m[2];
+        }
+
+        // 分离路径和查询参数
+        $queryPos = strpos($url, '?');
+        $path = $queryPos !== false ? substr($url, 0, $queryPos) : $url;
+        $query = $queryPos !== false ? substr($url, $queryPos) : '';
+
+        // 已以 suffix 结尾则跳过
+        if (str_ends_with($path, $suffix)) {
+            return $scheme . $url;
+        }
+
+        // 路径为空或已是根路径则不追加
+        $path = rtrim($path, '/');
+        if ($path === '') {
+            $path = '/';
+        } else {
+            $path .= $suffix;
+        }
+
+        return $scheme . $path . $query;
     }
 }

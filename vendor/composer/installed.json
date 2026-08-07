@@ -177,12 +177,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHPMailer/PHPMailer.git",
-                "reference": "4a489474e7ef8bbf03c1cb219d8939ea76a7fb40"
+                "reference": "d76c2f897a0ebc37ed4ce94a062fd2d6674373a6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/4a489474e7ef8bbf03c1cb219d8939ea76a7fb40",
-                "reference": "4a489474e7ef8bbf03c1cb219d8939ea76a7fb40",
+                "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/d76c2f897a0ebc37ed4ce94a062fd2d6674373a6",
+                "reference": "d76c2f897a0ebc37ed4ce94a062fd2d6674373a6",
                 "shasum": ""
             },
             "require": {
@@ -213,7 +213,7 @@
                 "symfony/polyfill-mbstring": "To support UTF-8 if the Mbstring PHP extension is not enabled (^1.2)",
                 "thenetworg/oauth2-azure": "Needed for Microsoft XOAUTH2 authentication"
             },
-            "time": "2026-07-21T06:38:45+00:00",
+            "time": "2026-08-06T06:44:34+00:00",
             "default-branch": true,
             "type": "library",
             "installation-source": "dist",
@@ -817,12 +817,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/zapj/zap-php-framework.git",
-                "reference": "dadbb7f95cf6f24c39bcb176aa7f31c4cdb3c527"
+                "reference": "1147fc6ec94abd82b4b95bf0b87d59e9d470a74c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/dadbb7f95cf6f24c39bcb176aa7f31c4cdb3c527",
-                "reference": "dadbb7f95cf6f24c39bcb176aa7f31c4cdb3c527",
+                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/1147fc6ec94abd82b4b95bf0b87d59e9d470a74c",
+                "reference": "1147fc6ec94abd82b4b95bf0b87d59e9d470a74c",
                 "shasum": ""
             },
             "require": {
@@ -841,7 +841,7 @@
             "suggest": {
                 "monolog/monolog": "Allows more advanced logging with multiple handlers"
             },
-            "time": "2026-08-05T10:46:43+00:00",
+            "time": "2026-08-07T02:08:18+00:00",
             "default-branch": true,
             "type": "library",
             "installation-source": "dist",
