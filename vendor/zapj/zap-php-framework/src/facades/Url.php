@@ -3,16 +3,15 @@
 namespace zap\facades;
 
 /**
- * @method static base($url = null)
- * @method static home()
- * @method static current()
- * @method static string action(string $controller, array $queryParams = null, array $pathParams = null)
- * @method static active($action,$output = null)
- * @method static to($format,$params = [],$queryString = true)
- * @method static controller()
- * @method static method()
- * @method static getRouteData($name = null)
-
+ * @method static string base($url = null)
+ * @method static string home()
+ * @method static string current()
+ * @method static string action($controller,$queryParams = null,$pathParams = null)
+ * @method static bool active($action,$output = null)
+ * @method static string to($format,$params = [],$queryString = true)
+ * @method static string controller()
+ * @method static string method()
+ * @method static array getRouteData($name = null)
  */
 class Url extends Facade
 {

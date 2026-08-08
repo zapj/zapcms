@@ -35,7 +35,7 @@ class AdminPage
             return;
         }
 
-        echo '$(function(){';
+        echo '<script>$(function(){';
         foreach ($allFlash as $key => $message) {
             if (in_array($key, ['__old__', '_validation_errors'], true)) {
                 continue;
@@ -44,7 +44,7 @@ class AdminPage
             $msg = addslashes((string)$message);
             echo "ZapToast.alert('{$msg}', {bgColor: {$bgColor}, position: Toast_Pos_Center});";
         }
-        echo '})';
+        echo '})</script>';
     }
 
 }

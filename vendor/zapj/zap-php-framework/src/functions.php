@@ -14,7 +14,6 @@ use zap\Config;
 use zap\ErrorHandler;
 use zap\http\Response;
 use zap\http\Session;
-use zap\http\Uri;
 use zap\http\ZapRequest;
 use zap\util\Arr;
 use zap\util\Str;
@@ -200,9 +199,9 @@ if (!function_exists('config_all')) {
     /**
      * 获取全部已加载配置
      *
-     * @return array<string, \ArrayObject>
+     * @return \zap\util\ZArray
      */
-    function config_all(): array
+    function config_all(): \zap\util\ZArray
     {
         return Config::all();
     }
@@ -264,7 +263,7 @@ if (!function_exists('url_action')) {
 if (!function_exists('current_url')) {
     function current_url(): string
     {
-        return Uri::current();
+        return \zap\facades\Url::current();
     }
 }
 
@@ -284,7 +283,7 @@ if (!function_exists('redirect')) {
 if (!function_exists('route')) {
     function route(string $name, array $args = []): ?string
     {
-        return \zap\http\Router::getRouteUrl($name, $args);
+        return \zap\http\Router::url($name, $args);
     }
 }
 
