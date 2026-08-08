@@ -475,17 +475,30 @@ class UpdateBaseData extends Command
         $stmt = $pdo->query("PRAGMA table_info('{$fullName}')");
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
+        // PRAGMA table_info only tells us which columns are part of the PK,
+        // NOT whether AUTOINCREMENT was declared. Parse sqlite_master instead.
+        $hasAutoincrement = false;
+        try {
+            $createStmt = $pdo->query(
+                "SELECT sql FROM sqlite_master WHERE type='table' AND name='{$fullName}'"
+            )->fetchColumn();
+            if ($createStmt && stripos($createStmt, 'AUTOINCREMENT') !== false) {
+                $hasAutoincrement = true;
+            }
+        } catch (\Throwable $e) {
+            // fallback: assume no explicit AUTOINCREMENT
+        }
+
         $cols = [];
         foreach ($rows as $r) {
             $parsed = $this->parseSqliteType($r['type']);
             $nullOk = ($r['notnull'] == 0);
 
-            // Auto-increment detection: INTEGER PRIMARY KEY → likely autoincrement
+            // AUTOINCREMENT only exists on a SINGLE INTEGER PRIMARY KEY column.
+            // Composite PKs and non-integer PKs never have AUTOINCREMENT.
             $autoInc = false;
-            if (!empty($r['pk']) && $parsed['type'] === 'int') {
-                // SQLite autoincrement is implicit for INTEGER PRIMARY KEY
-                // We check if the table info pk is 1 → it's a single INTEGER PK
-                $autoInc = true; // conservative: assume INTEGER PK is autoincrement
+            if ($hasAutoincrement && !empty($r['pk']) && $parsed['type'] === 'int') {
+                $autoInc = ($r['pk'] == 1);
             }
 
             $cols[] = [

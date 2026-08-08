@@ -93,8 +93,8 @@ class CreateTables
         });
 
         Schema::create('admin_roles',function(TableSchema $table){
-            $table->integer('admin_id')->autoIncrement();
-            $table->integer('role_id')->autoIncrement();
+            $table->integer('admin_id');
+            $table->integer('role_id');
             $table->integer('assignment_time')->nullable();
 
             $table->addPrimary('admin_roles_pk','admin_id', 'role_id');
@@ -193,8 +193,8 @@ class CreateTables
         });
 
         Schema::create('node_relation',function(TableSchema $table){
-            $table->integer('catalog_id')->autoIncrement();
-            $table->integer('node_id')->autoIncrement();
+            $table->integer('catalog_id');
+            $table->integer('node_id');
             $table->integer('level')->nullable()->default('0');
 
             $table->addPrimary('node_relation_pk','catalog_id', 'node_id');
@@ -272,8 +272,8 @@ class CreateTables
         });
 
         Schema::create('permissions_path',function(TableSchema $table){
-            $table->integer('perm_id')->autoIncrement();
-            $table->integer('path_id')->autoIncrement();
+            $table->integer('perm_id');
+            $table->integer('path_id');
             $table->integer('level')->nullable();
 
             $table->addPrimary('permissions_path_pk','perm_id', 'path_id');
@@ -318,7 +318,7 @@ class CreateTables
         });
 
         Schema::create('roles_permissions',function(TableSchema $table){
-            $table->integer('role_id')->autoIncrement();
+            $table->integer('role_id');
             $table->text('perm_key');
             $table->text('extras')->nullable();
             $table->integer('assignment_time')->nullable();
