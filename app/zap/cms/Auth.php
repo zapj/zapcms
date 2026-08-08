@@ -32,16 +32,15 @@ class Auth
     /**
      * @throws \Exception
      */
-    public static function check($url = null,$message = null,$type = FLASH_INFO){
+    public static function check($url = null, $message = null)
+    {
         if(!session()->has(static::$scope)){
             $url  = $url ?? Url::action('Auth@signIn');
             $message = $message ?? '未登录或已超时，请重新登录';
             if(Request::isAjax()){
-                Response::json(['code'=>-1,'msg'=>$message,'type'=>$type]);
+                Response::json(['code'=>-1,'msg'=>$message]);
             }
-//            $prevUrl = Request::prevUrl();
-//            Response::redirect($url,$message,$type);
-            Response::redirect($url);
+            Response::redirect($url)->with('info', $message);
         }
     }
 

@@ -32,6 +32,8 @@ class AbstractNodeType
 
     protected $isAjax;
 
+    public $pageHelper;
+
     public function __construct()
     {
         $this->catalogId = intval(Request::get('cid'));
@@ -66,7 +68,7 @@ class AbstractNodeType
     public function edit($id = 0){
         $id = intval($id);
         if(!$id){
-            $this->redirectTo("Node@{$this->action}",$_GET,$this->getTitle("%s不存在"),FLASH_ERROR);
+            $this->redirectTo("Node@{$this->action}",$_GET,$this->getTitle("%s不存在"),'error');
         }
 
         if(Request::isPost()){
@@ -128,7 +130,7 @@ class AbstractNodeType
         if(Request::isPost() && $id){
             $affId = Node::delete($id);
             if($affId){
-                add_flash($this->title . '删除成功',FLASH_SUCCESS);
+                session()->flash('success', $this->title . '删除成功');
                 Response::json(['code'=>0,'msg'=>$this->title . '删除成功']);
             }else{
                 Response::json(['code'=>1,'msg'=>$this->title . '删除失败，ID不存在']);
@@ -248,11 +250,15 @@ class AbstractNodeType
         }
     }
 
-    protected function redirectTo($action,$query = null,$message = NULL,$flashType = FLASH_INFO){
-        if($this->isAjax){
-            Response::json(['code'=> $flashType == FLASH_SUCCESS ? 0:-1 ,'msg'=>$message,'type'=>$flashType]);
+    protected function redirectTo($action, $query = null, $message = NULL, $flashKey = 'info'){
+        if ($this->isAjax) {
+            Response::json(['code'=> $flashKey === 'success' ? 0 : -1, 'msg' => $message]);
+            return;
         }
-        Response::redirect(url_action($action,$query),$message,$flashType);
+        $redirect = Response::redirect(url_action($action, $query));
+        if ($message !== NULL) {
+            $redirect->with($flashKey, $message);
+        }
     }
 
 

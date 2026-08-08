@@ -508,142 +508,85 @@ class Session
         return hash_equals($_SESSION[self::CSRF_TOKEN_KEY], $token);
     }
 
-    // ───────────────────── Flash 消息 ─────────────────────
+    // ───────────────────── Flash 消息（Key-Value，一次读取） ─────────────────────
 
     /**
-     * 写入 Flash 消息
+     * Flash 数据读写（纯 key-value，读后即焚）
      *
-     * @param string $type    消息类型（如 success / error / warning / info）
-     * @param string $message 消息内容
-     * @return $this
+     * 写入：session()->flash('message', '操作成功')
+     * 读取：session()->flash('message')   // 返回 '操作成功'，并清除该 key
+     * 全部：session()->flash()            // 返回所有 flash 键值对，并全部清除
+     *
+     * @param string|null $key   键名；无参时返回全部并清除
+     * @param mixed       $value 值（仅当提供两个参数时为写入操作）
+     * @return mixed|self 写入返回 $this，读取返回对应的值（无 key 时返回 null）
      */
-    public function flash(string $type, string $message): self
+    public function flash(?string $key = null, $value = null)
     {
         $this->start();
-        $_SESSION[self::FLASH_MESSAGE_KEY][$type][] = [
-            'message'   => $message,
-            'timestamp' => time(),
-        ];
+
+        // 无参：返回所有 flash 数据（不含 __old__）并清除
+        if (func_num_args() === 0) {
+            $all = $_SESSION[self::FLASH_MESSAGE_KEY] ?? [];
+            unset($all['__old__']);
+            // 保留 __old__（表单旧值）
+            $_SESSION[self::FLASH_MESSAGE_KEY] = isset($_SESSION[self::FLASH_MESSAGE_KEY]['__old__'])
+                ? ['__old__' => $_SESSION[self::FLASH_MESSAGE_KEY]['__old__']]
+                : [];
+            return $all;
+        }
+
+        // 单参：读取并清除指定 key
+        if (func_num_args() === 1) {
+            if (isset($_SESSION[self::FLASH_MESSAGE_KEY][$key])) {
+                $value = $_SESSION[self::FLASH_MESSAGE_KEY][$key];
+                unset($_SESSION[self::FLASH_MESSAGE_KEY][$key]);
+                if (empty($_SESSION[self::FLASH_MESSAGE_KEY])) {
+                    unset($_SESSION[self::FLASH_MESSAGE_KEY]);
+                }
+                return $value;
+            }
+            return null;
+        }
+
+        // 双参：写入
+        $_SESSION[self::FLASH_MESSAGE_KEY][$key] = $value;
         return $this;
     }
 
     /**
-     * 写入 Flash 消息（add_flash 别名，参数顺序为 message, type，向后兼容）
+     * 检查指定 key 的 Flash 数据是否存在
      *
-     * @param string $message 消息内容
-     * @param string $type    消息类型，默认 'info'
-     * @return $this
-     */
-    public function add_flash(string $message, string $type = 'info'): self
-    {
-        return $this->flash($type, $message);
-    }
-
-    /**
-     * 读取并清除 Flash 消息（原格式，含 timestamp）
-     *
-     * @param string|array|null $types 消息类型，null=所有类型
-     * @return array ['success' => [['message'=>'...', 'timestamp'=>...]]]
-     */
-    public function getFlash($types = null): array
-    {
-        $this->start();
-        $flashMessages = [];
-
-        if (empty($_SESSION[self::FLASH_MESSAGE_KEY])) {
-            return $flashMessages;
-        }
-
-        // 过滤排除系统键
-        $flashData = $_SESSION[self::FLASH_MESSAGE_KEY];
-        unset($flashData['__old__']);
-
-        if (is_null($types)) {
-            // 只取闪存键，不包含 __old__
-            $flashMessages = $flashData;
-            unset($_SESSION[self::FLASH_MESSAGE_KEY]);
-            // 恢复 __old__（避免丢失未读取的旧输入值）
-            if (isset($flashData['__old__'])) {
-                // 不做特殊处理，__old__ 在 getFlash 时通常由 old() 消费后清除
-            }
-            return $flashMessages;
-        }
-
-        if (!is_array($types)) {
-            $types = [$types];
-        }
-
-        foreach ($types as $type) {
-            if (isset($_SESSION[self::FLASH_MESSAGE_KEY][$type])) {
-                $flashMessages[$type] = $_SESSION[self::FLASH_MESSAGE_KEY][$type];
-                unset($_SESSION[self::FLASH_MESSAGE_KEY][$type]);
-            }
-        }
-
-        if (empty($_SESSION[self::FLASH_MESSAGE_KEY])) {
-            unset($_SESSION[self::FLASH_MESSAGE_KEY]);
-        }
-
-        return $flashMessages;
-    }
-
-    /**
-     * 获取纯文本 Flash 消息（仅取 message 字符串，不含 timestamp）
-     *
-     * @param string|array|null $types 消息类型，null=所有
-     * @return array ['success' => ['操作成功！'], 'error' => ['输入有误']]
-     */
-    public function getFlashMessages($types = null): array
-    {
-        $flash = $this->getFlash($types);
-        $messages = [];
-        foreach ($flash as $type => $items) {
-            $messages[$type] = array_column($items, 'message');
-        }
-        return $messages;
-    }
-
-    /**
-     * 检查是否有 Flash 消息
-     *
-     * @param string|null $type 指定类型，null=检查是否有任何消息
      * @return bool
      */
-    public function hasFlash(?string $type = null): bool
+    public function hasFlash(string $key): bool
     {
         $this->start();
-        if (empty($_SESSION[self::FLASH_MESSAGE_KEY])) {
-            return false;
-        }
-        if ($type === null) {
-            // 存在非 __old__ 键即为有消息
-            $keys = array_keys($_SESSION[self::FLASH_MESSAGE_KEY]);
-            return array_filter($keys, fn($k) => $k !== '__old__') !== [];
-        }
-        return !empty($_SESSION[self::FLASH_MESSAGE_KEY][$type]);
+        return isset($_SESSION[self::FLASH_MESSAGE_KEY][$key]);
     }
 
     /**
-     * 清除 Flash 消息
+     * 清除 Flash 数据
      *
-     * @param string|array|null $types 消息类型
+     * @param string|array|null $keys 指定 key，null=清除全部
      * @return $this
      */
-    public function clearFlash($types = null): self
+    public function clearFlash($keys = null): self
     {
         $this->start();
 
-        if (is_null($types)) {
-            unset($_SESSION[self::FLASH_MESSAGE_KEY]);
+        if (is_null($keys)) {
+            // 保留 __old__
+            if (isset($_SESSION[self::FLASH_MESSAGE_KEY]['__old__'])) {
+                $_SESSION[self::FLASH_MESSAGE_KEY] = ['__old__' => $_SESSION[self::FLASH_MESSAGE_KEY]['__old__']];
+            } else {
+                unset($_SESSION[self::FLASH_MESSAGE_KEY]);
+            }
             return $this;
         }
 
-        if (!is_array($types)) {
-            $types = [$types];
-        }
-
-        foreach ($types as $type) {
-            unset($_SESSION[self::FLASH_MESSAGE_KEY][$type]);
+        foreach ((array)$keys as $key) {
+            unset($_SESSION[self::FLASH_MESSAGE_KEY][$key]);
         }
 
         if (empty($_SESSION[self::FLASH_MESSAGE_KEY])) {

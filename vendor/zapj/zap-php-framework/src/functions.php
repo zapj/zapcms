@@ -30,11 +30,6 @@ const Z_DATE_TIME = 'Y-m-d H:i:s';
 const Z_DATE = 'Y-m-d';
 const Z_TIME = 'H:i:s';
 
-const FLASH_INFO = 'info';
-const FLASH_WARNING = 'warning';
-const FLASH_ERROR = 'error';
-const FLASH_SUCCESS = 'success';
-
 const ASSETS_HEAD = 'assets_head_urls';
 const ASSETS_HEAD_TEXT = 'assets_head_text';
 const ASSETS_BODY = 'assets_body_urls';
@@ -276,10 +271,12 @@ if (!function_exists('current_url')) {
 if (!function_exists('redirect')) {
     /**
      * 302/301 重定向并终止脚本
+     *
+     * 需要链式追加 Flash 消息时请用 Response::redirect($url)->with(...)
      */
     function redirect(string $url, int $statusCode = 302): void
     {
-        Response::redirect($url, $statusCode);
+        Response::redirect($url, $statusCode)->send();
         exit;
     }
 }
@@ -431,104 +428,95 @@ if (!function_exists('session')) {
 if (!function_exists('set_session')) {
     function set_session(string $name, $value): void
     {
-        Session::put($name, $value);
+        session()->set($name, $value);
     }
 }
 
 if (!function_exists('get_session')) {
     function get_session(string $name, $default = null)
     {
-        return Session::get($name, $default);
+        return session()->get($name, $default);
     }
 }
 
 if (!function_exists('has_session')) {
     function has_session(string $name): bool
     {
-        return Session::getInstance()->has($name);
+        return session()->has($name);
     }
 }
 
 if (!function_exists('remove_session')) {
     function remove_session(string $name): void
     {
-        Session::forget($name);
-    }
-}
-
-if (!function_exists('add_flash')) {
-    function add_flash(string $message, string $type = FLASH_INFO): Session
-    {
-        return Session::getInstance()->add_flash($message, $type);
-    }
-}
-
-if (!function_exists('get_flash')) {
-    /**
-     * @param string|null $type  消息类型，null 返回全部
-     * @param bool        $first true 仅返回第一条
-     * @return array|string|false
-     */
-    function get_flash(?string $type = null, bool $first = false)
-    {
-        if ($type !== null && $first) {
-            $flash = Session::getFlash($type);
-            return $flash ? current($flash) : false;
-        }
-        return Session::getFlash($type);
+        session()->forget($name);
     }
 }
 
 if (!function_exists('has_flash')) {
-    function has_flash(?string $type = null): bool
+    /**
+     * 检查 Flash 中指定 key 是否存在
+     */
+    function has_flash(string $key): bool
     {
-        return Session::getInstance()->hasFlash($type);
+        return session()->hasFlash($key);
     }
 }
 
 if (!function_exists('clear_flash')) {
-    function clear_flash(?string $type = null): array
+    /**
+     * 清除 Flash 数据
+     *
+     * @param string|array|null $keys 指定 key，null=清除全部
+     */
+    function clear_flash($keys = null): void
     {
-        return Session::getInstance()->clearFlash($type);
+        session()->clearFlash($keys);
     }
 }
 
 if (!function_exists('old')) {
     function old(?string $key = null, $default = null)
     {
-        return Session::old($key, $default);
+        return session()->old($key, $default);
     }
 }
 
 if (!function_exists('csrf_token')) {
     function csrf_token(): string
     {
-        return Session::token();
+        return session()->token();
     }
 }
 
 if (!function_exists('csrf_field')) {
     function csrf_field(): string
     {
-        return '<input type="hidden" name="_token" value="' . esc(Session::token()) . '" />';
+        return '<input type="hidden" name="_token" value="' . esc(session()->token()) . '" />';
     }
 }
 
 if (!function_exists('flash')) {
     /**
-     * 设置或获取 Flash 消息
+     * Flash 数据读写（纯 key-value，读后即焚）
      *
-     * @param string|null $message 消息文本（null 时读取）
-     * @param string      $type    消息类型
-     * @return string|null
+     * 写入：flash('message', '操作成功')
+     * 读取：flash('message')          // 返回 '操作成功'，并清除
+     * 全部：flash()                   // 返回所有键值对，并全部清除
+     *
+     * @param string|null $key   键名
+     * @param mixed       $value 值
+     * @return mixed|void
      */
-    function flash(?string $message = null, string $type = 'success'): ?string
+    function flash(?string $key = null, $value = null)
     {
-        if ($message !== null) {
-            Session::flash($type, $message);
-            return null;
+        if (func_num_args() === 0) {
+            return session()->flash();
         }
-        return Session::getFlash($type);
+        if (func_num_args() === 1) {
+            return session()->flash($key);
+        }
+        return session()->flash($key, $value);
     }
 }
 
@@ -570,7 +558,14 @@ if (!function_exists('report')) {
 }
 
 if (!function_exists('response')) {
-    function response($content = null, int $statusCode = 200, ?array $headers = []): Response
+    /**
+     * 创建 HTTP 响应实例
+     *
+     * @param mixed $content    响应内容 (字符串/null/数组)
+     * @param int   $statusCode HTTP 状态码
+     * @param array $headers    附加响应头 ['X-Custom' => 'value']
+     */
+    function response($content = null, int $statusCode = 200, array $headers = []): Response
     {
         return new Response($content, $statusCode, $headers);
     }

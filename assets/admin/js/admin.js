@@ -40,6 +40,16 @@ const ZapToast = {
             position:Toast_Pos_TopCenter,
             callback:function(){}
         }
+        // 兼容 alert({title:'msg', bg:...}) 对象调用方式
+        if(msg !== null && typeof msg === 'object'){
+            const obj = msg;
+            msg = obj.title || obj.message || obj.msg || '';
+            params = Object.assign({}, obj, params);
+            // 映射 bg → bgColor
+            if(params.bg && !params.bgColor){
+                params.bgColor = params.bg;
+            }
+        }
         if(params === undefined){
             params = {}
         }

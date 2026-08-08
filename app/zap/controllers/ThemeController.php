@@ -44,7 +44,7 @@ class ThemeController extends AdminController
         $theme = Option::get('website.theme','basic');
         $themeFile = themes_path("{$theme}/theme.json");
         if(!is_file($themeFile)){
-            Response::redirect(url_action('theme'),'当前主题不支持自定义',FLASH_INFO);
+            Response::redirect(url_action('theme'))->with('info', '当前主题不支持自定义');
         }
 
         $themeSettings = Option::getArray($theme,'REGEXP');
@@ -83,7 +83,7 @@ class ThemeController extends AdminController
         $theme = Option::get('website.theme','basic');
         $themeFile = themes_path("{$theme}/theme.json");
         if(!is_file($themeFile)){
-            Response::redirect(url_action('theme'),'当前主题不支持自定义',FLASH_INFO);
+            Response::redirect(url_action('theme'))->with('info', '当前主题不支持自定义');
         }
 
         $themeSettings = Option::getArray($theme,'REGEXP');

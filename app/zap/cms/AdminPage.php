@@ -22,15 +22,27 @@ class AdminPage
     }
 
     public function showFlashMessages(){
-        $colorMap = [FLASH_ERROR => 'bgDanger',FLASH_INFO => 'bgInfo',FLASH_SUCCESS=>'bgSuccess',FLASH_WARNING=>'bgWarning'];
-        echo '$(function(){';
-        foreach ([FLASH_ERROR,FLASH_INFO,FLASH_SUCCESS,FLASH_WARNING] as $flashType){
-            if(session()->hasFlash($flashType)){
-                $bgColor = $colorMap[$flashType];
-                $messages = join("<br/>",session()->getFlash($flashType));
-                echo "ZapToast.alert('{$messages}', {bgColor: {$bgColor}, position: Toast_Pos_Center});";
+        // key → bgColor 映射（常见键名自动匹配样式）
+        $colorMap = [
+            'error'   => 'bgDanger',
+            'warning' => 'bgWarning',
+            'success' => 'bgSuccess',
+            'info'    => 'bgInfo',
+        ];
 
+        $allFlash = session()->flash();
+        if (empty($allFlash)) {
+            return;
+        }
+
+        echo '$(function(){';
+        foreach ($allFlash as $key => $message) {
+            if (in_array($key, ['__old__', '_validation_errors'], true)) {
+                continue;
             }
+            $bgColor = $colorMap[$key] ?? 'bgInfo';
+            $msg = addslashes((string)$message);
+            echo "ZapToast.alert('{$msg}', {bgColor: {$bgColor}, position: Toast_Pos_Center});";
         }
         echo '})';
     }

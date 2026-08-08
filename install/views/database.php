@@ -94,9 +94,42 @@
                 <label class="form-label small fw-semibold">安装日志</label>
                 <div class="install-console" id="installConsole"></div>
             </div>
+
+            <!-- 安装完成面板 (初始隐藏) -->
+            <div id="doneWrap" class="d-none text-center mt-3">
+                <div class="mb-3">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#198754" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                </div>
+                <h5 class="fw-bold text-success mb-3">ZAP CMS 安装成功！</h5>
+                <div class="done-info text-start mx-auto mb-3" style="max-width: 360px;">
+                    <dl class="mb-0">
+                        <dt>后台地址</dt>
+                        <dd><a href="../<?= htmlspecialchars(Z_ADMIN_PREFIX) ?>" target="_blank"><?= htmlspecialchars(Z_ADMIN_PREFIX) ?></a></dd>
+                        <dt>用户名</dt>
+                        <dd><code id="doneUser">—</code></dd>
+                        <dt>密码</dt>
+                        <dd><code id="donePass">—</code></dd>
+                    </dl>
+                </div>
+                <div class="alert alert-warning mt-3 mb-0 text-start small" role="alert">
+                    <strong>&#9888; 安全提示：</strong>
+                    建议通过 FTP 或服务器管理面板删除 <code>/install/</code> 目录，防止被他人利用重复安装。
+                </div>
+                <div class="mt-4 d-flex justify-content-center gap-2">
+                    <a href="../<?= htmlspecialchars(Z_ADMIN_PREFIX) ?>" target="_blank" class="btn btn-success px-4">
+                        进入后台
+                    </a>
+                    <a href="../" target="_blank" class="btn btn-outline-secondary px-4">
+                        访问网站首页
+                    </a>
+                </div>
+            </div>
         </form>
     </div>
-    <div class="card-footer d-flex justify-content-between align-items-center">
+    <div class="card-footer d-flex justify-content-between align-items-center" id="installFooter">
         <a href="index.php?action=check" class="btn btn-outline-secondary btn-sm">&larr; 上一步</a>
         <button type="button" class="btn btn-success px-4" id="installBtn" onclick="installZapCMS()">
             开始安装
@@ -184,21 +217,32 @@ function installZapCMS(){
         log('数据表创建完成', 'ok');
         log('初始数据导入完成', 'ok');
         log('配置文件写入完成', 'ok');
-        log('安装成功！即将跳转...', 'end');
+        log('安装成功！', 'end');
 
-        // 跳转到完成页
-        setTimeout(function(){
-            location.href = 'index.php?action=done';
-        }, 800);
+        // 隐藏表单字段和安装按钮，显示完成面板
+        document.getElementById('installFooter').classList.add('d-none');
+        // 隐藏表单内除 consoleWrap 和 doneWrap 外的所有直接子元素
+        var cardBody = form.parentNode;
+        var children = cardBody.children;
+        for (var i = 0; i < children.length; i++) {
+            var el = children[i];
+            if (el.id !== 'consoleWrap' && el.id !== 'doneWrap') {
+                el.classList.add('d-none');
+            }
+        }
+        // 显示完成面板
+        document.getElementById('doneWrap').classList.remove('d-none');
+        document.getElementById('doneUser').textContent = adminUser;
+        document.getElementById('donePass').textContent = adminPass;
 
     }).catch(function(err){
-        if (err && err.message === 'db_connect' || err.message === 'install_fail') {
+        if (err && (err.message === 'db_connect' || err.message === 'install_fail')) {
             // 已在上面记录了错误
         } else if (err && err.statusText === 'error') {
             // jQuery 网络层错误
             log('网络请求失败', 'err');
         }
-    }).always(function(){
+        // 失败时恢复按钮
         btn.disabled = false;
         btn.textContent = '开始安装';
     });

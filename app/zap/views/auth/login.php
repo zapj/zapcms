@@ -1,121 +1,211 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN" data-bs-theme="light">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ZAP CMS - 登录</title>
-    <link href="<?php echo base_url();?>/assets/admin/css/zap-admin.css" rel="stylesheet">
-    <script src="<?php echo base_url();?>/assets/jquery/jquery-3.6.4.min.js"></script>
+
+    <link rel="stylesheet" href="<?php echo base_url();?>/assets/admin/css/overlayscrollbars.css">
+
+    <link rel="stylesheet" href="<?php echo base_url();?>/assets/admin/css/zap-admin.css">
+    <link rel="stylesheet" href="<?php echo base_url();?>/assets/admin/css/zap-admin-custom.css">
+<script src="<?php echo base_url();?>/assets/jquery/jquery-3.6.4.min.js"></script>
     <link href="<?php echo base_url();?>/assets/fontawesome/6.4.2/css/all.css" rel="stylesheet">
+    <!-- 动态样式 -->
     <style>
-        :root {
-            --zap-green: #10b981;
-            --zap-green-dark: #059669;
-        }
-        .login-page {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%);
-        }
-        .login-card {
+        .auth-login-box {
             width: 100%;
-            max-width: 420px;
-            padding: 2.5rem 2rem;
-            border-radius: 1rem;
-            border: none;
+            max-width: 440px;
         }
-        .login-logo {
-            width: 160px;
-            margin-bottom: 1.5rem;
+        .auth-login-logo {
+            font-size: 2.1rem;
+            font-weight: 300;
+            margin-bottom: 0.75rem;
         }
-        .login-card .form-control:focus {
-            border-color: var(--zap-green);
-            box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.15);
-        }
-        .btn-login {
-            --bs-btn-bg: var(--zap-green);
-            --bs-btn-border-color: var(--zap-green);
-            --bs-btn-hover-bg: var(--zap-green-dark);
-            --bs-btn-hover-border-color: var(--zap-green-dark);
-            --bs-btn-active-bg: var(--zap-green-dark);
-            --bs-btn-active-border-color: var(--zap-green-dark);
-            font-weight: 600;
-            letter-spacing: 0.5px;
+        .auth-login-logo img {
+            height: 48px;
         }
     </style>
+
+
 </head>
-<body class="login-page">
-    <div class="card shadow-lg login-card">
-        <div class="text-center mb-3">
-            <img class="login-logo" src="<?php echo base_url();?>/assets/admin/img/zap_logo_green.svg" alt="ZAP CMS" onerror="this.outerHTML='<h2 class=\'fw-bold text-success\'>ZAP CMS</h2>'">
+<body class="login-page bg-body-secondary">
+
+    <!-- Toast 容器 -->
+    <div class="toast-container top-50 start-50 translate-middle" id="centerToast"></div>
+    <div id="topCenterToast" class="toast-container top-0 start-50 translate-middle-x"></div>
+    <div id="topRightToast" class="toast-container top-0 end-0"></div>
+
+    <div class="login-box auth-login-box">
+        <!-- Logo & 标题 -->
+        <div class="login-logo">
+            <a href="<?php echo base_url();?>">
+                <img src="<?php echo base_url();?>/assets/admin/img/zap_logo_green.svg"
+                     alt="ZAP CMS"
+                     class="auth-login-logo img-fluid mb-2"
+                     style="height: 52px;">
+            </a>
+            <p class="text-secondary fs-6 mt-2">简单高效的建站系统</p>
         </div>
 
-        <form action="<?php echo \zap\facades\Url::action('Auth@signIn'); ?>" method="post" id="reqForm" enctype="multipart/form-data">
-            <div class="form-floating mb-3">
-                <input type="text" class="form-control" id="username" name="username" placeholder="用户名" autocomplete="username" autofocus>
-                <label for="username"><i class="fa fa-user me-1"></i>用户名</label>
-            </div>
-            <div class="form-floating mb-4">
-                <input type="password" class="form-control" id="password" name="password" placeholder="密码" autocomplete="current-password">
-                <label for="password"><i class="fa fa-lock me-1"></i>密码</label>
-            </div>
+        <!-- 登录卡片 -->
+        <div class="card">
+            <div class="card-body login-card-body">
+                <p class="login-box-msg">请输入账号和密码登录</p>
 
-            <button class="btn btn-login btn-success w-100 py-2" type="button" onclick="return loginSystem()">
-                <i class="fa fa-sign-in-alt me-1"></i>登录
-            </button>
-        </form>
+                <!-- Flash 消息区域 -->
+                <?php \zap\cms\AdminPage::instance()->showFlashMessages();?>
 
-        <p class="text-center text-muted small mt-4 mb-0">&copy; <a href="https://zap.cn" class="text-decoration-none text-muted">ZAP.CN</a> <?php echo date('Y');?></p>
+                <form id="loginForm" action="" method="post" autocomplete="off">
+                    <input type="hidden" name="token" value="<?php echo csrf_token();?>">
+
+                    <!-- 用户名 -->
+                    <div class="input-group mb-3">
+                        <input type="text"
+                               name="user_login"
+                               id="user_login"
+                               class="form-control"
+                               placeholder="用户名"
+                               required
+                               autofocus
+                               autocomplete="username">
+                        <div class="input-group-text">
+                            <span class="fas fa-user"></span>
+                        </div>
+                    </div>
+
+                    <!-- 密码 -->
+                    <div class="input-group mb-3">
+                        <input type="password"
+                               name="user_pass"
+                               id="user_pass"
+                               class="form-control"
+                               placeholder="密码"
+                               required
+                               autocomplete="current-password">
+                        <div class="input-group-text">
+                            <span class="fas fa-lock"></span>
+                        </div>
+                    </div>
+
+                    <!-- 记住我 & 忘记密码 -->
+                    <div class="row mb-3">
+                        <div class="col-8">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="remember" id="remember" value="1">
+                                <label class="form-check-label" for="remember">记住我</label>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <a href="<?php echo url_action('Auth@forgot');?>" class="text-decoration-none">忘记密码</a>
+                        </div>
+                    </div>
+
+                    <!-- 登录按钮 -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary" id="btn-login">
+                            <i class="fas fa-sign-in-alt me-1"></i>登录
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+        <!-- 页脚链接 -->
+        <?php $indexPage = \zap\cms\Option::get('home','home') ?: '1';?>
+        <div class="text-center mt-3">
+            <a href="<?php echo base_url();?>/page-<?php echo $indexPage;?>.html" class="text-decoration-none text-secondary">
+                <i class="fas fa-home me-1"></i>返回网站首页
+            </a>
+        </div>
     </div>
 
-    <!-- Toast 消息容器 -->
-    <div class="toast-container p-3 top-0 start-50 translate-middle-x" id="topCenterToast" data-original-class="toast-container p-3"></div>
-    <div class="toast-container p-3 top-0 end-0" id="topRightToast" data-original-class="toast-container p-3"></div>
-    <div class="toast-container p-3 top-50 start-50 translate-middle" id="centerToast" data-original-class="toast-container p-3"></div>
-    <div class="toast-container p-3 bottom-0 end-0" id="bottomRightToast" data-original-class="toast-container p-3"></div>
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="<?php echo base_url();?>/assets/admin/js/bootstrap.bundle.min.js"></script>
+
+    <!-- OverlayScrollbars -->
+    <script src="<?php echo base_url();?>/assets/admin/js/overlayscrollbars.browser.es6.js"></script>
+
+    <!-- ZAP Admin JS -->
+    <script src="<?php echo base_url();?>/assets/admin/js/admin.js"></script>
+    <script src="<?php echo base_url();?>/assets/admin/js/zap-admin.js"></script>
 
     <script>
-        function loginSystem(){
-            $.ajax({
-                url:'<?php echo url_action("Auth@signIn"); ?>',
-                type:'POST',
-                dataType:'json',
-                data: $('#reqForm').serialize(),
-                success:function(data){
-                    if(data.code === 0){
-                        ZapToast.alert(data.msg,{
-                            bgColor:bgSuccess,
-                            delay:1000,
-                            callback:function(){
-                                location.href=data.redirect_to;
-                            }
-                        });
-                    }else{
-                        ZapToast.alert(data.msg,{bgColor:bgDanger})
-                    }
-                },error:function(data){
-                    console.log(data)
+        var loginUrl  = "<?php echo url_action('Auth@signIn');?>";
+        var indexUrl  = "<?php echo url_action('Index');?>";
+        var baseUrl   = "<?php echo base_url();?>";
+
+        // 初始化 AdminLTE
+        $(function () {
+            // AdminLTE 自检测无需额外初始化
+            // 回车键提交
+            $('#loginForm').on('keypress', function(e) {
+                if (e.which === 13) {
+                    $('#loginForm').submit();
                 }
             });
-            return false;
-        }
-
-        // 回车键登录
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                loginSystem();
-            }
         });
+
+        $('#loginForm').submit(function() {
+            var username  = $.trim($('#user_login').val());
+            var password  = $.trim($('#user_pass').val());
+            var token     = $('input[name="token"]').val();
+            var remember  = $('#remember').is(':checked') ? 1 : 0;
+
+            if (username == '') {
+                ZapToast.alert({title: '请输入账号', bg: bgDanger});
+                $('#user_login').focus();
+                return false;
+            }
+            if (password == '') {
+                ZapToast.alert({title: '请输入密码', bg: bgDanger});
+                $('#user_pass').focus();
+                return false;
+            }
+
+            loginSystem(username, password, token, remember);
+            return false;
+        });
+
+        function loginSystem(username, password, token, remember)
+        {
+            var btn = $('#btn-login');
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>正在登录...');
+
+            $.ajax({
+                url: loginUrl,
+                data: {
+                    user_login: username,
+                    user_pass: password,
+                    token: token,
+                    remember: remember
+                },
+                dataType: 'json',
+                method: 'POST',
+                timeout: 15000,
+                success: function (ret) {
+                    if (ret.code == 0) {
+                        ZapToast.alert({title: ret.msg || '登录成功', bg: bgSuccess});
+                        setTimeout(function () {
+                            window.location.href = ret.data?.redirect || indexUrl;
+                        }, 600);
+                    } else {
+                        ZapToast.alert({title: ret.msg || '登录失败', bg: bgDanger});
+                        btn.prop('disabled', false).html('<i class="fas fa-sign-in-alt me-1"></i>登录');
+                        // 刷新 CSRF Token
+                        if (ret.token) {
+                            $('input[name="token"]').val(ret.token);
+                        }
+                    }
+                },
+                error: function (xhr, status, error) {
+                    ZapToast.alert({title: '请求失败，请稍后重试', bg: bgDanger});
+                    btn.prop('disabled', false).html('<i class="bi bi-box-arrow-in-right me-1"></i>登录');
+                }
+            });
+        }
     </script>
-    <script src="<?php echo base_url();?>/assets/admin/js/bootstrap.bundle.min.js"></script>
-    <script src="<?php echo base_url();?>/assets/admin/js/admin.js"></script>
-    <script>
-        <?php
-        \zap\cms\AdminPage::instance()->showFlashMessages();
-        ?>
-    </script>
+
 </body>
 </html>

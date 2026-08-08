@@ -9,7 +9,6 @@ use zap\facades\Url;
 use zap\http\Controller;
 use zap\http\Request;
 use zap\http\Response;
-use zap\http\Session;
 use zap\util\Password;
 use zap\view\View;
 
@@ -17,23 +16,25 @@ class AuthController extends Controller
 {
     function index()
     {
-        Response::redirect(Url::action('Auth@signIn'));
+        Response::redirect(Url::action('Auth@signIn'))
+            ->with('warning', '请先登录');
     }
 
     function signIn()
     {
         if (Request::isPost()) {
-            $username = Request::post('username');
-            $password = Request::post('password');
+            $username = Request::post('user_login');
+            $password = Request::post('user_pass');
 
             $admin = DB::table('admin')->where('username', $username)->fetch(FETCH_OBJ);
-            if (empty($admin) || ($admin && Password::verify($password, $admin->password) === false )) {
+            // 短路求值：empty($admin) 为 true 时不会执行 Password::verify
+            if (empty($admin) || !Password::verify($password, $admin->password)) {
                 if (Request::isAjax()) {
-                    Response::jsonResponse(['code'=>1,'msg'=>'登录失败，用户名或密码错误'])->withJson();
-                }else{
-                    Response::redirect(Url::action('Auth@signIn'), "登录失败，用户名或密码错误", Session::ERROR);
+                    Response::json(['code'=>1,'msg'=>'登录失败，用户名或密码错误']);
+                    return;
                 }
-                exit;
+                Response::redirect(Url::action('Auth@signIn'))->with('error', '登录失败，用户名或密码错误');
+                return;
             }
 
             //登录成功
@@ -50,11 +51,11 @@ class AuthController extends Controller
             ]);
 
             if (Request::isAjax()) {
-                Response::jsonResponse(['code'=>0,'msg'=>'登录成功','redirect_to'=>Url::action('Index')])->withJson();
-            }else{
-                Response::redirect(Url::action('Index'), "登录成功", FLASH_SUCCESS);
+                Response::json(['code'=>0,'msg'=>'登录成功','redirect_to'=>Url::action('Index')]);
+                return;
             }
-            exit;
+            Response::redirect(Url::action('Index'))->with('success', '登录成功');
+            return;
         }
         View::render("auth.login");
     }
@@ -62,7 +63,7 @@ class AuthController extends Controller
     function signOut()
     {
         Auth::signOut();
-        Response::redirect(Url::action('Auth@signIn'), "您已安全退出", FLASH_SUCCESS);
+        Response::redirect(Url::action('Auth@signIn'))->with('success', '您已安全退出');
     }
 
 
