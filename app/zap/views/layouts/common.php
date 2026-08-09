@@ -42,10 +42,19 @@ use \zap\facades\Url;
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item dropdown">
                         <a class="nav-link" data-bs-toggle="dropdown" href="#" role="button">
-                            <i class="fa fa-user-circle me-1"></i>
+                            <img src="<?php echo !empty(\zap\cms\Auth::user()['avatar_url']) ? htmlspecialchars(\zap\cms\Auth::user()['avatar_url']) : base_url('/assets/admin/images/default-avatar.svg'); ?>"
+                                 alt="" class="rounded-circle me-1" width="26" height="26" style="object-fit:cover;">
                             <span><?php echo htmlspecialchars(\zap\cms\Auth::user()['nickname'] ?? \zap\cms\Auth::user()['username'] ?? '管理员'); ?></span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end shadow">
+                            <div class="px-3 py-2 border-bottom">
+                                <div class="fw-semibold text-dark"><?php echo htmlspecialchars(\zap\cms\Auth::user()['full_name'] ?? \zap\cms\Auth::user()['username'] ?? ''); ?></div>
+                                <small class="text-muted"><?php echo htmlspecialchars(\zap\cms\Auth::user()['email'] ?? ''); ?></small>
+                            </div>
+                            <a class="dropdown-item" href="<?php echo \zap\facades\Url::action('User@profile'); ?>">
+                                <i class="fa fa-user-cog me-2"></i>账户设置
+                            </a>
+                            <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="<?php echo \zap\facades\Url::action('System@settings'); ?>">
                                 <i class="fa fa-cog me-2"></i>系统设置
                             </a>

@@ -1,115 +1,97 @@
-<?php
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card card-warning card-outline">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-lock me-2"></i>修改密码</h5>
+                </div>
+                <div class="card-body">
+                    <form id="changePasswordForm" method="post" action="<?php echo \zap\facades\Url::action('User@changePassword'); ?>">
+                        <?php echo csrf_field(); ?>
 
-use zap\facades\Url;
+                        <div class="mb-3">
+                            <label for="old_password" class="form-label">
+                                当前密码 <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-key"></i></span>
+                                <input type="password" class="form-control" id="old_password"
+                                       name="old_password" required
+                                       placeholder="请输入当前密码">
+                            </div>
+                        </div>
 
-\zap\cms\Asset::library('jqueryvalidation');
-$this->layout('layouts/common');
-?>
+                        <div class="mb-3">
+                            <label for="new_password" class="form-label">
+                                新密码 <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" class="form-control" id="new_password"
+                                       name="new_password" required minlength="6"
+                                       placeholder="请输入新密码（至少6个字符）">
+                            </div>
+                        </div>
 
-<nav class="navbar bg-body-tertiary mb-3 rounded shadow-sm">
-    <div class="container-fluid">
-        <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);"
-             aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item "><a href="<?php echo Url::action('System@settings') ?>">设置</a></li>
-                <li class="breadcrumb-item active"><a href="<?php echo Url::action('User@changePassword') ?>">修改密码</a></li>
-            </ol>
-        </nav>
-        <div class=" text-end" >
-            <button type="button" class="btn btn-success btn-sm" onclick="changePassword()"><i class="fa fa-save"></i> 保存</button>
+                        <div class="mb-4">
+                            <label for="confirm_password" class="form-label">
+                                确认新密码 <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-check-circle"></i></span>
+                                <input type="password" class="form-control" id="confirm_password"
+                                       name="confirm_password" required minlength="6"
+                                       placeholder="请再次输入新密码">
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-warning" id="savePwdBtn">
+                                <i class="fas fa-save me-1"></i>修改密码
+                            </button>
+                            <a href="<?php echo \zap\facades\Url::action('User@profile'); ?>"
+                               class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>返回个人资料
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card card-info card-outline">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="fas fa-info-circle me-2"></i>密码安全提示</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0 small">
+                        <li>密码长度至少为 <strong>6</strong> 个字符</li>
+                        <li>建议使用字母、数字和特殊字符的组合</li>
+                        <li>请勿使用与其他网站相同的密码</li>
+                        <li>修改密码后需要重新登录</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
+</div>
 
-</nav>
-<form id="zForm">
-<main class="container zap-main">
-
-
-    <div class="card shadow-sm">
-        <div class="card-header">修改密码</div>
-        <div class="card-body">
-            <div class="row mb-3">
-                <label for="cur_password" class="col-sm-2 col-form-label">当前密码</label>
-                <div class="col-sm-10">
-                    <input type="password" class="form-control" id="cur_password" name="cur_password" placeholder="请输入当前密码" autocomplete="off" required>
-                </div>
-            </div>
-            <div class="row mb-3">
-                <label for="new_password" class="col-sm-2 col-form-label">请输入新密码</label>
-                <div class="col-sm-10">
-                    <input type="password" class="form-control" id="new_password" name="new_password" placeholder="请输入新密码" required>
-                </div>
-            </div>
-            <div class="row mb-3">
-                <label for="renew_password" class="col-sm-2 col-form-label">再次输入新密码</label>
-                <div class="col-sm-10">
-                    <input type="password" class="form-control" id="renew_password" name="renew_password" placeholder="再次输入新密码" required>
-                </div>
-            </div>
-
-
-
-        </div>
-        <div class="card-footer text-center">
-            <button type="button" class="btn btn-success" onclick="changePassword()">修改密码</button>
-        </div>
-    </div>
-
-
-</main>
-</form>
 <script>
-    $(function(){
-        $('#zForm').validate({
-            rules:{
-                new_password:{
-                    required: true,
-                    rangelength: [6, 18],
-                    pattern:/^[a-zA-Z0-9.@#$]{6,18}$/
-                },
-                renew_password: {
-                    required: true,
-                    equalTo:"#new_password",
-                    rangelength: [6, 18],
-                    pattern:/^[a-zA-Z0-9.@#$]{6,18}$/
-                }
-            },
-            messages:{
-                cur_password:"当前密码必须填写",
-                new_password:{
-                    required:"请输入新密码",
-                    rangelength:"密码长度必须为6~18位的字符或数字",
-                    pattern:"密码必须由6~18位字符组合,支持以下字符 [a-zA-Z0-9.@#$] "
-                },
-                renew_password:{
-                    required:"请再次输入新密码",
-                    rangelength:"密码长度必须为6~18位的字符或数字",
-                    pattern:"密码必须由6~18位字符组合,支持以下字符 [a-zA-Z0-9.@#$] "
-                },
-            }
-        });
-    })
-    function changePassword(){
-        const zForm = $('#zForm');
-        if(!zForm.valid()){
+$(function(){
+    $('#changePasswordForm').on('submit', function(){
+        var newPwd = $('#new_password').val();
+        var confirmPwd = $('#confirm_password').val();
+
+        if(newPwd !== confirmPwd){
+            ZapToast.alert('两次输入的新密码不一致', {bgColor: bgDanger, position: Toast_Pos_Center});
             return false;
         }
-        $.ajax({
-            url: '<?php echo Url::current();?>',
-            method: 'post',
-            data: zForm.serialize(),
-            dataType: 'json',
-            success: function (data) {
-                if (data.code === 0) {
-                    ZapToast.alert(data.msg, {bgColor: bgSuccess, position: Toast_Pos_Center,callback:function(){
-                        location.href='<?php echo url_action('Auth@signIn');?>';
-                        }});
-                    $('#zForm')[0].reset();
-                } else {
-                    ZapToast.alert(data.msg, {bgColor: bgDanger, position: Toast_Pos_Center});
-                }
-            }
-        });
 
-    }
+        if(newPwd.length < 6){
+            ZapToast.alert('新密码至少需要6个字符', {bgColor: bgDanger, position: Toast_Pos_Center});
+            return false;
+        }
+
+        $('#savePwdBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>提交中...');
+    });
+});
 </script>

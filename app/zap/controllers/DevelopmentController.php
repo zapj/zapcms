@@ -2,7 +2,6 @@
 
 namespace app\zap\controllers;
 
-use app\zap\helpers\ZapFilesystemIterator;
 use FilesystemIterator;
 use zap\cms\AdminController;
 use zap\view\View;

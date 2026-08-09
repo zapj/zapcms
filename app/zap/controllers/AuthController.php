@@ -43,17 +43,21 @@ class AuthController extends Controller
                 ->where('username',$username)
                 ->update();
             session()->set('zapAdmin',[
-                'last_ip'=>$admin->last_ip,
-                'last_access_time'=>$admin->last_access_time,
-                'id'=>$admin->id,
-                'username'=>$admin->username,
-                'full_name'=> $admin->full_name ?: $admin->username
+                'id'              => $admin->id,
+                'username'        => $admin->username,
+                'full_name'       => $admin->full_name ?: $admin->username,
+                'email'           => $admin->email ?? '',
+                'phone_number'    => $admin->phone_number ?? '',
+                'avatar_url'      => $admin->avatar_url ?? '',
+                'last_ip'         => $admin->last_ip,
+                'last_access_time'=> $admin->last_access_time,
             ]);
 
             if (Request::isAjax()) {
                 Response::json(['code'=>0,'msg'=>'登录成功','redirect_to'=>Url::action('Index')]);
                 return;
             }
+            \zap\cms\models\AdminLog::log('管理员登录', "用户 {$admin->username} 登录成功", $admin->id, $admin->username);
             Response::redirect(Url::action('Index'))->with('success', '登录成功');
             return;
         }
@@ -62,6 +66,7 @@ class AuthController extends Controller
 
     function signOut()
     {
+        \zap\cms\models\AdminLog::log('管理员退出', '安全退出系统');
         Auth::signOut();
         Response::redirect(Url::action('Auth@signIn'))->with('success', '您已安全退出');
     }
