@@ -2,4 +2,6 @@
 var/cache/*
 var/logs/*
 var/tmp/*
+var/backups/*
 storage/*
+.vscode
