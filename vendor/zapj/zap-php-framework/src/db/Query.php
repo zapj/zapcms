@@ -318,6 +318,47 @@ class Query
     }
 
     /**
+     * Add a raw WHERE clause with optional bindings.
+     *
+     * @param string $sql    Raw SQL expression (e.g. "a.id = b.id AND status = ?")
+     * @param array  $bindings Values to bind to placeholders
+     * @param string $boolean 'AND' or 'OR'
+     */
+    /**
+     * Add a raw WHERE clause with named bindings.
+     *
+     * Example:
+     *   $q->whereRaw('a.id = b.id');
+     *   $q->whereRaw('status = :status AND hits > :min', ['status' => 1, 'min' => 100]);
+     *
+     * @param string $sql      Raw SQL with :named placeholders
+     * @param array  $bindings ['key' => value] — keys are auto-prefixed with ':' if missing
+     * @param string $boolean  'AND' or 'OR'
+     */
+    public function whereRaw(string $sql, array $bindings = [], string $boolean = 'AND'): self
+    {
+        foreach ($bindings as $key => $value) {
+            $key = ltrim((string) $key, ':');
+            $this->params[$key] = $value;
+        }
+
+        $this->wheres[] = [
+            'sql'     => $sql,
+            'boolean' => $boolean,
+        ];
+
+        return $this;
+    }
+
+    /**
+     * Add a raw OR WHERE clause.
+     */
+    public function orWhereRaw(string $sql, array $bindings = []): self
+    {
+        return $this->whereRaw($sql, $bindings, 'OR');
+    }
+
+    /**
      * Internal where builder.
      * Accepts: [colName => [operator, value, boolean]]
      *
@@ -484,6 +525,27 @@ class Query
     public function orderByDesc(string $column): self
     {
         return $this->orderBy($column, 'DESC');
+    }
+
+    /**
+     * Add a raw ORDER BY clause with optional named bindings.
+     *
+     * Examples:
+     *   $q->orderByRaw('RAND()');
+     *   $q->orderByRaw('FIELD(id, :a, :b, :c)', ['a' => 3, 'b' => 1, 'c' => 2]);
+     *   $q->orderByRaw('(SELECT val FROM t WHERE t.pid=n.id AND t.key=:k LIMIT 1) DESC', ['k' => 'rating']);
+     *
+     * @param string $expression Raw SQL (e.g. subquery, function call)
+     * @param array  $bindings   Named bindings ['key' => value], keys auto-prefixed with ':'
+     */
+    public function orderByRaw(string $expression, array $bindings = []): self
+    {
+        foreach ($bindings as $key => $value) {
+            $key = ltrim((string) $key, ':');
+            $this->params[$key] = $value;
+        }
+        $this->orders[] = $expression;
+        return $this;
     }
 
     public function latest(string $column = 'id'): self

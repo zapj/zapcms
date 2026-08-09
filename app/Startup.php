@@ -10,6 +10,7 @@
 
 namespace app;
 
+use app\controllers\ZqueryController;
 use Twig\Error\Error as TwigError;
 use zap\cms\models\Node;
 use zap\DB;
@@ -51,6 +52,14 @@ class Startup
         // 计算当前请求 URI（去除查询参数）
         $this->currentUri = strtok($_SERVER['REQUEST_URI'], '?') ?: '/';
         $this->baseUrl = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+
+        // ──── ZQuery 统一查询 API ────
+        $this->router->match(['GET', 'POST'], '/api/zquery', function () {
+            (new ZqueryController())->index();
+        });
+        $this->router->get('/api/zquery/meta', function () {
+            (new ZqueryController())->meta();
+        });
 
         // ──── 注册前台兜底路由（匹配所有未被后台匹配的请求）────
         $this->router->any('/{any:.*}', function ($any = '') {

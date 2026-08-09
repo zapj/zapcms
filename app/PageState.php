@@ -12,7 +12,32 @@ defined('IN_ZAP_CMS') or die('No permission to access');
  *
  * 封装当前页面渲染所需的所有状态数据，统一从控制器传递到视图。
  * 通过 pageState() 全局函数访问单例。
- *
+ * 
+ * @property bool         $isHome          是否首页
+ * @property bool         $isSearch        是否搜索页
+ * @property bool         $isCatalog       是否栏目页
+ * @property bool         $isNode          是否节点页
+ * @property bool         $is404           是否 404 页面
+ * @property bool         $isDesignMode    是否设计模式
+ * @property bool         $isAdmin         是否后台管理页面
+ * @property bool         $isMobile        是否移动端访问
+ * @property bool         $isAjax          是否 Ajax 请求
+ * @property bool         $isPost          是否 POST 请求
+ * @property bool         $isGet           是否 GET 请求
+ * @property bool         $isPjax          是否 PJAX 请求
+ * @property bool         $isPreview       是否预览模式
+ * @property bool         $isPreviewMode   是否预览模式（同上）
+ * @property bool         $isPreviewAdmin  是否后台预览模式
+ * @property bool         $isPreviewFront  是否前台预览模式
+ * @property bool         $isPreviewNode   是否节点预览模式
+ * @property bool         $isPreviewCatalog 是否栏目预览模式
+ * @property bool         $isPreviewSearch 是否搜索预览模式
+ * @property bool         $isPreview404    是否 404 预览模式
+ * @property bool         $isPreviewAjax   是否 Ajax 预览模式
+ * @property bool         $isPreviewPjax   是否 PJAX 预览模式
+ * @property bool         $isPreviewPost   是否 POST 预览模式
+ * @property bool         $isPreviewGet    是否 GET 预览模式
+ * @property bool         $isPreviewMobile 是否移动端预览模式
  * @property string       $pageTitle       页面标题（SEO title）
  * @property string       $pageKeywords    页面关键词（SEO keywords）
  * @property string       $pageDescription 页面描述（SEO description）

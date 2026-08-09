@@ -44,8 +44,7 @@ $childLastSlug = [];
         <div class="container">
             <div class="row">
                 <div class="col-md-12 text-center">
-                    &copy; <?php echo date('Y') . '  ' . option('website.copyright'); ?>
-                    <a href="https://www.zap.cn/zapcms">Powered by ZapCMS</a>
+                   Copyright &copy; <?php echo date('Y') . ' ' . option('website.copyright'); ?> <a href="https://www.zap.cn/zapcms">Powered by ZapCMS</a>
                 </div>
             </div>
         </div>
