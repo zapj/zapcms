@@ -1,40 +1,36 @@
-<?php
-defined('IN_ZAP_CMS') or die('No permission to access');
-
-use zap\cms\BreadCrumb;
-
-echo $this->extend('layout/default'); ?>
-<div class="bread_area">
+<?php defined('IN_ZAP_CMS') or die('No permission to access'); ?>
+<?php $this->extend('layout/default'); ?>
+<?php $this->beginBlock('content'); ?>
+    <?php echo $this->partial('partials/_breadcrumb'); ?>
     <div class="container">
         <div class="row">
-            <div class="col-sm-12">
-                <?php BreadCrumb::instance()->display(); ?>
+            <div class="col-sm-9">
+                <div class="content-wrap">
+                    <div class="row">
+                        <?php if (empty($articles)): ?>
+                        <div class="col-sm-12">
+                            <p>暂无内容</p>
+                        </div>
+                        <?php else: foreach ($articles as $article): ?>
+                        <div class="col-sm-4">
+                            <div class="post-content">
+                                <a href="<?php echo site_url('/' . $article['slug']); ?>">
+                                    <img class="img-responsive" src="<?php echo \zap\cms\helpers\ThumbHelper::thumb($article['image'], 270, 210); ?>" alt="<?php echo htmlspecialchars($article['title']); ?>" />
+                                </a>
+                                <div class="content-wrap">
+                                    <h4><a href="<?php echo site_url('/' . $article['slug']); ?>"><?php echo htmlspecialchars($article['title']); ?></a></h4>
+                                    <ul class="list-inline post-meta">
+                                        <li><i class="fa fa-calendar"></i> <?php echo date('Y-m-d', strtotime($article['created_at'])); ?></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endforeach; endif; ?>
+                    </div>
+                    <?php echo $this->partial('partials/_pagination', ['page' => $page ?? null]); ?>
+                </div>
             </div>
+            <?php echo $this->partial('partials/_sidebar'); ?>
         </div>
     </div>
-</div>
-<main class="site-main category-main">
-    <div class="container">
-        <div class="row">
-            <aside class="sidebar col-sm-3">
-                <div class="widget">
-                    <h4><?php echo pageState()->node['title']; ?></h4>
-                    <ul>
-                        <?php foreach(pageState()->subCatalogList as $catalog){ ?>
-                            <li <?php if(pageState()->nodeId == $catalog['id']){echo 'class="current"';} ?>
-                            ><a href="<?php echo site_url("/{$catalog['slug']}"); ?>" title="<?php echo $catalog['title'];?>"><?php echo $catalog['title'];?></a></li>
-                        <?php } ?>
-
-                    </ul>
-                </div>
-            </aside>
-            <section class="page col-sm-9">
-                <h2 class="page-title"><?php echo pageState()->node['title']; ?></h2>
-                <div class="entry">
-                    <?php echo pageState()->node['content']; ?>
-                </div>
-            </section>
-
-        </div>
-    </div>
-</main>
+<?php $this->endBlock(); ?>

@@ -61,6 +61,11 @@ abstract class ViewRenderer
         $this->view->include($name, $blockName);
     }
 
+    public function partial($name, array $data = []): string
+    {
+        return $this->view->partial($name, $data);
+    }
+
     public function block($name): string
     {
         return $this->view->blocks[$name] ?? '';

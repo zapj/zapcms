@@ -1,70 +1,37 @@
-<?php
-defined('IN_ZAP_CMS') or die('No permission to access');
-
-use zap\cms\BreadCrumb;
-
-echo $this->extend('layout/default'); ?>
-<div class="bread_area">
+<?php defined('IN_ZAP_CMS') or die('No permission to access'); ?>
+<?php $this->extend('layout/default'); ?>
+<?php $this->beginBlock('content'); ?>
+    <?php echo $this->partial('partials/_breadcrumb'); ?>
     <div class="container">
         <div class="row">
             <div class="col-sm-12">
-                <?php BreadCrumb::instance()->display(); ?>
+                <div class="content-wrap">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <form method="get" action="<?php echo site_url('/search'); ?>">
+                                <div class="input-group" style="margin-bottom: 20px;">
+                                    <input type="text" name="q" class="form-control" placeholder="请输入搜索关键词" value="<?php echo htmlspecialchars($query ?? ''); ?>">
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-primary" type="submit">搜索</button>
+                                    </span>
+                                </div>
+                            </form>
+                            <?php if (empty($articles)): ?>
+                            <p>未找到相关内容</p>
+                            <?php else: ?>
+                            <p>共找到 <?php echo count($articles); ?> 条结果</p>
+                            <?php foreach ($articles as $article): ?>
+                            <div class="search-item" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+                                <h4><a href="<?php echo site_url('/' . $article['slug']); ?>"><?php echo htmlspecialchars($article['title']); ?></a></h4>
+                                <p><?php echo htmlspecialchars(mb_substr(strip_tags($article['content'] ?? ''), 0, 200)) . '...'; ?></p>
+                            </div>
+                            <?php endforeach; ?>
+                            <?php echo $this->partial('partials/_pagination', ['page' => $page ?? null]); ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
-<main class="site-main category-main">
-    <div class="container">
-        <div class="row">
-            <aside class="sidebar col-sm-3">
-                <div class="widget">
-                    <h4>搜索</h4>
-                    <ul>
-                        <?php foreach(pageState()->subCatalogList as $catalog){ ?>
-                            <li <?php if(pageState()->nodeId == $catalog['id']){echo 'class="current"';} ?>
-                            ><a href="<?php echo site_url("/{$catalog['slug']}"); ?>" title="<?php echo $catalog['title'];?>"><?php echo $catalog['title'];?></a></li>
-                        <?php } ?>
-
-                    </ul>
-                </div>
-            </aside>
-            <section class="category-content col-sm-9">
-<!--                <h2 class="category-title">文章列表</h2>-->
-                <ul class="media-list">
-                    <?php foreach ($data_list as $node){ ?>
-                        <li class="media">
-                            <div class="media-left">
-                                <a href="#" title="Post">
-                                    <img class="media-object" width="200"  src="<?php echo \zap\cms\helpers\ThumbHelper::thumb($node['image'],200,200); ?>" alt="Post">
-                                </a>
-                            </div>
-                            <div class="media-body">
-                                <h4 class="media-heading"><a href="<?php echo site_url("/{$node['node_type']}/{$node['slug']}") ?>" title="<?php echo $node['title'];?>"><?php echo $node['title'];?></a></h4>
-                                <p class="text-muted"><?php echo \zap\util\Str::truncate(strip_tags($node['content']),200);?></p>
-                                <aside class="meta category-meta">
-                                    <div class="pull-left ">
-                                        <div class="arc-comment "><a href="#" title="阅读量" class="text-muted"><i class="fa fa-eye"></i> 阅读量  <?php echo empty($node['hits']) ? 0 :$node['hits']; ?> </a></div>
-                                        <div class="arc-date text-muted"><?php echo date(Z_DATE,$node['pub_time']); ?></div>
-                                    </div>
-                                    <div class="pull-right">
-                                        <ul class="arc-share">
-                                            <li><a href="#0" title="Post"><i class="fa fa-wechat"></i></a></li>
-                                            <li><a href="#0" title="Post"><i class="fa fa-weibo"></i></a></li>
-
-                                        </ul>
-                                    </div>
-                                </aside>
-                            </div>
-                        </li>
-                    <?php } ?>
-
-
-                </ul>
-                <div class="row text-center">
-                    <?php echo $page->render(); ?>
-                </div>
-            </section>
-
-        </div>
-    </div>
-</main>
+<?php $this->endBlock(); ?>

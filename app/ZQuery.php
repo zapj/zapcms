@@ -10,7 +10,7 @@
 
 namespace app;
 
-class ZapQuery
+class ZQuery
 {
     protected $condition;
     public function __construct($condition)

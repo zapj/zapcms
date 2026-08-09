@@ -1,68 +1,199 @@
 <?php
-/*
- * Copyright (c) 2023.  ZAP.CN  - ZAP CMS - All Rights Reserved
- * @author Allen
- * @email zapcms@zap.cn
- * @date 2023/12/27 上午11:30
- * @lastModified 2023/12/25 下午3:53
- *
- */
-
 namespace app;
 
 use ArrayObject;
 use zap\cms\Catalog;
+use zap\facades\Cache;
 
-class PageState extends \ArrayObject
+defined('IN_ZAP_CMS') or die('No permission to access');
+
+/**
+ * PageState - 页面状态对象
+ *
+ * 封装当前页面渲染所需的所有状态数据，统一从控制器传递到视图。
+ * 通过 pageState() 全局函数访问单例。
+ *
+ * @property string       $pageTitle       页面标题（SEO title）
+ * @property string       $pageKeywords    页面关键词（SEO keywords）
+ * @property string       $pageDescription 页面描述（SEO description）
+ * @property int          $catalogId       当前栏目 ID
+ * @property int          $nodeId          当前节点 ID
+ * @property string       $nodeType        当前节点类型
+ * @property string       $nodeTypeLabel   节点类型中文标签，如「新闻」「产品」
+ * @property array        $node            当前节点完整数据
+ * @property string|null  $image           节点封面图
+ * @property array[]      $catalogList     栏目列表
+ * @property array[]      $subCatalogList  子栏目列表
+ * @property array[]      $parentIds       父级 ID 列表（用于面包屑）
+ * @property array[]      $latestNews      最新动态列表
+ * @property string       $latestNewsUrl   最新动态栏目链接
+ * @property string       $latestNewsName  最新动态栏目名称
+ * @property bool         $designMode      是否处于设计模式
+ * @property string       $theme           当前主题名称
+ * @property array        $setting         当前主题配置
+ * @property string       $canonicalUrl    当前页面的规范化 URL
+ *
+ * @method static PageState instance() 获取单例
+ */
+class PageState extends ArrayObject
 {
-    public $isHome;
-    public $nodeId;
-    public $node;
-    public $tags;
-    public $tag;
-    public $catalog;
-    public ?array $catalogList;
-    public $catalogPaths;
-
-    public $options = [];
-    public $isCatalog = false;
-    public $isNode = false;
-    public $nodeType;
-    public $nodeMimeType;
+    private static ?PageState $instance = null;
 
     public function __construct()
     {
-        parent::__construct([], ArrayObject::STD_PROP_LIST|ArrayObject::ARRAY_AS_PROPS, "ArrayIterator");
+        parent::__construct([], ArrayObject::STD_PROP_LIST | ArrayObject::ARRAY_AS_PROPS, 'ArrayIterator');
     }
 
-    public function addOptions($options){
-        $this->options += $options;
-    }
-
-    public function getCatalog($key = null){
-        if(!$this->catalog && $this->nodeType == 'catalog'){
-            $this->catalog = Catalog::instance()->get($this->nodeId);
+    /**
+     * 获取单例实例（自动创建）
+     */
+    public static function instance(): self
+    {
+        if (self::$instance === null) {
+            self::$instance = new self();
         }
-        return $key ? $this->catalog[$key] : $this->catalog;
+        return self::$instance;
     }
 
+    /**
+     * 重置单例（用于测试或重新初始化）
+     */
+    public static function reset(): void
+    {
+        self::$instance = null;
+    }
+
+    // ─── 便捷访问方法 ───────────────────────────────────────
+
+    /**
+     * 获取主题配置项
+     *
+     * @param string $key     配置键，如 'basic_home.slide'
+     * @param mixed  $default 默认值
+     * @return mixed
+     */
+    public function themeSetting(string $key, $default = null)
+    {
+        return $this->setting[$key] ?? $default;
+    }
+
+    /**
+     * 判断是否有设置项
+     */
+    public function hasThemeSetting(string $key): bool
+    {
+        return isset($this->setting[$key]) && !empty($this->setting[$key]);
+    }
+
+    /**
+     * 是否有子栏目
+     */
+    public function hasSubCatalogs(): bool
+    {
+        return !empty($this['subCatalogList']);
+    }
+
+    /**
+     * 是否有最新动态
+     */
+    public function hasLatestNews(): bool
+    {
+        return !empty($this['latestNews']);
+    }
+
+    /**
+     * 获取顶级栏目菜单（带缓存）
+     */
     public function getCatalogList(): ?array
     {
-        if(!$this->catalogList){
-            $this->catalogList = \zap\facades\Cache::get('top_menu',function(){
-                return \zap\cms\Catalog::instance()->getTreeArray();
-            },5000);
+        if (!$this['catalogList']) {
+            $this['catalogList'] = Cache::get('top_menu', function () {
+                return Catalog::instance()->getTreeArray();
+            }, 5000);
         }
-        return $this->catalogList;
+        return $this['catalogList'];
     }
 
-    public function getSearchSidebarMenu(){
-        $types = ['article','product'];
-        $results = \zap\cms\Catalog::instance()->getTreeArray([['node_type','IN',$types]]);
-        return $results;
+    /**
+     * 获取当前栏目详情
+     */
+    public function getCatalog($key = null)
+    {
+        if (!$this['catalog'] && $this['nodeType'] === 'catalog') {
+            $this['catalog'] = Catalog::instance()->get($this['nodeId']);
+        }
+        return $key ? ($this['catalog'][$key] ?? null) : $this['catalog'];
     }
 
+    /**
+     * 获取搜索页侧边栏菜单
+     */
+    public function getSearchSidebarMenu(): array
+    {
+        $types = ['article', 'product'];
+        return Catalog::instance()->getTreeArray([['node_type', 'IN', $types]]);
+    }
 
+    /**
+     * 第一个子栏目（用于侧边栏标题）
+     */
+    public function firstSubCatalog(): ?array
+    {
+        if (!$this->hasSubCatalogs()) {
+            return null;
+        }
+        $list = $this['subCatalogList'];
+        return reset($list) ?: null;
+    }
 
+    /**
+     * 智能节点链接（根据类型自动选择规则）
+     */
+    public function nodeUrl(array $node): string
+    {
+        return smart_node_url($node);
+    }
 
+    /**
+     * 获取缩略图 URL
+     */
+    public function thumb(int $width, int $height): string
+    {
+        return \zap\cms\helpers\ThumbHelper::thumb($this->image, $width, $height);
+    }
+
+    // ─── SEO 输出 ──────────────────────────────────────────
+
+    /**
+     * 输出 SEO meta 标签 HTML
+     */
+    public function printMeta(): string
+    {
+        $html = '';
+        if (!empty($this['pageTitle'])) {
+            $html .= '<title>' . htmlspecialchars($this['pageTitle']) . '</title>' . "\n";
+        }
+        if (!empty($this['pageKeywords'])) {
+            $html .= '<meta name="keywords" content="' . htmlspecialchars($this['pageKeywords']) . '">' . "\n";
+        }
+        if (!empty($this['pageDescription'])) {
+            $html .= '<meta name="description" content="' . htmlspecialchars($this['pageDescription']) . '">' . "\n";
+        }
+        if (!empty($this['canonicalUrl'])) {
+            $html .= '<link rel="canonical" href="' . htmlspecialchars($this['canonicalUrl']) . '">' . "\n";
+        }
+        return $html;
+    }
+}
+
+if (!function_exists('pageState')) {
+    /**
+     * 获取 PageState 单例
+     *
+     * @return PageState
+     */
+    function pageState(): PageState
+    {
+        return PageState::instance();
+    }
 }

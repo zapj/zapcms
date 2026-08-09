@@ -1,42 +1,26 @@
-<?php
-defined('IN_ZAP_CMS') or die('No permission to access');
-
-use zap\cms\BreadCrumb;
-
-echo $this->extend('layout/default'); ?>
-<div class="bread_area">
+<?php defined('IN_ZAP_CMS') or die('No permission to access'); ?>
+<?php $this->extend('layout/default'); ?>
+<?php $this->beginBlock('content'); ?>
+    <?php echo $this->partial('partials/_breadcrumb'); ?>
     <div class="container">
         <div class="row">
-            <div class="col-sm-12">
-                <?php BreadCrumb::instance()->display(); ?>
+            <div class="col-sm-9">
+                <div class="content-wrap">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <article class="single-post">
+                                <div class="entry-header">
+                                    <h1 class="entry-title"><?php echo htmlspecialchars($article['title']); ?></h1>
+                                </div>
+                                <div class="post-content">
+                                    <?php echo $article['content']; ?>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                </div>
             </div>
+            <?php echo $this->partial('partials/_sidebar'); ?>
         </div>
     </div>
-</div>
-<main class="site-main page-main">
-    <div class="container">
-        <div class="row">
-            <aside class="sidebar col-sm-3">
-                <div class="widget">
-                    <h4><?php
-                        $topCatalog = array_shift(pageState()->subCatalogList);
-                        echo $topCatalog['title']; ?></h4>
-                    <ul>
-                        <?php foreach(pageState()->subCatalogList as $catalog){ ?>
-                            <li <?php if(pageState()->nodeId == $catalog['id']){echo 'class="current"';} ?>
-                            ><a href="<?php echo site_url("/{$catalog['slug']}"); ?>" title="<?php echo $catalog['title'];?>"><?php echo $catalog['title'];?></a></li>
-                        <?php } ?>
-
-                    </ul>
-                </div>
-            </aside>
-            <section class="page col-sm-9">
-                <h2 class="page-title"><?php echo pageState()->node['title']; ?></h2>
-                <div class="entry">
-                    <?php echo pageState()->node['content']; ?>
-                </div>
-            </section>
-
-        </div>
-    </div>
-</main>
+<?php $this->endBlock(); ?>

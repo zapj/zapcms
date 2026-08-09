@@ -425,6 +425,15 @@ function theme_url(?string $path = null): string
 }
 
 /**
+ * 输出主题资源 URL（CSS/JS/图片等）
+ * 用法: theme_asset('css/style.css'), theme_asset('img/logo.svg')
+ */
+function theme_asset(string $path): void
+{
+    echo theme_url($path);
+}
+
+/**
  * 主题资源文件系统路径
  */
 function theme_path(?string $path = null): string
