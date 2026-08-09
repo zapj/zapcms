@@ -54,8 +54,9 @@
                 <p class="login-box-msg">请输入账号和密码登录</p>
 
                 <!-- Flash 消息区域 -->
+                <script>
                 <?php \zap\cms\AdminPage::instance()->showFlashMessages();?>
-
+                </script>
                 <form id="loginForm" action="" method="post" autocomplete="off">
                     <input type="hidden" name="token" value="<?php echo csrf_token();?>">
 
@@ -115,7 +116,7 @@
         <!-- 页脚链接 -->
         <?php $indexPage = \zap\cms\Option::get('home','home') ?: '1';?>
         <div class="text-center mt-3">
-            <a href="<?php echo base_url();?>/page-<?php echo $indexPage;?>.html" class="text-decoration-none text-secondary">
+            <a href="<?php echo base_url('/');?>" class="text-decoration-none text-secondary">
                 <i class="fas fa-home me-1"></i>返回网站首页
             </a>
         </div>

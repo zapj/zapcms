@@ -46,10 +46,10 @@ use \zap\facades\Url;
                                  alt="" class="rounded-circle me-1" width="26" height="26" style="object-fit:cover;">
                             <span><?php echo htmlspecialchars(\zap\cms\Auth::user()['nickname'] ?? \zap\cms\Auth::user()['username'] ?? '管理员'); ?></span>
                         </a>
-                        <div class="dropdown-menu dropdown-menu-end shadow">
+                        <div class="dropdown-menu dropdown-menu-end shadow" style="min-width: 240px;">
                             <div class="px-3 py-2 border-bottom">
-                                <div class="fw-semibold text-dark"><?php echo htmlspecialchars(\zap\cms\Auth::user()['full_name'] ?? \zap\cms\Auth::user()['username'] ?? ''); ?></div>
-                                <small class="text-muted"><?php echo htmlspecialchars(\zap\cms\Auth::user()['email'] ?? ''); ?></small>
+                                <div class="fw-semibold text-dark text-truncate"><?php echo htmlspecialchars(\zap\cms\Auth::user()['full_name'] ?? \zap\cms\Auth::user()['username'] ?? ''); ?></div>
+                                <small class="text-muted text-nowrap"><?php echo htmlspecialchars(\zap\cms\Auth::user()['email'] ?? ''); ?></small>
                             </div>
                             <a class="dropdown-item" href="<?php echo \zap\facades\Url::action('User@profile'); ?>">
                                 <i class="fa fa-user-cog me-2"></i>账户设置
