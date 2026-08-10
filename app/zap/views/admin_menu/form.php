@@ -8,7 +8,7 @@ use zap\cms\AdminMenu;
     <div class="col-md-6">
         <label for="data_title" class="form-label small">菜单名称</label>
         <input type="text" class="form-control form-control-sm" name="zap_data[title]" id="data_title"
-               value="<?php echo $menu['title'] ?? ''; ?>" placeholder="菜单名称"/>
+               value="<?php echo $menu['title'] ?? ''; ?>" placeholder="菜单名称" autofocus/>
     </div>
     <div class="col-md-6">
         <label for="data_icon" class="form-label small">图标</label>
@@ -25,14 +25,16 @@ use zap\cms\AdminMenu;
     <div class="col-md-6">
         <label for="data_pid" class="form-label small">上级菜单</label>
         <select name="zap_data[pid]" id="data_pid" class="form-select form-select-sm">
-            <option value="0">- 无 -</option>
+            <option value="0">- 顶级菜单 -</option>
             <?php
-            AdminMenu::instance()->forEachAll(function ($row) use ($menu) {
+            // 新增时 $parent 有值 → 自动选中父级；编辑时用 $menu['pid'] 选中
+            $selectedPid = isset($parent['id']) ? intval($parent['id']) : intval($menu['pid'] ?? 0);
+            AdminMenu::instance()->forEachAll(function ($row) use ($menu, $selectedPid) {
                 ?>
                 <option value="<?php echo $row['id']; ?>"
-                    <?php echo ($menu['pid'] ?? 0) == $row['id'] ? 'selected' : ''; ?>
+                    <?php echo $selectedPid === intval($row['id']) ? 'selected' : ''; ?>
                     <?php echo !empty($menu['path']) && \zap\util\Str::startsWith($row['path'], $menu['path']) ? 'disabled' : ''; ?>>
-                    <?php echo str_repeat('&nbsp;&nbsp;', $row['level'] - 1) . $row['title']; ?>
+                    <?php echo str_repeat('&nbsp;&nbsp;', max(0, intval($row['level']) - 1)) . $row['title']; ?>
                 </option>
                 <?php
             });
@@ -86,6 +88,3 @@ use zap\cms\AdminMenu;
                value="<?php echo $menu['sort_order'] ?? 0; ?>"/>
     </div>
 </form>
-<script>
-    var CATALOG_PID = <?php echo isset($parent['id']) ? $parent['id'] : 0;?>;
-</script>

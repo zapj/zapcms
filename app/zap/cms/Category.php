@@ -58,27 +58,38 @@ class Category
 
     public function add($data)
     {
-        $data[$this->parentColumn] = $data[$this->parentColumn] ?? 0;
-        if ($data[$this->parentColumn] > 0) {
-            $parent = DB::table($this->table)->where($this->primaryKey, $data[$this->parentColumn])->fetch();
-//            $data[$this->pathColumn] = sprintf('%s,%s',$parent->path,$parent->id);
-            $data[$this->pathColumn] = $parent->path;
-            $data[$this->levelColumn] = $parent->level + 1;
+        $pid = intval($data[$this->parentColumn] ?? 0);
+        $data[$this->parentColumn] = $pid;
+
+        if ($pid > 0) {
+            $parent = DB::table($this->table)->where($this->primaryKey, $pid)->fetch(FETCH_ASSOC);
+            if (empty($parent)) {
+                $pid = 0;
+                $data[$this->parentColumn] = 0;
+                $data[$this->pathColumn] = '';
+                $data[$this->levelColumn] = $this->defaultLevel;
+            } else {
+                $data[$this->pathColumn] = $parent[$this->pathColumn];
+                $data[$this->levelColumn] = intval($parent[$this->levelColumn]) + 1;
+            }
         } else {
             $data[$this->pathColumn] = '';
             $data[$this->levelColumn] = $this->defaultLevel;
         }
+
         $category_id = DB::insert($this->table, $data);
-        if(!$category_id){
-            $category_id = $data['id'];
+        if (!$category_id) {
+            $category_id = isset($data['id']) ? intval($data['id']) : 0;
         }
-        if($data[$this->parentColumn] == 0){
-            DB::update($this->table,[$this->pathColumn => "{$category_id},"],[$this->primaryKey => $category_id]);
-        }else{
-            DB::update($this->table,[
-                $this->pathColumn => sprintf("%s%s,",$data[$this->pathColumn],$category_id)
-            ],[$this->primaryKey => $category_id]);
+
+        if ($pid === 0) {
+            DB::update($this->table, [$this->pathColumn => "{$category_id},"], [$this->primaryKey => $category_id]);
+        } else {
+            DB::update($this->table, [
+                $this->pathColumn => sprintf("%s%s,", $data[$this->pathColumn], $category_id)
+            ], [$this->primaryKey => $category_id]);
         }
+
         return $category_id;
     }
 
