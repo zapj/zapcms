@@ -84,11 +84,11 @@ $this->view->page_title = '系统菜单管理';
             </table>
         </div>
 
-        <div class="card-footer d-flex justify-content-between">
-            <button type="button" class="btn btn-danger btn-sm" onclick="remove()">
+        <div class="card-footer d-flex ">
+            <button type="button" class="btn btn-danger btn-sm me-3" onclick="remove()">
                 <i class="fa fa-trash me-1"></i>删除选中
             </button>
-            <button type="button" class="btn btn-success" onclick="save()">
+            <button type="button" class="btn btn-success btn-sm" onclick="save()">
                 <i class="fa fa-save me-1"></i>保存
             </button>
         </div>
