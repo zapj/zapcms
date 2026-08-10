@@ -1,5 +1,5 @@
 <?php
-defined('IN_ZAP_CMS') or die('No permission to access');
+defined('IN_ZAPCMS') or die('No permission to access');
 $this->extend('layout/default');
 $this->beginBlock('content');
 ?>

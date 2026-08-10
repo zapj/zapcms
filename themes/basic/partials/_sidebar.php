@@ -1,4 +1,4 @@
-<?php defined('IN_ZAP_CMS') or die('No permission to access');
+<?php defined('IN_ZAPCMS') or die('No permission to access');
 
 // 优先使用传入参数，否则从 PageState 获取
 $state = pageState();

@@ -13,7 +13,11 @@ $this->view->page_title = $page;
         <div class="card card-outline card-success">
             <div class="card-body">
                 <?php
-                $themePage = theme_path("zap/{$page}.php");
+                // 当前主题的文件不存在时，自动回退到 basic 主题
+                $themePage = theme_path("admin/{$page}.php");
+                if (!is_file($themePage)) {
+                    $themePage = themes_path("basic/admin/{$page}.php");
+                }
                 if (is_file($themePage)) {
                     include $themePage;
                 }

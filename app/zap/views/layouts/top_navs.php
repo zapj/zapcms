@@ -10,7 +10,8 @@
     <!-- 侧边栏菜单滚动区 -->
     <div class="sidebar-wrapper">
         <nav class="mt-2">
-            <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
+            <ul class="nav sidebar-menu flex-column <?php \zap\AdminHook::echo('admin_menu_class'); ?>" data-lte-toggle="treeview" role="menu" data-accordion="false">
+                <?php \zap\AdminHook::echo('admin_menu_before'); ?>
                 <li class="nav-item">
                     <a href="<?php echo \zap\facades\Url::action('Index'); ?>" class="nav-link">
                             <i class="nav-icon fa fa-dashboard"></i>
@@ -121,8 +122,9 @@
                         <?php endif; ?>
                     </li>
                 <?php endforeach; ?>
+                <?php \zap\AdminHook::echo('admin_menu_after'); ?>
             </ul>
-
+            <?php \zap\AdminHook::echo('admin_menu_footer'); ?>
             <div class="p-3 mt-3 border-top border-secondary border-opacity-25">
               <a href="https://zap.cn/docs/zapcms" target="_blank" class="btn btn-sm btn-outline-light w-100 d-flex align-items-center justify-content-center gap-2">
                 <i class="bi bi-book" aria-hidden="true"></i>

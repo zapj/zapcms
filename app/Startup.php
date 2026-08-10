@@ -77,7 +77,7 @@ class Startup
      */
     protected function dispatchFrontend(string $path): void
     {
-        define('IN_ZAP_CMS', true);
+        define('IN_ZAPCMS', true);
 
         // ──── 加载站点配置 ────
         $website = get_options('website', 'REGEXP');

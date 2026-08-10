@@ -573,3 +573,13 @@ function get_theme_url(?string $path = null)
         ? base_url("themes/{$theme}")
         : base_url("themes/{$theme}/{$path}");
 }
+
+/**
+ * 获取主题配置对象（用于后台主题设置页面的读写）
+ *
+ * @return \zap\cms\ThemeSettings
+ */
+function themeSettings(): \zap\cms\ThemeSettings
+{
+    return new \zap\cms\ThemeSettings();
+}

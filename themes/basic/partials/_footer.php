@@ -1,4 +1,4 @@
-<?php defined('IN_ZAP_CMS') or die('No permission to access');
+<?php defined('IN_ZAPCMS') or die('No permission to access');
 
 /**
  * 页脚 partial

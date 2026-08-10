@@ -18,7 +18,11 @@ $this->view->page_title = '主题设置';
             </div>
             <div class="card-body">
                 <?php
-                $view = theme_path('zap/settings.php');
+                // 当前主题的文件不存在时，自动回退到 basic 主题
+                $view = theme_path('admin/settings.php');
+                if (!is_file($view)) {
+                    $view = themes_path('basic/admin/settings.php');
+                }
                 if (is_file($view)) {
                     include $view;
                 }

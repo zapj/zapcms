@@ -51,14 +51,15 @@ class Bootstrap
      */
     protected function initAdminEnv(): void
     {
-        define('IN_ZAP_ADMIN', true);
+        define('IN_ZAPCMS_ADMIN', true);
         config_set('config.theme', false);
         define('IS_AJAX', Request::isAjax());
         View::paths(realpath(__DIR__ . '/views'));
 
         $theme = option('website.theme', 'basic');
-        if (is_file(themes_path("{$theme}/functions.php"))) {
-            include themes_path("{$theme}/functions.php");
+        // 后端只加载 admin/functions.php，不加载前台的 functions.php
+        if (is_file(themes_path("{$theme}/admin/functions.php"))) {
+            include themes_path("{$theme}/admin/functions.php");
         }
     }
 

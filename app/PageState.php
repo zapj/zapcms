@@ -5,7 +5,7 @@ use ArrayObject;
 use zap\cms\Catalog;
 use zap\facades\Cache;
 
-defined('IN_ZAP_CMS') or die('No permission to access');
+defined('IN_ZAPCMS') or die('No permission to access');
 
 /**
  * PageState - 页面状态对象

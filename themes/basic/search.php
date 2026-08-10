@@ -1,4 +1,4 @@
-<?php defined('IN_ZAP_CMS') or die('No permission to access'); ?>
+<?php defined('IN_ZAPCMS') or die('No permission to access'); ?>
 <?php $this->extend('layout/default'); ?>
 <?php $this->beginBlock('content'); ?>
     <?php echo $this->partial('partials/_breadcrumb'); ?>

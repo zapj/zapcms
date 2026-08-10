@@ -13,7 +13,7 @@ $this->view->page_title = '主题管理';
             </div>
             <div class="card-body">
                 <div class="row g-3">
-                    <?php foreach ($themes as $theme): ?>
+                    <?php foreach ($themes as $theme):  ?>
                     <div class="col-6 col-md-3 col-lg-2">
                         <div class="card card-outline card-secondary h-100">
                             <div class="position-relative">

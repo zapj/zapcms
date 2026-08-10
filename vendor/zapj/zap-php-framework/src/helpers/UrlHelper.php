@@ -43,7 +43,7 @@ class UrlHelper
     {
         $base = $this->base();
         // When in admin panel, return admin dashboard URL
-        if (defined('IN_ZAP_ADMIN') && IN_ZAP_ADMIN) {
+        if (defined('IN_ZAPCMS_ADMIN') && IN_ZAPCMS_ADMIN) {
             $prefix = defined('Z_ADMIN_PREFIX') ? trim(Z_ADMIN_PREFIX, '/') : 'z-admin';
             return $base . '/' . $prefix;
         }
@@ -129,7 +129,7 @@ class UrlHelper
 
         // Derive from current URL
         $path = trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/', '/');
-        if (defined('IN_ZAP_ADMIN') && IN_ZAP_ADMIN) {
+        if (defined('IN_ZAPCMS_ADMIN') && IN_ZAPCMS_ADMIN) {
             $prefix = defined('Z_ADMIN_PREFIX') ? trim(Z_ADMIN_PREFIX, '/') : 'z-admin';
             if (str_starts_with($path, $prefix . '/')) {
                 $path = substr($path, strlen($prefix) + 1);
@@ -156,7 +156,7 @@ class UrlHelper
         } catch (\Throwable $e) {}
 
         $path = trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/', '/');
-        if (defined('IN_ZAP_ADMIN') && IN_ZAP_ADMIN) {
+        if (defined('IN_ZAPCMS_ADMIN') && IN_ZAPCMS_ADMIN) {
             $prefix = defined('Z_ADMIN_PREFIX') ? trim(Z_ADMIN_PREFIX, '/') : 'z-admin';
             if (str_starts_with($path, $prefix . '/')) {
                 $path = substr($path, strlen($prefix) + 1);
@@ -195,7 +195,7 @@ class UrlHelper
         }
 
         // Admin context: prepend admin prefix
-        if (defined('IN_ZAP_ADMIN') && IN_ZAP_ADMIN) {
+        if (defined('IN_ZAPCMS_ADMIN') && IN_ZAPCMS_ADMIN) {
             $uri = Z_ADMIN_PREFIX.'/'. ltrim($uri, '/');
         }else{
              $uri = '/' . ltrim($uri, '/');
