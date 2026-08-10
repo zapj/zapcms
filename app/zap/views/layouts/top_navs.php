@@ -1,5 +1,20 @@
 <aside class="app-sidebar bg-dark shadow" data-bs-theme="dark">
-    <!-- 侧边栏品牌区域 -->
+    <style>
+      .docs-btn-text {
+  overflow: hidden;           /* 防止文字溢出 */
+  white-space: nowrap;        /* 强制不换行，配合max-width实现折叠 */
+  opacity: 0;
+  max-width: 0;
+  transition: 
+    opacity 0.3s ease-in-out,
+    max-width 0.4s ease-in-out; /* 宽度稍慢，制造“展开”感 */
+}
+
+body.sidebar-mini.sidebar-open .docs-btn-text {
+  opacity: 1;
+  max-width: 150px;           /* 过渡到目标宽度 */
+}
+    </style>    <!-- 侧边栏品牌区域 -->
     <div class="sidebar-brand">
         <a href="<?php echo \zap\facades\Url::action('Index'); ?>" class="brand-link text-decoration-none">
             <img src="<?php echo base_url();?>/assets/admin/img/zap_logo_white.svg" alt="ZAP" class="brand-image opacity-75 shadow" width="26" height="26" onerror="this.style.display='none'">
@@ -125,12 +140,27 @@
                 <?php \zap\AdminHook::echo('admin_menu_after'); ?>
             </ul>
             <?php \zap\AdminHook::echo('admin_menu_footer'); ?>
-            <div class="p-3 mt-3 border-top border-secondary border-opacity-25">
-              <a href="https://zap.cn/docs/zapcms" target="_blank" class="btn btn-sm btn-outline-light w-100 d-flex align-items-center justify-content-center gap-2">
-                <i class="bi bi-book" aria-hidden="true"></i>
-                View documentation
+            <div class="p-3 mt-3 border-top border-secondary border-opacity-25 docs-block">
+              <a href="https://zap.cn/docs/zapcms" target="_blank" class="btn btn-sm btn-outline-light w-100 d-flex align-items-center justify-content-center docs-btn" title="View documentation">
+                <i class="fa fa-book ms-2 me-2" aria-hidden="true"></i>
+                <span class="docs-btn-text">Documentation</span>
               </a>
             </div>
         </nav>
     </div>
 </aside>
+<script>
+(function() {
+    var body = document.body;
+    if (!body.classList.contains('sidebar-mini')) return;
+    var sidebar = document.querySelector('.app-sidebar');
+    if (sidebar) {
+        sidebar.addEventListener('mouseenter', function() {
+            body.classList.add('sidebar-open');
+        });
+        sidebar.addEventListener('mouseleave', function() {
+            body.classList.remove('sidebar-open');
+        });
+    }
+})();
+</script>
