@@ -3,6 +3,9 @@ defined('IN_ZAPCMS') or die('No permission to access');
 $this->extend('layout/default');
 $this->beginBlock('content');
 ?>
+<style>
+.product-thumb { width: 100%; height: 210px; object-fit: cover; display: block; }
+</style>
     <?php echo $this->partial('partials/_breadcrumb'); ?>
     <div class="container">
         <div class="row">
