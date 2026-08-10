@@ -24,7 +24,7 @@ class NodeController extends AdminController
             $controller = Router::convertToName($method);
             $action = Router::convertToName($action);
 
-            $class = "\\zapcms\node\controllers\{$controller}Controller";
+            $class = "\\zapcms\\node\\controllers\\{$controller}Controller";
             if(!class_exists($class)){
                 $nodeTypeClass = NodeType::getClass($method);
                 $class = class_exists($nodeTypeClass) ? $nodeTypeClass : AbstractNodeType::class;

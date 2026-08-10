@@ -25,6 +25,7 @@ class AdminController extends Controller
         //初始化RBAC
         app()->make(RBAC::class,[],'rbac');
         app()->breadcrumb = BreadCrumb::instance();
+        BreadCrumb::instance()->add('控制台',url_action('Index'));
         //website options
 
     }
