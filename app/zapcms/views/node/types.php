@@ -1,111 +1,112 @@
-<?php
+<?php use zap\facades\Url; ?>
+<?php $this->layout('layouts/common'); ?>
+<a href="<?= Url::action('Node/typesForm')?>" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg"></i> 添加模型
+</a>
 
-use zap\facades\Url;
-
-$this->layout('layouts/common');
-?>
-
-<nav class="navbar bg-body-tertiary mb-3 rounded shadow-sm ">
-    <div class="container-fluid">
-        <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);"
-             aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="<?php echo Url::action('Content') ?>">内容管理</a></li>
-                <li class="breadcrumb-item active" aria-current="page"><a
-                        href="<?php echo Url::action('Node@types',$_GET) ?>">内容模型管理</a></li>
-            </ol>
-        </nav>
-        <div class=" text-end" >
-            <a class="btn btn-success btn-sm" href="<?php echo url_action("Zap@{$_controller}/add",$_GET);?>">
-                <i class="fa fa-add"></i> 添加</a>
-        </div>
-    </div>
-
-</nav>
-
-
-<main class="container-fluid zap-main">
-
-
-
-    <div class="card shadow-sm">
-
-        <div class="card-header"><?php echo $title; ?></div>
-
-        <div class="table-responsive card-body">
-            <table class="table text-nowrap table-hover">
-                <thead>
-                <tr>
-                    <th scope="col">ID</th>
-                    <th scope="col" class="w-50">标题</th>
-                    <th scope="col">点击量</th>
-                    <th scope="col">发布日期</th>
-                    <th scope="col">状态</th>
-                    <th scope="col" >操作</th>
-                </tr>
-                </thead>
-                <tbody>
-                <?php foreach ($data as $row): ?>
-                    <tr>
-                        <th scope="row"><?php echo $row['id'];?></th>
-                        <td>
-                            <a href="<?php echo url_action("Node@{$_controller}/edit/{$row['id']}",$_GET);?>">
-                                <?php echo $row['title'];?>
-                            </a>
-                        </td>
-
-                        <td><?php echo $row['hits']; ?></td>
-                        <td><?php echo date(Z_DATE_TIME,$row['pub_time']); ?></td>
-                        <td><?php echo \zapcms\models\Node::getStatusTitle($row['status']); ?></td>
-                        <td>
-                            <a href="<?php echo url_action("Node@{$_controller}/edit/{$row['id']}",$_GET);?>" class="btn btn-sm btn-success"><i class="fa fa-edit"></i> 编辑</a>
-                            <a href="javascript:void(0);" onclick="remove(<?php echo $row['id'];?>,'<?php echo $row['title'];?>');" class="btn btn-sm btn-danger"><i class="fa fa-remove"></i> 删除</a>
-
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-
-                </tbody>
-            </table>
-            <div>
-<!--                --><?php //echo $page->render(7,'pagination  justify-content-center','page-item' ,'page-link'); ?>
+<div class="card">
+    <div class="card-header">
+        <form class="row g-2" method="get" action="<?= Url::action('Node/types')?>">
+            <div class="col-auto">
+                <input type="text" name="search" class="form-control form-control-sm"
+                       placeholder="搜索标识 / 标题" value="<?=e($search ?? '')?>">
             </div>
-        </div>
+            <div class="col-auto">
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">全部状态</option>
+                    <option value="1" <?=($status ?? '') === '1' ? 'selected' : ''?>>启用</option>
+                    <option value="0" <?=($status ?? '') === '0' ? 'selected' : ''?>>禁用</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-search"></i> 搜索
+                </button>
+            </div>
+            <div class="col-auto">
+                <a href="<?= Url::action('Node/types')?>" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-repeat"></i> 重置
+                </a>
+            </div>
+        </form>
     </div>
 
+    <?php if (empty($data)): ?>
+    <div class="card-body text-center py-5 text-muted">
+        <i class="bi bi-inbox" style="font-size:3rem;display:block;"></i>
+        <p class="mt-2">暂无内容模型数据，点击「添加模型」开始创建。</p>
+    </div>
+    <?php else: ?>
+    <div class="table-responsive">
+        <table class="table table-hover table-sm mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th style="width:60px">ID</th>
+                    <th>类型标识</th>
+                    <th>标题</th>
+                    <th>描述</th>
+                    <th>处理类</th>
+                    <th>版本</th>
+                    <th class="text-center">排序</th>
+                    <th class="text-center">状态</th>
+                    <th class="text-end" style="width:140px">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($data as $row): ?>
+                <tr>
+                    <td><?=$row['type_id']?></td>
+                    <td><code><?=e($row['type_name'])?></code></td>
+                    <td><strong><?=e($row['title'])?></strong></td>
+                    <td class="text-muted small"><?=e(mb_strlen($row['description'] ?? '') > 30 ? mb_substr($row['description'], 0, 30) . '…' : ($row['description'] ?? ''))?></td>
+                    <td><small class="text-monospace"><?=e($row['node_type'] ?? '—')?></small></td>
+                    <td><?=e($row['version'] ?? '0.0.0')?></td>
+                    <td class="text-center"><?=$row['sort_order']?></td>
+                    <td class="text-center">
+                        <span class="badge bg-<?=$row['status'] ? 'success' : 'secondary'?>">
+                            <?=$row['status'] ? '启用' : '禁用'?>
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <a href="<?= Url::action('Node/typesForm', ['id' => $row['type_id']])?>"
+                           class="btn btn-outline-primary btn-xs" title="编辑">
+                            <i class="bi bi-pencil"></i> 编辑
+                        </a>
+                        <button type="button" class="btn btn-outline-danger btn-xs"
+                                onclick="deleteType(<?=$row['type_id']?>, '<?=e($row['title'])?>')" title="删除">
+                            <i class="bi bi-trash"></i> 删除
+                        </button>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+    <?php endif; ?>
+</div>
 
-</main>
-<script >
+<script>
+function deleteType(id, title) {
+    if (!confirm('确认删除模型「' + title + '」？此操作不可恢复。')) return;
 
-    function remove(id,title){
-        const m = ZapModal.create({
-            id: 'confirmDelete',
-            title: '提示',
-            content: "确认删除 【"+title+"】 吗？",
-            backdrop: false,
-            buttons: [
-                {close: true, title: "取消", class: 'btn-outline-secondary'},
-                {title: "确定", class: 'btn-danger'}
-            ],
-            btn2: function() {
-                $.ajax({
-                    url: '<?php echo url_action('Zap@{$_controller}/remove');?>',
-                    method: 'POST',
-                    data: {id:id},
-                    dataType: 'json',
-                    success: function (data) {
-                        if(data.code === 0){
-                            location.reload();
-                        }else{
-                            ZapToast.alert(data.msg, {bgColor: bgDanger, position: Toast_Pos_Center});
-                        }
-                    }
-                }).always(function(){
-                    m.hide();
-                })
-            }
-        }, true);
-        m.show();
-    }
+    var formData = new FormData();
+    formData.append('id', id);
 
+    fetch('<?= Url::action('Node/typesDelete')?>', {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+        if (res.code === 0) {
+            location.reload();
+        } else {
+            alert(res.msg || '删除失败');
+        }
+    })
+    .catch(function() {
+        alert('网络错误，请重试');
+    });
+}
 </script>

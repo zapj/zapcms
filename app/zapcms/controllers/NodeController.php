@@ -4,6 +4,7 @@ namespace zapcms\controllers;
 
 use zapcms\controllers\AdminController;
 use zapcms\services\NodeType;
+use zap\DB;
 use zap\http\Response;
 use zap\http\Router;
 use zapcms\node\AbstractNodeType;
@@ -12,7 +13,7 @@ use zap\view\View;
 class NodeController extends AdminController
 {
 
-    public function _invoke($method,$params)
+    public function _invoke(string $method, array $params = [])
     {
         View::paths(base_path("app/zapcms/node/views"));
         if($method == 'index'){$method = 'default';}
@@ -53,10 +54,97 @@ class NodeController extends AdminController
     }
 
     function types(){
-        $data = [];
+        $search  = req()->get('search', '');
+        $status  = req()->get('status', '');
 
+        $query = DB::table('node_types');
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('type_name', 'LIKE', "%{$search}%")
+                  ->orWhere('title', 'LIKE', "%{$search}%");
+            });
+        }
+        if ($status !== '') {
+            $query->where('status', (int)$status);
+        }
+        $query->orderBy('sort_order', 'ASC')->orderBy('type_id', 'DESC');
 
-        View::render("node.types",$data);
+        $data = $query->fetchAll();
+
+        View::render("node.types", [
+            'data'        => $data,
+            'search'      => $search,
+            'status'      => $status,
+            'title'       => '内容模型管理',
+            'page_title'  => '内容模型',
+            'page_subtitle' => '管理网站的内容类型',
+        ]);
+    }
+
+    function typesForm(){
+        $id  = req()->get('id', 0);
+        $row = [];
+        if ($id > 0) {
+            $row = DB::table('node_types')->where('type_id', (int)$id)->first();
+            if (!$row) {
+                throw new \RuntimeException('模型不存在');
+            }
+        }
+        View::render("node.types_form", [
+            'row'         => $row,
+            'id'          => (int)$id,
+            'page_title'  => $id > 0 ? '编辑模型' : '添加模型',
+        ]);
+    }
+
+    function typesSave(){
+        $id   = req()->post('type_id', 0);
+        $data = [
+            'type_name'   => trim(req()->post('type_name', '')),
+            'title'       => trim(req()->post('title', '')),
+            'description' => trim(req()->post('description', '')),
+            'node_type'   => trim(req()->post('node_type', '')),
+            'version'     => trim(req()->post('version', '0.0.0')),
+            'sort_order'  => (int)req()->post('sort_order', 0),
+            'status'      => (int)req()->post('status', 1),
+        ];
+
+        if (empty($data['type_name']) || empty($data['title'])) {
+            Response::json(['code' => 1, 'msg' => '类型标识和标题不能为空']);
+            return;
+        }
+
+        // 唯一性检查
+        $existQuery = DB::table('node_types')->where('type_name', $data['type_name']);
+        if ($id > 0) {
+            $existQuery->where('type_id', '!=', (int)$id);
+        }
+        if ($existQuery->exists()) {
+            Response::json(['code' => 1, 'msg' => '类型标识已存在']);
+            return;
+        }
+
+        $now = time();
+        if ($id > 0) {
+            $data['updated_at'] = $now;
+            DB::table('node_types')->where('type_id', (int)$id)->update($data);
+        } else {
+            $data['created_at'] = $now;
+            $data['updated_at'] = $now;
+            DB::table('node_types')->insert($data);
+        }
+
+        Response::json(['code' => 0, 'msg' => '保存成功']);
+    }
+
+    function typesDelete(){
+        $id = req()->post('id', 0);
+        if ($id <= 0) {
+            Response::json(['code' => 1, 'msg' => '参数错误']);
+            return;
+        }
+        DB::table('node_types')->where('type_id', (int)$id)->delete();
+        Response::json(['code' => 0, 'msg' => '删除成功']);
     }
 
 }
