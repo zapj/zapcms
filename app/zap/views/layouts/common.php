@@ -23,7 +23,7 @@ use \zap\facades\Url;
     <?php \zap\AdminHook::echo('admin_head'); ?>
 </head>
 
-<body class="layout-fixed sidebar-expand-lg bg-body-tertiary ">
+<body class="<?php echo $body_class ?? 'layout-fixed sidebar-expand-lg bg-body-tertiary'; ?>">
     <div class="app-wrapper">
         <!-- 顶部导航栏 -->
         <nav class="app-header navbar navbar-expand bg-white shadow-sm">
