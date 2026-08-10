@@ -10,23 +10,23 @@
  */
 
 // 创建自定义数据表
+\zap\db\Schema::dropIfExists('example_plugin_data');
 \zap\db\Schema::create('example_plugin_data', function (\zap\db\TableSchema $table) {
     $table->integer('id')->autoIncrement();
     $table->varchar('title', 255);
     $table->text('content')->nullable();
     $table->integer('created_at')->nullable()->default(0);
-
-    $table->addPrimary('example_pk', 'id');
-    $table->dropTableIfExists();
+    $table->addPrimaryKey('id');
+   
     $table->setTableEngine(\zap\db\TableSchema::ENGINE_INNODB);
 });
 
 // 添加后台菜单项
-// \zap\cms\AdminMenu::moduleItem([
+// \zapcms\services\AdminMenu::moduleItem([
 //     'title' => '示例插件',
 //     'icon'  => 'fa-solid fa-star',
 //     'url'   => '/z-admin/mod/example-plugin'
 // ]);
 
 // 添加配置项
-\zap\cms\Option::add('plugin.example.config', 'default_value');
+\zapcms\services\Option::add('plugin.example.config', 'default_value');

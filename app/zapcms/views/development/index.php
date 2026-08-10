@@ -1,5 +1,5 @@
 <?php
-\zap\cms\Asset::library('ace');
+\zapcms\support\Asset::library('ace');
 $this->layout('layouts/common');
 /**
  * @var string $path 当前目录路径

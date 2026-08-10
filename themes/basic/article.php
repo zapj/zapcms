@@ -19,7 +19,7 @@ $this->beginBlock('content');
                                     <h1 class="entry-title"><?php echo htmlspecialchars($article['title']); ?></h1>
                                 </div><!-- /.entry-header -->
                                 <div class="post-thumbnail">
-                                    <img src="<?php echo \zap\cms\helpers\ThumbHelper::thumb($article['image'], 750, 480); ?>" class="img-responsive" alt="<?php echo htmlspecialchars($article['title']); ?>">
+                                    <img src="<?php echo \zapcms\helpers\ThumbHelper::thumb($article['image'], 750, 480); ?>" class="img-responsive" alt="<?php echo htmlspecialchars($article['title']); ?>">
                                 </div><!-- /.post-thumbnail -->
                                 <div class="post-content">
                                     <?php echo $article['content']; ?>

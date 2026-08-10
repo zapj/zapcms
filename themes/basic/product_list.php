@@ -21,7 +21,7 @@ $this->beginBlock('content');
                         <div class="col-sm-4">
                             <div class="post-content">
                                 <a href="<?php echo site_url('/' . $article['slug']); ?>">
-                                    <img class="img-responsive product-thumb" src="<?php echo \zap\cms\helpers\ThumbHelper::thumb($article['image'], 270, 210); ?>" alt="<?php echo htmlspecialchars($article['title']); ?>" />
+                                    <img class="img-responsive product-thumb" src="<?php echo \zapcms\helpers\ThumbHelper::thumb($article['image'], 270, 210); ?>" alt="<?php echo htmlspecialchars($article['title']); ?>" />
                                 </a>
                                 <div class="content-wrap">
                                     <h4><a href="<?php echo site_url('/' . $article['slug']); ?>"><?php echo htmlspecialchars($article['title']); ?></a></h4>

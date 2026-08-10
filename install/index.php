@@ -210,7 +210,7 @@ function createDBSchemaBaseDataAction()
 
     try {
         ob_start();
-        $schema = new \zap\cms\CreateTables();
+        $schema = new \zapcms\support\CreateTables();
         $schema->createSchema();
         $schema->installBaseData();
         $schema->installDemoData();
@@ -219,11 +219,11 @@ function createDBSchemaBaseDataAction()
         if (is_file(config_path('database.php'))) {
             rename(config_path('database.php'), config_path('backup.database.php'));
         }
-        \zap\cms\ZapConfig::createConfig(config('database'), config_path('database.php'));
+        \zapcms\support\ZapConfig::createConfig(config('database'), config_path('database.php'));
 
-        \zap\cms\Option::update('website.title', $websiteTitle);
-        \zap\cms\Option::update('website.slogan', $websiteSlogan);
-        \zap\cms\Option::update('website.email', $websiteEmail);
+        \zapcms\services\Option::update('website.title', $websiteTitle);
+        \zapcms\services\Option::update('website.slogan', $websiteSlogan);
+        \zapcms\services\Option::update('website.email', $websiteEmail);
 
         \zap\DB::update('admin', [
             'username' => $websiteUsername,

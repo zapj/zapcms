@@ -4,7 +4,7 @@ use zapcms\services\Catalog;
 use zapcms\models\Node;
 
 /**
- * @var \zap\cms\Catalog $menu
+ * @var \zapcms\services\Catalog $menu
  * @var int $catalogId
  */
 $menu = $menu ?? Catalog::instance();

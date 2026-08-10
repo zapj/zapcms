@@ -20,7 +20,7 @@ class CatalogController extends Controller
         BreadCrumb::instance()->add('首页',base_url('/'));
     }
 
-    public function _invoke($method,$params = [])
+    public function _invoke(string $method, $params = [])
     {
         if(method_exists($this,$method)){
             $this->$method();

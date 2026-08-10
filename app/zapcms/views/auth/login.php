@@ -55,7 +55,7 @@
 
                 <!-- Flash 消息区域 -->
                 <script>
-                <?php \zap\cms\AdminPage::instance()->showFlashMessages();?>
+                <?php \zapcms\services\AdminPage::instance()->showFlashMessages();?>
                 </script>
                 <form id="loginForm" action="" method="post" autocomplete="off">
                     <input type="hidden" name="token" value="<?php echo csrf_token();?>">

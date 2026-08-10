@@ -8,7 +8,7 @@
 \zap\DB::exec('DROP TABLE IF EXISTS {example_plugin_data}');
 
 // 移除配置项
-\zap\cms\Option::remove('plugin.example.config');
+\zapcms\services\Option::remove('plugin.example.config');
 
 // 移除后台菜单项（如果有注册的话）
-// \zap\cms\AdminMenu::removeModuleItem('example-plugin');
+// \zapcms\services\AdminMenu::removeModuleItem('example-plugin');

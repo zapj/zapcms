@@ -17,7 +17,7 @@ class NodeController extends Controller
         BreadCrumb::instance()->add('首页',base_url('/'));
     }
 
-    public function _invoke($method,$params = [])
+    public function _invoke(string $method,$params = [])
     {
         if(method_exists($this,$method)){
             $this->$method();
@@ -74,7 +74,7 @@ class NodeController extends Controller
         view('product', ['article' => $node]);
     }
 
-    private function getCatalogPathByNodeId($node_id){
+    private function getCatalogPathByNodeId(int $node_id){
         return NodeRelation::where('node_id',$node_id)->orderBy('level ASC')
             ->leftJoin(['node','n'],'node_relation.catalog_id=n.id')
             ->select('n.title,n.id,n.slug')

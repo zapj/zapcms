@@ -201,7 +201,7 @@ class PageState extends ArrayObject
      */
     public function thumb(int $width, int $height): string
     {
-        return \zap\cms\helpers\ThumbHelper::thumb($this->image, $width, $height);
+        return \zapcms\helpers\ThumbHelper::thumb($this->image, $width, $height);
     }
 
     // ─── SEO 输出 ──────────────────────────────────────────

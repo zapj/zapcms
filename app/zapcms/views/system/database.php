@@ -42,7 +42,7 @@ if ($driver === 'sqlite') {
 
 // 表列表（含附加信息）
 $tableData = [];
-$tablesRaw = \app\zap\cms\system\SysInfo::getDatabaseTableNames();
+$tablesRaw = \zapcms\support\SysInfo::getDatabaseTableNames();
 foreach ($tablesRaw as $t) {
     $name = $t['name'];
     $entry = ['name' => $name, 'rows' => '', 'size' => ''];

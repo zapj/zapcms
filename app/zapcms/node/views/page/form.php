@@ -134,7 +134,7 @@ function save() {
 }
 </script>
 <?php
-!IS_AJAX && \zap\cms\Editor::instance()->create('.summernote', [
+!IS_AJAX && \zapcms\services\Editor::instance()->create('.summernote', [
     'image_upload' => 'zapSendFile',
     'upload_url' => url_action('Upload@image')
 ]);

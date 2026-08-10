@@ -12,5 +12,5 @@
 // 根据版本执行不同的更新操作
 // if (version_compare($fromVersion, '1.1.0', '<')) {
 //     // 执行 1.1.0 版本的更新操作
-//     \zap\cms\Option::add('plugin.example.new_config', 'new_value');
+//     \zapcms\services\Option::add('plugin.example.new_config', 'new_value');
 // }

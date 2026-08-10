@@ -3,7 +3,7 @@
     <div class="container">
         <div class="row">
             <div class="col-sm-12">
-                <?php \zap\cms\BreadCrumb::instance()->display(); ?>
+                <?php \zapcms\services\BreadCrumb::instance()->display(); ?>
             </div>
         </div>
     </div>
