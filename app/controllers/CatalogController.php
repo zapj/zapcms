@@ -5,8 +5,8 @@
 
 namespace app\controllers;
 
-use zap\cms\BreadCrumb;
-use zap\cms\Catalog;
+use zapcms\services\BreadCrumb;
+use zapcms\services\Catalog;
 use zap\DB;
 use zap\exception\ViewNotFoundException;
 use zap\helpers\Pagination;

@@ -5,7 +5,7 @@
 
 namespace app\controllers;
 
-use zap\cms\Sitemap;
+use zapcms\services\Sitemap;
 use zap\http\Controller;
 
 class SitemapController extends Controller

@@ -12,7 +12,7 @@ namespace app;
 
 use app\controllers\ZqueryController;
 use Twig\Error\Error as TwigError;
-use zap\cms\models\Node;
+use zapcms\models\Node;
 use zap\DB;
 use zap\exception\NotFoundException;
 use zap\exception\ViewNotFoundException;

@@ -17,7 +17,7 @@ if (!defined('Z_ADMIN_PREFIX')) {
 }
 
 // ──────────────────── 后台路由 ────────────────────
-$adminBootstrap = new \zap\Bootstrap();
+$adminBootstrap = new \zapcms\Bootstrap();
 $adminBootstrap->handle($router);
 
 // ──────────────────── 前台 CMS 路由 ────────────────────

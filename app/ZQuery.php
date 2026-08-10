@@ -15,7 +15,7 @@
 
 namespace app;
 
-use zap\cms\helpers\ThumbHelper;
+use zapcms\helpers\ThumbHelper;
 use zap\DB;
 use zap\db\Query;
 

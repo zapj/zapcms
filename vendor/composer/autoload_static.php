@@ -19,12 +19,13 @@ class ComposerStaticInit501184272d4d7ed612cf428f1bb86753
         'f844ccf1d25df8663951193c3fc307c8' => __DIR__ . '/..' . '/twig/twig/src/Resources/string_loader.php',
         '2a9d6d763e243d8f9e496986c262a927' => __DIR__ . '/..' . '/zapj/zap-php-framework/src/compat.php',
         'ed7610ef029ae6b6d5177039e3fb3277' => __DIR__ . '/..' . '/zapj/zap-php-framework/src/functions.php',
-        '42958137b6d13be8aa87d316c453d768' => __DIR__ . '/../..' . '/app/zap/functions.php',
+        'b9c812931a806f2f841e821f526e3b18' => __DIR__ . '/../..' . '/app/zapcms/functions.php',
     );
 
     public static $prefixLengthsPsr4 = array (
         'z' => 
         array (
+            'zapcms\\' => 7,
             'zap\\' => 4,
         ),
         'm' => 
@@ -58,10 +59,13 @@ class ComposerStaticInit501184272d4d7ed612cf428f1bb86753
     );
 
     public static $prefixDirsPsr4 = array (
+        'zapcms\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/app/zapcms',
+        ),
         'zap\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/app/zap',
-            1 => __DIR__ . '/..' . '/zapj/zap-php-framework/src',
+            0 => __DIR__ . '/..' . '/zapj/zap-php-framework/src',
         ),
         'mods\\' => 
         array (

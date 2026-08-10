@@ -2,7 +2,7 @@
 namespace app;
 
 use ArrayObject;
-use zap\cms\Catalog;
+use zapcms\services\Catalog;
 use zap\facades\Cache;
 
 defined('IN_ZAPCMS') or die('No permission to access');

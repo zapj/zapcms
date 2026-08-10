@@ -12,11 +12,11 @@
   },
   "autoload": {
     "files":[
-      "app/zap/functions.php"
+      "app/zapcms/functions.php"
     ],
     "psr-4":{
       "app\\" :"app/",
-      "zap\\" :"app/zap/",
+      "zapcms\\" :"app/zapcms/",
       "mods\\" :"mods/"
     }
   },

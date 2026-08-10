@@ -5,9 +5,9 @@
 
 namespace app\controllers;
 
-use zap\cms\BreadCrumb;
-use zap\cms\Catalog;
-use zap\cms\models\NodeRelation;
+use zapcms\services\BreadCrumb;
+use zapcms\services\Catalog;
+use zapcms\models\NodeRelation;
 use zap\http\Controller;
 
 class NodeController extends Controller

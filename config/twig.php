@@ -10,6 +10,6 @@ return [
     'template_paths'=>[
     ],
     'extensions'=>[
-        \zap\cms\twig\PageTwigExtension::class
+        \zapcms\twig\PageTwigExtension::class
     ]
 ];

@@ -6,9 +6,9 @@
 namespace app\controllers;
 
 use app\PageState;
-use zap\cms\BreadCrumb;
-use zap\cms\Catalog;
-use zap\cms\models\Node;
+use zapcms\services\BreadCrumb;
+use zapcms\services\Catalog;
+use zapcms\models\Node;
 use zap\helpers\Pagination;
 use zap\http\Controller;
 
