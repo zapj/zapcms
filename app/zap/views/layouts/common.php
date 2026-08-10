@@ -41,6 +41,11 @@ use \zap\facades\Url;
                     </li>
                 </ul>
                 <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" data-lte-toggle="fullscreen" href="#" role="button" title="全屏">
+                            <i class="fa fa-expand"></i>
+                        </a>
+                    </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link" data-bs-toggle="dropdown" href="#" role="button">
                             <img src="<?php echo !empty(\zap\cms\Auth::user()['avatar_url']) ? htmlspecialchars(\zap\cms\Auth::user()['avatar_url']) : base_url('/assets/admin/images/default-avatar.svg'); ?>"

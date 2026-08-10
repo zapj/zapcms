@@ -223,7 +223,7 @@ var Zap = {
         return window.zapFinder;
     }
 
-}
+};
 
 function ZapDialog(settings){
     const defaultSettings = {
