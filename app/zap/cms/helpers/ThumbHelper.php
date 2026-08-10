@@ -29,6 +29,16 @@ class ThumbHelper
         }
         $file = storage_path($file);
         if(!is_file($file)){
+            // 为占位图也生成对应尺寸的缩略图
+            $placeholder = app()->basePath('/assets/images/placeholder.jpg');
+            if(is_file($placeholder)){
+                $thumb_file = "placeholder-{$width}x{$height}.jpg";
+                if(!is_file(storage_path("thumbs/".$thumb_file))){
+                    $img = Image::from($placeholder);
+                    $img->thumb($width,$height)->saveFile(storage_path("thumbs/".$thumb_file));
+                }
+                return base_url("/storage/thumbs/".$thumb_file);
+            }
             return base_url("/assets/images/placeholder.jpg");
         }
         $img = Image::from($file);
