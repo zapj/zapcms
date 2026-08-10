@@ -1,6 +1,9 @@
 <?php
 \zap\cms\Asset::library('ace');
 $this->layout('layouts/common');
+/**
+ * @var string $path 当前目录路径
+ */
 ?>
 <style>
 .zap-dev-container {
