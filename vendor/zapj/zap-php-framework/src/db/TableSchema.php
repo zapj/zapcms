@@ -20,6 +20,12 @@ use zap\DB;
  */
 class TableSchema
 {
+    // ─── Engine constants (used for MySQL; ignored by SQLite / PgSQL) ───
+    const ENGINE_INNODB = 'InnoDB';
+    const ENGINE_MYISAM = 'MyISAM';
+    const ENGINE_MEMORY = 'MEMORY';
+    const ENGINE_ARCHIVE = 'ARCHIVE';
+
     /** @var string[] Collected DDL statements for batch execution */
     private array $sql = [];
 

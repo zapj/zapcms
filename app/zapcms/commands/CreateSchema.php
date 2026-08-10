@@ -21,7 +21,7 @@ class CreateSchema extends Command
     {
         $connection = $this->input->getParam('c','my_test');
         Schema::connection($connection);
-        Schema::verbose($this->out->getVerbose());
+        Schema::setOutput($output);
         $schema = new CreateTables($this->out->getVerbose());
         $schema->createSchema();
 

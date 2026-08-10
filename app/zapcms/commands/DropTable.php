@@ -17,10 +17,11 @@ class DropTable extends Command
 {
     function execute(Input $input, Output $output): int
     {
-        Schema::verbose($this->input->hasParam('v'));
+        Schema::setOutput($output);
         $connection = $this->input->getParam('c');
         Schema::connection($connection);
-        $this->out->writeln(Schema::drop('user'));
+        $this->out->writeln('Dropping table...');
+        $this->out->writeln(Schema::dropIfExists('user') ? 'Done.' : 'Table not found.');
         return self::SUCCESS;
     }
 

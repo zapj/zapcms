@@ -32,12 +32,25 @@ class Schema
 {
     protected static ?Output $output = null;
 
+    /** @var string|null Override the default connection name */
+    protected static ?string $connectionName = null;
+
     /**
      * Set a console Output instance for SQL logging.
      */
     public static function setOutput(Output $output): void
     {
         static::$output = $output;
+    }
+
+    /**
+     * Set the database connection name to use for subsequent operations.
+     *
+     * @param string|null $name  e.g. 'sqlite' — see database.php connections
+     */
+    public static function connection(?string $name): void
+    {
+        static::$connectionName = $name;
     }
 
     // ─── Create Table ────────────────────────────────────────────
@@ -56,7 +69,7 @@ class Schema
 
         $sql      = $table->toSql();
         $execTime = static::time();
-        $result   = DB::getPDO()->rawExec($sql);
+        $result   = DB::getPDO(static::$connectionName)->rawExec($sql);
         $execTime = static::time() - $execTime;
 
         static::log($sql, $execTime);
@@ -83,10 +96,10 @@ class Schema
         $execTime  = static::time();
 
         if ($ddl !== '') {
-            DB::getPDO()->rawExec($ddl);
+            DB::getPDO(static::$connectionName)->rawExec($ddl);
         }
         if ($dataSql !== '') {
-            DB::getPDO()->rawExec($dataSql);
+            DB::getPDO(static::$connectionName)->rawExec($dataSql);
         }
 
         $execTime = static::time() - $execTime;
@@ -100,7 +113,7 @@ class Schema
      */
     public static function hasTable(string $tableName): bool
     {
-        $pdo   = DB::getPDO();
+        $pdo   = DB::getPDO(static::$connectionName);
         $table = $pdo->quoteTable($tableName);
 
         try {
@@ -115,7 +128,7 @@ class Schema
 
     public static function drop(string $tableName): bool
     {
-        return DB::getPDO()->dropTable($tableName);
+        return DB::getPDO(static::$connectionName)->dropTable($tableName);
     }
 
     public static function dropIfExists(string $tableName): bool
@@ -130,7 +143,7 @@ class Schema
 
     public static function rename(string $from, string $to): bool
     {
-        return DB::getPDO()->renameTable($from, $to);
+        return DB::getPDO(static::$connectionName)->renameTable($from, $to);
     }
 
     // ─── Console Logging ─────────────────────────────────────────
