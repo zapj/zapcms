@@ -15,11 +15,11 @@ $this->view->page_title = $page;
                 <?php
                 // 当前主题的文件不存在时，自动回退到 basic 主题
                 $themePage = theme_path("admin/{$page}.php");
-                if (!is_file($themePage)) {
-                    $themePage = themes_path("basic/admin/{$page}.php");
-                }
+                
                 if (is_file($themePage)) {
                     include $themePage;
+                }else{
+                    echo "<div class='alert alert-danger'>当前主题的自定义页面不存在，请检查主题目录下的 admin/{$page}.php 文件是否存在</div>";
                 }
                 ?>
             </div>

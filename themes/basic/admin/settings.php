@@ -21,16 +21,14 @@ if (!in_array($page, $allowedPages)) {
     $page = '_settings';
 }
 ?>
-<div class="container-fluid px-4">
-    <div class="row">
-        <!-- ========== 左侧侧边栏 ========== -->
-        <div class="col-md-3">
-            <?php include __DIR__ . '/_sidebar_settings.php'; ?>
-        </div>
+<div class="row">
+    <!-- ========== 左侧侧边栏 ========== -->
+    <div class="col-md-3">
+        <?php include __DIR__ . '/_sidebar_settings.php'; ?>
+    </div>
 
-        <!-- ========== 右侧内容区 ========== -->
-        <div class="col-md-9">
-            <?php include __DIR__ . '/' . $page . '.php'; ?>
-        </div>
+    <!-- ========== 右侧内容区 ========== -->
+    <div class="col-md-9">
+        <?php include __DIR__ . '/' . $page . '.php'; ?>
     </div>
 </div>
