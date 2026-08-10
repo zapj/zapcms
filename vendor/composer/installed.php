@@ -122,7 +122,7 @@
         'zapj/zap-php-framework' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '98afb3d59277e54f42f3e8832d3b7218c96ca835',
+            'reference' => '24f920307dcac69d112946fadc99294d2a81acce',
             'type' => 'library',
             'install_path' => __DIR__ . '/../zapj/zap-php-framework',
             'aliases' => array(
