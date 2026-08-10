@@ -1,185 +1,759 @@
 <?php
 \zap\cms\Asset::library('ace');
-//\zap\Asset::library('codemirror');
-//register_scripts(base_url('/assets/admin/js/util.js'),ASSETS_BODY);
-//register_scripts(base_url('/assets/admin/js/main.js'),ASSETS_BODY);
 $this->layout('layouts/common');
 ?>
-<nav class="navbar bg-body-tertiary mb-3 rounded shadow-sm">
-    <div class="container-fluid">
-        <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);"
-             aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item active"><a href="<?php echo url_action('Development') ?>">在线开发工具</a></li>
-            </ol>
-        </nav>
-        <div class=" text-end" >
+<style>
+.zap-dev-container {
+    display: flex;
+    height: calc(100vh - 190px);
+    min-height: 500px;
+    margin: -0.5rem;
+}
+.zap-dev-sidebar {
+    width: 260px;
+    min-width: 260px;
+    border-right: 1px solid #dee2e6;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+}
+.zap-dev-sidebar-header {
+    padding: 0.75rem;
+    border-bottom: 1px solid #dee2e6;
+    flex-shrink: 0;
+}
+.zap-dev-sidebar-header .input-group-text {
+    background: transparent;
+    border-right: none;
+}
+.zap-dev-sidebar-header .form-control {
+    border-left: none;
+}
+.zap-dev-sidebar-header .form-control:focus {
+    border-color: #ced4da;
+    box-shadow: none;
+}
+.zap-dev-file-tree {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.25rem 0;
+}
+.zap-dev-file-tree .list-group {
+    border-radius: 0;
+}
+.zap-dev-file-tree .list-group-item {
+    border: none;
+    border-radius: 0;
+    padding: 0.35rem 0.75rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #495057;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    user-select: none;
+    border-left: 3px solid transparent;
+}
+.zap-dev-file-tree .list-group-item:hover {
+    background: #f0f3f7;
+}
+.zap-dev-file-tree .list-group-item.active {
+    background: #e7f1ff;
+    border-left-color: #0d6efd;
+    color: #0d6efd;
+    font-weight: 500;
+}
+.zap-dev-file-tree .list-group-item .item-icon {
+    width: 16px;
+    text-align: center;
+    flex-shrink: 0;
+    font-size: 0.85rem;
+}
+.zap-dev-file-tree .list-group-item.dir-item {
+    font-weight: 500;
+}
+.zap-dev-file-tree .list-group-item.dir-item .chevron {
+    transition: transform 0.2s;
+    font-size: 0.7rem;
+    margin-left: auto;
+    color: #adb5bd;
+}
+.zap-dev-file-tree .list-group-item.dir-item.expanded .chevron {
+    transform: rotate(90deg);
+}
+.zap-dev-file-tree .list-group-item .item-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+.zap-dev-file-tree .child-list {
+    display: none;
+}
+.zap-dev-file-tree .child-list.open {
+    display: block;
+}
+.zap-dev-file-tree .child-list .list-group-item {
+    padding-left: 1.75rem;
+}
+.zap-dev-file-tree .child-list .child-list .list-group-item {
+    padding-left: 2.75rem;
+}
+.zap-dev-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background: #fff;
+}
+.zap-dev-tabs {
+    display: flex;
+    border-bottom: 1px solid #dee2e6;
+    background: #f8f9fa;
+    overflow-x: auto;
+    flex-shrink: 0;
+    scrollbar-width: none;
+}
+.zap-dev-tabs::-webkit-scrollbar {
+    display: none;
+}
+.zap-dev-tabs .os-scrollbar {
+    display: none !important;
+}
+.zap-dev-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.75rem;
+    border-right: 1px solid #dee2e6;
+    cursor: pointer;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    color: #6c757d;
+    background: #f8f9fa;
+    min-width: 0;
+    transition: background 0.15s;
+}
+.zap-dev-tab:hover {
+    background: #e9ecef;
+}
+.zap-dev-tab.active {
+    background: #fff;
+    color: #212529;
+    font-weight: 500;
+    border-bottom: 2px solid #0d6efd;
+    margin-bottom: -1px;
+}
+.zap-dev-tab .tab-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+.zap-dev-tab .tab-close {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    font-size: 0.65rem;
+    color: #adb5bd;
+}
+.zap-dev-tab .tab-close:hover {
+    background: #dee2e6;
+    color: #495057;
+}
+.zap-dev-tab .tab-modified {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #fd7e14;
+    flex-shrink: 0;
+}
+.zap-dev-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.4rem 0.75rem;
+    border-bottom: 1px solid #e9ecef;
+    background: #fafafa;
+    flex-shrink: 0;
+    gap: 0.75rem;
+}
+.zap-dev-toolbar .file-info {
+    font-size: 0.8rem;
+    color: #6c757d;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+.zap-dev-toolbar .file-info .file-lang {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    background: #e9ecef;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    margin-left: 0.5rem;
+    text-transform: uppercase;
+}
+.zap-dev-toolbar .toolbar-actions {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+    flex-shrink: 0;
+}
+.zap-dev-toolbar .toolbar-actions .btn {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.6rem;
+}
+.zap-dev-editor-wrap {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    position: relative;
+    min-height: 0;
+}
+.zap-dev-editor-wrap .editor-pane {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+.zap-dev-editor-wrap .editor-pane.active {
+    display: block;
+}
+.zap-dev-statusbar {
+    display: flex;
+    align-items: center;
+    padding: 0.2rem 0.75rem;
+    background: #0d6efd;
+    color: #fff;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    gap: 1.5rem;
+}
+.zap-dev-statusbar span {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+.zap-dev-welcome {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #adb5bd;
+    gap: 0.75rem;
+}
+.zap-dev-welcome i {
+    font-size: 3rem;
+}
+.zap-dev-welcome .hint {
+    font-size: 0.8rem;
+    color: #ced4da;
+}
+.zap-dev-welcome .shortcuts {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+.zap-dev-welcome .shortcuts kbd {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+.empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #adb5bd;
+}
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 0.75rem;
+}
+.empty-state p {
+    font-size: 0.9rem;
+    margin: 0;
+}
+.loading-spinner {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    color: #adb5bd;
+}
+</style>
 
-        </div>
-    </div>
-
-</nav>
-<main class="container-fluid zap-main">
-    <div class="row shadow rounded">
-        <div class="col-3 pe-0">
-            <ul class="overflow-y-auto cd-accordion cd-accordion--animated margin-top-lg margin-bottom-lg" id="fileTreeView"  style="height: calc(100vh - 160px);">
-
-            </ul>
-        </div>
-        <div class="col-9 ps-0">
-            <ul class="nav nav-tabs" id="fileToolbarTabs" role="tablist">
-
-            </ul>
-            <div class="tab-content" id="fileContentTabs">
+<div class="zap-dev-container">
+    <!-- 左侧文件树 -->
+    <div class="zap-dev-sidebar">
+        <div class="zap-dev-sidebar-header">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text"><i class="fa fa-search"></i></span>
+                <input type="text" class="form-control" id="fileSearch" placeholder="搜索文件...">
             </div>
-
+        </div>
+        <div class="zap-dev-file-tree" id="fileTreeView">
+            <div class="loading-spinner text-center">
+                <i class="fa fa-spinner fa-spin"></i> 加载中...
+            </div>
         </div>
     </div>
 
-</main>
+    <!-- 右侧编辑区 -->
+    <div class="zap-dev-main">
+        <!-- 文件标签栏 -->
+        <div class="zap-dev-tabs" id="fileToolbarTabs"></div>
+
+        <!-- 编辑器工具栏 -->
+        <div class="zap-dev-toolbar" id="editorToolbar" style="display:none;">
+            <div class="file-info">
+                <span id="currentFilePath">-</span>
+                <span class="file-lang" id="currentFileLang">-</span>
+            </div>
+            <div class="toolbar-actions">
+                <button class="btn btn-sm btn-primary" id="btnSave" title="保存文件 (Ctrl+S)">
+                    <i class="fa fa-save"></i> 保存
+                </button>
+            </div>
+        </div>
+
+        <!-- 编辑器面板 -->
+        <div class="zap-dev-editor-wrap" id="fileContentTabs">
+            <div class="empty-state" id="welcomeScreen">
+                <i class="fa fa-code"></i>
+                <p>从左侧文件树选择文件开始编辑</p>
+                <div class="shortcuts">
+                    <span><kbd>Ctrl+S</kbd> 保存文件</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 状态栏 -->
+        <div class="zap-dev-statusbar" id="statusBar">
+            <span><i class="fa fa-folder-open"></i> <span id="statusRoot"><?php echo htmlspecialchars($path); ?></span></span>
+            <span id="statusInfo">就绪</span>
+        </div>
+    </div>
+</div>
+
 <script>
-    const fileTreeView = $('#fileTreeView');
-    const editorInstances = {};
-    $(function(){
+const fileTreeView = $('#fileTreeView');
+const editorToolbar = $('#editorToolbar');
+const welcomeScreen = $('#welcomeScreen');
+const fileToolbarTabs = $('#fileToolbarTabs');
+const fileContentTabs = $('#fileContentTabs');
+const statusInfo = $('#statusInfo');
+const editorInstances = {};
+let activeFilePath = null;
 
-        getDir('<?php echo $path;?>',fileTreeView);
+// 文件搜索
+let searchTimer = null;
+$('#fileSearch').on('input', function() {
+    clearTimeout(searchTimer);
+    const query = $(this).val().toLowerCase();
+    searchTimer = setTimeout(function() {
+        fileTreeView.find('.list-group-item.file-item').each(function() {
+            const name = $(this).find('.item-name').text().toLowerCase();
+            if (query === '' || name.includes(query)) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+        // 展开包含匹配结果的目录
+        if (query !== '') {
+            fileTreeView.find('.child-list').addClass('open');
+            fileTreeView.find('.dir-item').addClass('expanded');
+        }
+    }, 300);
+});
 
-        fileTreeView.on('click','li',function(e){
+$(function() {
+    getDir('<?php echo $path;?>', null);
+
+    // 文件树点击事件
+    fileTreeView.on('click', '.list-group-item', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const type = $(this).data('type');
+        const path = $(this).data('path');
+
+        if (type === 'dir') {
+            // 展开/折叠目录
+            $(this).toggleClass('expanded');
+            $(this).next('.child-list').toggleClass('open');
+
+            // 如果还没加载子目录内容
+            if (!$(this).data('loaded')) {
+                getDir(path, this);
+                $(this).data('loaded', true);
+            }
+        } else if (type === 'file') {
+            // 如果文件已打开，切换到对应标签
+            if (editorInstances[path]) {
+                activateTab(path);
+            } else {
+                getDir(path, this);
+            }
+
+            // 高亮当前文件
+            fileTreeView.find('.list-group-item').removeClass('active');
+            $(this).addClass('active');
+        }
+    });
+
+    // 标签点击
+    fileToolbarTabs.on('click', '.zap-dev-tab', function(e) {
+        if ($(e.target).hasClass('tab-close')) return;
+        const path = $(this).data('path');
+        activateTab(path);
+    });
+
+    // 标签关闭
+    fileToolbarTabs.on('click', '.tab-close', function(e) {
+        e.stopPropagation();
+        const path = $(this).closest('.zap-dev-tab').data('path');
+        closeTab(path);
+    });
+
+    // 保存按钮
+    $('#btnSave').on('click', function() {
+        saveCurrentFile();
+    });
+
+    // Ctrl+S 保存
+    $(document).on('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
             e.preventDefault();
-            e.stopPropagation();
-            const path = $(this).data('path');
-            const type = $(this).data('type');
-            if(!$(this).hasClass('zap-open')){
-                if($(this).data('type') === 'file' && editorInstances[path] !== undefined){
-                    editorInstances[path].tab.show();
-                }else{
-                    getDir(path,this)
-                }
-
-            }
-            if(type==='dir'){
-                $(this).toggleClass('zap-open');
-            }
-
-        });
-
-    })
-
-    function getDir(path,pEl){
-        if(!path){
-            path = '/';
+            saveCurrentFile();
         }
-        const firstEl = $(pEl).find('i:first');
-        const firstElClass = firstEl.attr('class');
-        firstEl.attr('class','fa-solid fa-spinner fa-spin pe-1');
-        $.ajax({
-            url:'<?php echo url_action('Development@getDir'); ?>?path='+path,
-            success:function(resp){
-                console.log(resp)
-                var $pEl = pEl;
-                if(resp.type === 'list'){
-                    renderFileList(resp.data,$pEl);
-                }else if(resp.type === 'content'){
-                    openFile(resp.path,resp.filename,resp.content);
-                }
+    });
+});
 
-            }
-        }).done(function(){
-            firstEl.attr('class',firstElClass);
-        });
+function getDir(path, pEl) {
+    if (!path) {
+        path = '/';
     }
 
-    function renderFileList(data,pEl){
-        // console.log($(pEl).get(0).tagName ,'render')
-        if($(pEl).get(0).tagName === 'LI'){
-            $(pEl).find('ul').remove();
+    const iconEl = pEl ? $(pEl).find('.item-icon:first') : null;
+    const iconClass = iconEl ? iconEl.attr('class') : '';
 
-            pEl = $('<ul/>').addClass('cd-accordion__sub cd-accordion__sub--l1').appendTo($(pEl).get(0));
-            // sub_ul.addClass('cd-accordion__sub cd-accordion__sub--l1');
-            pEl.empty()
-        }
-
-        for (const f in data) {
-            fi = data[f];
-            icon = fi.icon;
-            hasSubmenu =  '';
-
-            if(fi.type === 'dir'){
-                linkTag = `<label class="cd-accordion__label" for="${fi.filename}" > <i class="fa fa-angle-right pe-1"></i><i class="${icon} pe-1"></i><span>${fi.filename}</span></label>`;
-                hasSubmenu =  'cd-accordion__item--has-children zap-tree-has-children';
-            }else{
-                linkTag = `<label href="#0" class="cd-accordion__label" ><i class="${icon} pe-1"></i><span>${fi.filename}</span></label>`;
-            }
-            pEl.append(`<li class="cd-accordion__item ${hasSubmenu}" data-filename="${fi.filename}" data-path="${fi.path}" data-type="${fi.type}">
-                    ${linkTag}
-                </li>`);
-        }
-
+    if (iconEl) {
+        iconEl.attr('class', 'fa-solid fa-spinner fa-spin item-icon');
+    }
+    if (pEl) {
+        $(pEl).addClass('loading');
     }
 
-    function openFile(path,filename,content){
-        if(editorInstances[path] !== undefined){
-            editorInstances[path].editor.setValue(content, -1);
-            editorInstances[path].tab.show();
+    $.ajax({
+        url: '<?php echo url_action('Development@getDir'); ?>?path=' + encodeURIComponent(path),
+        success: function(resp) {
+            if (resp.type === 'list') {
+                renderFileList(resp.data, pEl);
+            } else if (resp.type === 'content') {
+                openFile(resp.path, resp.filename, resp.content);
+            }
+        },
+        error: function() {
+            showToast('加载失败', 'error');
+        }
+    }).always(function() {
+        if (iconEl) {
+            iconEl.attr('class', iconClass);
+        }
+        if (pEl) {
+            $(pEl).removeClass('loading');
+        }
+    });
+}
+
+function renderFileList(data, pEl) {
+    let container;
+    if (pEl && $(pEl).hasClass('dir-item')) {
+        // 在目录项后面创建子列表
+        let childList = $(pEl).next('.child-list');
+        if (childList.length === 0) {
+            childList = $('<div class="child-list open"></div>').insertAfter(pEl);
+        }
+        childList.empty();
+        container = childList;
+    } else {
+        // 根级别 - 先清除加载提示
+        fileTreeView.find('.loading-spinner').remove();
+        const existingList = fileTreeView.find('> .list-group');
+        if (existingList.length > 0) {
+            existingList.remove();
+        }
+        container = $('<div class="list-group list-group-flush"></div>').appendTo(fileTreeView);
+    }
+
+    for (const f of data) {
+        const isDir = f.type === 'dir';
+        const hasChildren = isDir;
+
+        const item = $(`<div class="list-group-item ${isDir ? 'dir-item' : 'file-item'}"
+            data-filename="${escapeHtml(f.filename)}"
+            data-path="${escapeHtml(f.path)}"
+            data-type="${escapeHtml(f.type)}">
+            <i class="${escapeHtml(f.icon)} item-icon"></i>
+            <span class="item-name">${escapeHtml(f.filename)}</span>
+            ${isDir ? '<i class="fa fa-chevron-right chevron"></i>' : ''}
+        </div>`);
+
+        container.append(item);
+    }
+}
+
+function openFile(path, filename, content) {
+    // 如果已打开，更新内容并激活
+    if (editorInstances[path]) {
+        editorInstances[path].originalContent = content;
+        editorInstances[path].editor.setValue(content, -1);
+        editorInstances[path].editor.session.getUndoManager().reset();
+        editorInstances[path].dirty = false;
+        updateTabDirty(path, false);
+        activateTab(path);
+        return;
+    }
+
+    const uId = 'ace' + (Math.random() + 1).toString(36).substring(10);
+
+    // 创建编辑器面板
+    const editorPane = $(`<div class="editor-pane active" id="${uId}-pane"></div>`).appendTo(fileContentTabs);
+    const editorDiv = $(`<div id="${uId}" style="width:100%;height:100%;"></div>`).appendTo(editorPane);
+
+    // 隐藏欢迎页
+    welcomeScreen.hide();
+
+    // 创建标签
+    const tabEl = $(`<div class="zap-dev-tab active" data-path="${escapeHtml(path)}">
+        <span class="tab-name" title="${escapeHtml(path)}">${escapeHtml(filename)}</span>
+        <span class="tab-modified" style="display:none;"></span>
+        <span class="tab-close"><i class="fa fa-times"></i></span>
+    </div>`);
+
+    // 移除其他标签的激活状态
+    fileToolbarTabs.find('.zap-dev-tab').removeClass('active');
+    fileContentTabs.find('.editor-pane').removeClass('active');
+
+    fileToolbarTabs.append(tabEl);
+
+    // 初始化ACE编辑器
+    const editor = ace.edit(uId);
+    const modelist = ace.require('ace/ext/modelist');
+    const mode = modelist.getModeForPath(filename).mode;
+    editor.session.setMode(mode);
+    editor.setValue(content, -1);
+    editor.session.getUndoManager().reset();
+    editor.setOptions({
+        fontSize: '14px',
+        showPrintMargin: false,
+        enableBasicAutocompletion: true,
+        enableSnippets: true,
+        enableLiveAutocompletion: true,
+    });
+
+    // 监听内容变化
+    editor.session.on('change', function() {
+        const dirty = editor.session.getUndoManager().hasUndo();
+        if (editorInstances[path]) {
+            editorInstances[path].dirty = dirty;
+            updateTabDirty(path, dirty);
+        }
+    });
+
+    // 修复编辑器大小
+    editor.resize();
+
+    editorInstances[path] = {
+        id: uId,
+        editor: editor,
+        tab: tabEl,
+        pane: editorPane,
+        filename: filename,
+        path: path,
+        originalContent: content,
+        dirty: false,
+        type: 'ace'
+    };
+
+    activeFilePath = path;
+
+    // 显示工具栏
+    editorToolbar.show();
+    updateToolbar(path, filename);
+
+    // 显示编辑器
+    editorPane.addClass('active');
+    updateStatusBar('已打开: ' + filename);
+
+    // 高亮左侧文件树
+    fileTreeView.find('.list-group-item').removeClass('active');
+    fileTreeView.find(`.list-group-item[data-path="${escapeAttr(path)}"]`).addClass('active');
+}
+
+function activateTab(path) {
+    if (!editorInstances[path]) return;
+
+    // 切换所有标签和面板的激活状态
+    fileToolbarTabs.find('.zap-dev-tab').removeClass('active');
+    fileContentTabs.find('.editor-pane').removeClass('active');
+
+    editorInstances[path].tab.addClass('active');
+    editorInstances[path].pane.addClass('active');
+    editorInstances[path].editor.resize();
+    activeFilePath = path;
+
+    updateToolbar(path, editorInstances[path].filename);
+    updateStatusBar('已打开: ' + editorInstances[path].filename);
+
+    // 高亮左侧文件树
+    fileTreeView.find('.list-group-item').removeClass('active');
+    fileTreeView.find(`.list-group-item[data-path="${escapeAttr(path)}"]`).addClass('active');
+}
+
+function closeTab(path) {
+    if (!editorInstances[path]) return;
+
+    const inst = editorInstances[path];
+
+    // 检查是否有未保存的修改
+    if (inst.dirty) {
+        if (!confirm(`文件 "${inst.filename}" 有未保存的修改，确定关闭吗？`)) {
             return;
         }
-
-        uId = 'ace' + (Math.random()+1).toString(36).substring(10);
-
-        editorInstances[path] = {
-            id: uId,
-            editor : null,
-            tab: null,
-            type:'<?php echo option('zap.default_dev_editor','ace'); ?>'
-        };
-        var defaultEditor = `<textarea id="${uId}" class="z-2" style="height: calc(100vh - 200px);width: 100%"></textarea>`;
-        if(editorInstances[path].type === 'ace'){
-            defaultEditor = `<div id="${uId}" class="z-2" style="height: calc(100vh - 200px)"></div>`;
-            editorInstances[path].type = 'ace';
-        }else if(editorInstances[path].type === 'codemirror'){
-            editorInstances[path].type = 'codemirror';
-        }
-        //CodeJar
-        $('#fileToolbarTabs').append(`<li class="nav-item" role="presentation">
-                    <a class="nav-link" id="${uId}-tab" data-bs-toggle="tab" data-bs-target="#${uId}-tab-pane"
-                          title="${path}"   role="tab" aria-controls="home-tab-pane" aria-selected="true">${filename} <i class="ps-2 fa fa-close" onclick="closeTab('${uId}');"></i></a>
-                </li>`);
-
-        $('#fileContentTabs').append(`<div class="tab-pane fade" id="${uId}-tab-pane" role="tabpanel" aria-labelledby="${uId}-tab" tabindex="0">${defaultEditor}</div>`);
-
-
-        if(editorInstances[path].type === 'ace'){
-            editorInstances[path].editor = ace.edit(uId);
-            const modelist = ace.require("ace/ext/modelist")
-            const mode = modelist.getModeForPath(filename).mode
-            editorInstances[path].editor.session.setMode(mode)
-            editorInstances[path].editor.setValue(content, -1)
-        }else if(editorInstances[path].type === 'codemirror'){
-
-        }else {
-            document.getElementById(uId).value = content;
-        }
-
-
-        var triggerEl = document.querySelector('#' + uId + '-tab');
-        editorInstances[path].tab = new bootstrap.Tab(triggerEl)
-        editorInstances[path].tab.show();
     }
 
-    function closeTab(uId){
-        delete editorInstances[$('#'+uId+"-tab").attr('title')];
-        $('#'+uId+"-tab").parent().remove();
-        $('#'+uId+"-tab-pane").remove();
+    // 销毁编辑器
+    inst.editor.destroy();
+    inst.tab.remove();
+    inst.pane.remove();
 
-        //select last tab
-        lastTabEl = document.querySelector("#fileToolbarTabs li:last-child a");
-        if(lastTabEl !== null){
-            const lastTab = bootstrap.Tab.getInstance(lastTabEl);
-            lastTab.show()
+    delete editorInstances[path];
+
+    if (activeFilePath === path) {
+        // 激活最后一个标签
+        const paths = Object.keys(editorInstances);
+        if (paths.length > 0) {
+            const lastPath = paths[paths.length - 1];
+            activateTab(lastPath);
+        } else {
+            activeFilePath = null;
+            editorToolbar.hide();
+            welcomeScreen.show();
+            updateToolbar(null, null);
+            updateStatusBar('就绪');
         }
-
     }
-    function getEditor(uId){
+}
 
+function saveCurrentFile() {
+    if (!activeFilePath || !editorInstances[activeFilePath]) {
+        return;
     }
+
+    const inst = editorInstances[activeFilePath];
+    const content = inst.editor.getValue();
+
+    $('#btnSave').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> 保存中...');
+
+    $.ajax({
+        url: '<?php echo url_action('Development@saveFile'); ?>',
+        type: 'POST',
+        data: {
+            path: activeFilePath,
+            content: content
+        },
+        success: function(resp) {
+            if (resp.code === 0) {
+                inst.originalContent = content;
+                inst.dirty = false;
+                inst.editor.session.getUndoManager().reset();
+                updateTabDirty(activeFilePath, false);
+                showToast('文件保存成功', 'success');
+                updateStatusBar('已保存: ' + inst.filename + ' (' + formatSize(resp.size) + ')');
+            } else {
+                showToast(resp.msg || '保存失败', 'error');
+            }
+        },
+        error: function() {
+            showToast('保存失败，网络错误', 'error');
+        },
+        complete: function() {
+            $('#btnSave').prop('disabled', false).html('<i class="fa fa-save"></i> 保存');
+        }
+    });
+}
+
+function updateTabDirty(path, dirty) {
+    if (!editorInstances[path]) return;
+    const dot = editorInstances[path].tab.find('.tab-modified');
+    if (dirty) {
+        dot.show();
+    } else {
+        dot.hide();
+    }
+}
+
+function updateToolbar(path, filename) {
+    if (!path) {
+        $('#currentFilePath').text('-');
+        $('#currentFileLang').text('-');
+        return;
+    }
+    $('#currentFilePath').text(path);
+    const ext = filename.split('.').pop().toUpperCase();
+    $('#currentFileLang').text(ext);
+}
+
+function updateStatusBar(msg) {
+    statusInfo.text(msg);
+}
+
+function showToast(msg, type) {
+    // 使用已有的 toast 系统
+    const container = $('#bottomRightToast');
+    const icon = type === 'success' ? 'fa-check-circle text-success' : 'fa-exclamation-circle text-danger';
+    const toastEl = $(`<div class="toast align-items-center text-bg-white border-0 shadow-sm" role="alert" data-bs-delay="2000">
+        <div class="d-flex">
+            <div class="toast-body"><i class="fa ${icon} me-2"></i>${msg}</div>
+            <button type="button" class="btn-close btn-close-sm me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>`);
+    container.append(toastEl);
+    const toast = new bootstrap.Toast(toastEl[0]);
+    toast.show();
+    toastEl.on('hidden.bs.toast', function() {
+        toastEl.remove();
+    });
+}
+
+function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function escapeAttr(str) {
+    return str.replace(/"/g, '\\"');
+}
 </script>

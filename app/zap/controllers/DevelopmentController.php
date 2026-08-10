@@ -11,7 +11,15 @@ class DevelopmentController extends AdminController
     public function index()
     {
         $path = '/' . trim(req()->get('path','/'),'/');
-        View::render('development.index',['path'=>$path]);
+        View::render('development.index',[
+            'path' => $path,
+            'page_title' => '代码编辑器',
+            'page_subtitle' => '文件浏览与代码编辑器',
+            'breadcrumbs' => [
+                ['title' => '控制台', 'url' => \zap\facades\Url::action('Index')],
+                ['title' => '代码编辑器', 'url' => \zap\facades\Url::action('Development')],
+            ],
+        ]);
     }
 
     public function getDir(){
@@ -46,6 +54,66 @@ class DevelopmentController extends AdminController
 //            ];
 //        }
         response(['code'=>0,'msg'=>'','path'=>$path,'type'=>'list','data'=>$data])->withJson();
+    }
+
+    public function saveFile()
+    {
+        if (!req()->isPost()) {
+            response(['code' => 1, 'msg' => '无效的请求方式'])->withJson();
+            return;
+        }
+
+        $path = trim(req()->post('path', ''));
+        $content = req()->post('content', '');
+
+        if (empty($path)) {
+            response(['code' => 1, 'msg' => '文件路径不能为空'])->withJson();
+            return;
+        }
+
+        $realPath = realpath(app()->basePath($path));
+
+        // 安全检查：确保文件在项目目录内
+        $basePath = realpath(app()->basePath('/'));
+        if ($realPath === false) {
+            // 文件不存在，检查父目录是否在项目内
+            $parentDir = realpath(dirname(app()->basePath($path)));
+            if ($parentDir === false || strpos($parentDir, $basePath) !== 0) {
+                response(['code' => 1, 'msg' => '不允许访问该路径'])->withJson();
+                return;
+            }
+            $realPath = app()->basePath($path);
+        } else {
+            if (strpos($realPath, $basePath) !== 0) {
+                response(['code' => 1, 'msg' => '不允许访问该路径'])->withJson();
+                return;
+            }
+        }
+
+        // 不允许编辑 PHP 的 vendor 目录或 .git 目录
+        if (strpos($realPath, DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR) !== false ||
+            strpos($realPath, DIRECTORY_SEPARATOR . '.git' . DIRECTORY_SEPARATOR) !== false) {
+            response(['code' => 1, 'msg' => '不允许编辑系统核心文件'])->withJson();
+            return;
+        }
+
+        if (!is_writable(dirname($realPath))) {
+            response(['code' => 1, 'msg' => '目录不可写'])->withJson();
+            return;
+        }
+
+        if (is_file($realPath) && !is_writable($realPath)) {
+            response(['code' => 1, 'msg' => '文件不可写'])->withJson();
+            return;
+        }
+
+        $result = file_put_contents($realPath, $content);
+        if ($result === false) {
+            response(['code' => 1, 'msg' => '文件保存失败'])->withJson();
+            return;
+        }
+
+        response(['code' => 0, 'msg' => '文件保存成功', 'path' => $path, 'size' => $result])->withJson();
     }
 
     private function getFileIcon($ext): string
