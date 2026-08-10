@@ -44,16 +44,22 @@ class CatalogController extends Controller
         pageState()->subCatalogList = Catalog::instance()->getSubCatalogList(pageState()->catalog['pid'] == 0 ? pageState()->catalog['id'] : pageState()->catalog['pid']);
         try{
             if(pageState()->nodeMimeType==='page') {
-                $view = View::make(pageState()->nodeMimeType);
+                view('page', ['article' => pageState()->node]);
+                return;
             }else{
                 $page = new Pagination(intval(req()->get('page',1)),12,req()->get());
                 $view = View::make( theme_file_is_exists(pageState()->nodeMimeType . '_list') ? pageState()->nodeMimeType.'_list' : pageState()->nodeMimeType);
                 $query = DB::table('node_relation','nr')->leftJoin(['node','n'],'nr.node_id=n.id')
-                    ->where('nr.catalog_id',pageState()->nodeId);
+                    ->where('nr.catalog_id',pageState()->nodeId)
+                    ->where('n.node_type', pageState()->nodeMimeType);
                 $view->page = $page->setTotal($query->count('n.id'));
                 $query->limit($page->getLimit(),$page->getOffset());
-                $view->data_list = $query->get(FETCH_ASSOC);
-
+                $view->articles = $query->get(FETCH_ASSOC);
+                $view->page = $page;
+                // 没有子栏目时（如FAQ），用文章列表作为侧边菜单
+                if (empty(pageState()->subCatalogList) && !empty($view->articles)) {
+                    pageState()->subCatalogList = $view->articles;
+                }
             }
 
         }catch (ViewNotFoundException $exception){

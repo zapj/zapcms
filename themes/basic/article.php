@@ -1,9 +1,15 @@
-<?php defined('IN_ZAP_CMS') or die('No permission to access'); ?>
-<?php $this->extend('layout/default'); ?>
-<?php $this->beginBlock('content'); ?>
+<?php
+defined('IN_ZAP_CMS') or die('No permission to access');
+$this->extend('layout/default');
+$this->beginBlock('content');
+/**
+ * @var array $article
+ */
+?>
     <?php echo $this->partial('partials/_breadcrumb'); ?>
     <div class="container">
         <div class="row">
+            <?php echo $this->partial('partials/_sidebar'); ?>
             <div class="col-sm-9">
                 <div class="content-wrap">
                     <div class="row">
@@ -23,7 +29,6 @@
                     </div>
                 </div><!-- /.content-wrap -->
             </div>
-            <?php echo $this->partial('partials/_sidebar'); ?>
         </div>
     </div>
 <?php $this->endBlock(); ?>

@@ -101,8 +101,9 @@ class Catalog extends Category
     }
 
     public function getSubCatalogList($catalogId){
+        // 排除父级自身：path LIKE '5,%' 会匹配到 path='5,'，加 _ 确保至少还有一个后代
         return $this->getAll([
-            [$this->pathColumn,'LIKE',"{$catalogId},%"]
+            [$this->pathColumn,'LIKE',"{$catalogId},%_"]
         ]);
     }
 

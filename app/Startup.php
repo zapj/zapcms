@@ -49,8 +49,8 @@ class Startup
     {
         $this->router = $router;
 
-        // 计算当前请求 URI（去除查询参数）
-        $this->currentUri = strtok($_SERVER['REQUEST_URI'], '?') ?: '/';
+        // 计算当前请求 URI（去除查询参数，解码中文等字符）
+        $this->currentUri = urldecode(strtok($_SERVER['REQUEST_URI'], '?') ?: '/');
         $this->baseUrl = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
 
         // ──── ZQuery 统一查询 API ────
@@ -146,7 +146,7 @@ class Startup
      */
     private function parseUrlPath(string $urlPath): void
     {
-        $segments = $urlPath === '' ? [] : preg_split('#/#', trim($urlPath, '/'), -1, PREG_SPLIT_NO_EMPTY);
+        $segments = $urlPath === '' ? [] : array_map('urldecode', preg_split('#/#', trim($urlPath, '/'), -1, PREG_SPLIT_NO_EMPTY));
 
         if (isset($segments[0]) && preg_match('/^[a-z]+[-_0-9a-z]+$/i', $segments[0])) {
             $controllerClass = $this->namespace . '\\' . Router::convertToName($segments[0]) . 'Controller';
@@ -200,6 +200,14 @@ class Startup
                 ->fetch(FETCH_ASSOC);
 
             $node or $this->router->trigger404();
+
+            // catalog 类型的内容存在 catalog 表中，需要从 catalog 表补充 content 字段
+            if ($node['node_type'] === 'catalog' && empty($node['content'])) {
+                $catalog = DB::table('catalog')->where('slug', $slug)->fetch(FETCH_ASSOC);
+                if ($catalog && !empty($catalog['content'])) {
+                    $node['content'] = $catalog['content'];
+                }
+            }
 
             $pageState->node = $node;
             $pageState->nodeId = $node['id'];

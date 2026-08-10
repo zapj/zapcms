@@ -42,7 +42,22 @@ class NodeController extends Controller
         view('node',[]);
     }
 
+    function page(){
+        $node = pageState()->node;
+        $slug = $node['slug'];
+        BreadCrumb::instance()->add($node['title'],site_url("/{$slug}"),true);
+        view('page', ['article' => $node]);
+    }
+
+    function article(){
+        $node = pageState()->node;
+        $slug = $node['slug'];
+        BreadCrumb::instance()->add($node['title'],site_url("/{$slug}"),true);
+        view('article', ['article' => $node]);
+    }
+
     function product(){
+        $node = pageState()->node;
         //获取 url path
         pageState()->catalogPaths = $this->getCatalogPathByNodeId(pageState()->nodeId);
         $slugs = [];
@@ -56,7 +71,7 @@ class NodeController extends Controller
         //侧边栏菜单
         $topCatalog = current(pageState()->catalogPaths);
         pageState()->subCatalogList = Catalog::instance()->getSubCatalogList($topCatalog['id']);
-        view('product',[]);
+        view('product', ['article' => $node]);
     }
 
     private function getCatalogPathByNodeId($node_id){

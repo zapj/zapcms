@@ -1,10 +1,13 @@
-<?php defined('IN_ZAP_CMS') or die('No permission to access'); ?>
-<?php $this->extend('layout/default'); ?>
-<?php $this->beginBlock('content'); ?>
+<?php
+defined('IN_ZAP_CMS') or die('No permission to access');
+$this->extend('layout/default');
+$this->beginBlock('content');
+?>
     <?php echo $this->partial('partials/_breadcrumb'); ?>
     <div class="container">
         <div class="row">
-            <div class="col-sm-12">
+            <?php echo $this->partial('partials/_sidebar'); ?>
+            <div class="col-sm-9">
                 <div class="content-wrap">
                     <div class="row">
                         <?php if (empty($articles)): ?>
@@ -20,7 +23,7 @@
                                 <div class="content-wrap">
                                     <h4><a href="<?php echo site_url('/' . $article['slug']); ?>"><?php echo htmlspecialchars($article['title']); ?></a></h4>
                                     <ul class="list-inline post-meta">
-                                        <li><i class="fa fa-calendar"></i> <?php echo date('Y-m-d', strtotime($article['created_at'])); ?></li>
+                                        <li><i class="fa fa-calendar"></i> <?php echo date('Y-m-d', intval($article['pub_time'] ?: 0)); ?></li>
                                     </ul>
                                 </div>
                             </div>

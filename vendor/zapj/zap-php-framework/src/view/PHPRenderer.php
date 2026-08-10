@@ -67,7 +67,11 @@ class PHPRenderer extends ViewRenderer
         }
 
         error_reporting($errorLevel);
-        $this->view->blocks[$aliasName] = ob_get_clean();
+        // 保存外层缓冲内容；如果模板已通过 beginBlock/endBlock 设置了同名块，保留模板内容
+        $outerContent = ob_get_clean();
+        if (empty($this->view->blocks[$aliasName])) {
+            $this->view->blocks[$aliasName] = $outerContent;
+        }
     }
 
     /**

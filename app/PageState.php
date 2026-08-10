@@ -57,6 +57,23 @@ defined('IN_ZAP_CMS') or die('No permission to access');
  * @property string       $theme           当前主题名称
  * @property array        $setting         当前主题配置
  * @property string       $canonicalUrl    当前页面的规范化 URL
+ * @property array        $catalogPaths    当前栏目路径数组（用于面包屑）
+ * @property string       $nodeMimeType    当前节点的 MIME 类型（如 article、product、page 等）
+ * @property string       $nodeMimeTypeLabel 当前节点的 MIME 类型中文标签
+ * @property string       $nodeSlug        当前节点的 slug（用于生成 URL）
+ * @property string       $nodeUrl         当前节点的 URL
+ * @property string       $nodeTitle       当前节点的标题
+ * @property string       $nodeDescription 当前节点的描述
+ * @property string       $nodeKeywords    当前节点的关键词
+ * @property string       $nodeImage       当前节点的封面图
+ * @property string       $nodeContent     当前节点的内容
+ * @property string       $nodeCreatedAt   当前节点的创建时间
+ * @property string       $nodeUpdatedAt   当前节点的更新时间
+ * @property string       $nodePublishedAt 当前节点的发布时间
+ * @property string       $nodeAuthor      当前节点的作者
+ * @property string       $nodeStatus      当前节点的状态
+ * @property string       $nodeViews       当前节点的浏览量
+ * @property array        $catalog         当前节点所属的栏目数据
  *
  * @method static PageState instance() 获取单例
  */
