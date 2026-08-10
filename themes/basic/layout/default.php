@@ -20,10 +20,12 @@ $footerCatalogMenu = $catalogMenu;
     <script src="<?php echo theme_url('js/swiper-bundle.min.js'); ?>"></script>
     <?php endif; ?>
     <link href="<?php echo theme_url('css/page-styles.css'); ?>" rel="stylesheet">
+    <script src="<?php echo base_url(); ?>/assets/jquery/jquery-3.6.4.min.js"></script>
     <!--[if lt IE 9]>
     <script src="<?php echo theme_url('js/html5shiv.min.js'); ?>"></script>
     <script src="<?php echo theme_url('js/respond.min.js'); ?>"></script>
     <![endif]-->
+
     <?php echo option('website.head_script'); ?>
 </head>
 <body>
@@ -61,7 +63,7 @@ $footerCatalogMenu = $catalogMenu;
 
 <?php echo $this->partial('partials/_footer', ['footerCatalogMenu' => $footerCatalogMenu]); ?>
 
-<script src="<?php echo base_url(); ?>/assets/jquery/jquery-3.6.4.min.js"></script>
+
 <script src="<?php echo theme_url('js/bootstrap.min.js'); ?>"></script>
 
 <?php

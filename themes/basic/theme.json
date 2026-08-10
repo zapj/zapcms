@@ -1,7 +1,7 @@
 {
     "name": "basic",
     "label": "默认主题",
-    "version": "1.0.0",
+    "version": "1.2.0",
     "description": "Basic 是 ZAP CMS 内置的默认主题，风格简洁，适合企业官网、产品展示等场景。",
     "author": "ZAP CMS",
     "settings": {
