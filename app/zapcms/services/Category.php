@@ -44,7 +44,7 @@ class Category
     //分类层级
     protected $levelColumn = 'level';
 
-    protected $defaultLevel = 0;
+    protected $defaultLevel = 1;
 
     public function __construct($table, $primaryKey = 'id', $parentColumn = 'pid', $pathColumn = 'path', $levelColumn = 'level')
     {
@@ -98,31 +98,40 @@ class Category
         if(is_null($category)){
             return false;
         }
-        //修改父类 需要更新
-        if($data[$this->parentColumn] != $category[$this->parentColumn]){
+        // 确保 pid 字段存在
+        if(!isset($data[$this->parentColumn])){
+            $data[$this->parentColumn] = $category[$this->parentColumn];
+        }
+        $pidChanged = $data[$this->parentColumn] != $category[$this->parentColumn];
 
-
-            if($data[$this->parentColumn] == 0){
-                $data[$this->pathColumn] = ",{$id},";
-            }else{
-                $parent = $this->get($data[$this->parentColumn]);
+        // 始终根据当前 pid 重新计算自身的 level（修复历史数据错误）
+        if($data[$this->parentColumn] == 0){
+            $data[$this->pathColumn] = "{$id},";
+            $data[$this->levelColumn] = $this->defaultLevel;
+        }else{
+            $parent = $this->get($data[$this->parentColumn]);
+            if($parent){
                 $data[$this->pathColumn] = "{$parent[$this->pathColumn]}{$id},";
+                $data[$this->levelColumn] = intval($parent[$this->levelColumn]) + 1;
             }
-            //更新下级所有菜单 path
-            $pathPrefix = $category[$this->pathColumn];
+        }
+
+        // 父类变化时，级联更新子孙节点的 path 和 level
+        if($pidChanged && isset($data[$this->pathColumn]) && isset($data[$this->levelColumn])){
+            $levelOffset = $data[$this->levelColumn] - intval($category[$this->levelColumn]);
+            $pathPrefix  = $category[$this->pathColumn];
+
             $childrenCategories = DB::table($this->table)->where($this->pathColumn,'LIKE',"{$pathPrefix}%")
                 ->get(FETCH_ASSOC);
             foreach ($childrenCategories as $row){
                 $path = str_replace($pathPrefix,$data[$this->pathColumn],$row[$this->pathColumn]);
-                $level = substr_count($path,',');
                 DB::table($this->table)->where($this->primaryKey,$row[$this->primaryKey])
                     ->set($this->pathColumn,$path)
-                    ->set($this->levelColumn,$level < 1 ? 0 : $level - 1)
+                    ->set($this->levelColumn,intval($row[$this->levelColumn]) + $levelOffset)
                     ->update();
-                //->set($this->pathColumn,DB::raw("REPLACE({$this->pathColumn},'{$pathPrefix}','{$data[$this->pathColumn]}')"))
             }
-
         }
+
         DB::update($this->table,$data,[$this->primaryKey=>$id]);
     }
 
