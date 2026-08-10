@@ -3,7 +3,7 @@
  * Copyright (c) 2023.  ZAP.CN  - ZAP CMS
  */
 
-namespace zapcms\console;
+namespace zapcms\commands;
 
 use zapcms\support\CreateBaseData;
 use zap\console\Command;
@@ -167,7 +167,7 @@ class UpdateBaseData extends Command
         $lines[] = ' * To regenerate: php console zap:UpdateBaseData -e';
         $lines[] = ' */';
         $lines[] = '';
-        $lines[] = 'namespace zapcms\console;';
+        $lines[] = 'namespace zapcms\support;';
         $lines[] = '';
         $lines[] = 'use zap\\db\\Schema;';
         $lines[] = 'use zap\\db\\TableSchema;';
@@ -230,9 +230,12 @@ class UpdateBaseData extends Command
             }
         }
         if (!empty($pkColumns)) {
-            $pkName = $this->makePkName($logicalName);
-            $pkList = "'" . implode("', '", $pkColumns) . "'";
-            $out[] = "            \$table->addPrimary('{$pkName}',{$pkList});";
+            if (count($pkColumns) === 1) {
+                $out[] = "            \$table->addPrimaryKey('{$pkColumns[0]}');";
+            } else {
+                $pkList = "'" . implode("', '", $pkColumns) . "'";
+                $out[] = "            \$table->addPrimaryKey([{$pkList}]);";
+            }
         }
 
         // Emit indexes (skip PK duplicates; non_unique=0 → unique, else → regular index)
@@ -248,15 +251,10 @@ class UpdateBaseData extends Command
                 continue;
             }
             $colList = "'" . implode("', '", $idxCols) . "'";
-            if (!empty($idx['unique'])) {
-                $out[] = "            \$table->addUnique('{$idx['name']}',{$colList});";
-            } else {
-                $out[] = "            \$table->addIndex('{$idx['name']}',{$colList});";
-            }
+            $out[] = "            \$table->addIndex('{$idx['name']}',{$colList});";
         }
 
         $out[] = '';
-        $out[] = "            \$table->dropTableIfExists();";
         $out[] = "            \$table->setTableEngine(TableSchema::ENGINE_INNODB);";
         $out[] = "        });";
 
@@ -324,7 +322,7 @@ class UpdateBaseData extends Command
         $lines[] = ' * To regenerate: php console zap:UpdateBaseData -e';
         $lines[] = ' */';
         $lines[] = '';
-        $lines[] = 'namespace zapcms\console;';
+        $lines[] = 'namespace zapcms\support;';
         $lines[] = '';
         $lines[] = 'use zap\\db\\AlertTable;';
         $lines[] = 'use zap\\db\\Schema;';
@@ -347,7 +345,7 @@ class UpdateBaseData extends Command
     }
 
     /**
-     * Export one table's data as Schema::table() + batchInert() code block.
+     * Export one table's data as Schema::alter() + batchInsert() code block.
      */
     protected function exportTableData(string $fullName, string $logicalName): string
     {
@@ -366,16 +364,15 @@ class UpdateBaseData extends Command
         }
 
         $out = [];
-        $colStr = "['" . implode("', '", $columns) . "']";
 
-        $out[] = "        Schema::table('{$logicalName}',function (AlertTable \$table){";
-        $out[] = "            \$table->setColumns({$colStr});";
-        $out[] = "            \$table->batchInert([";
+        $out[] = "        Schema::alter('{$logicalName}',function (AlertTable \$table){";
+        $out[] = "            \$table->batchInsert([";
 
         foreach ($rows as $row) {
             $vals = [];
             foreach ($columns as $col) {
-                $vals[] = $this->formatPhpValue($row[$col] ?? null);
+                $quotedCol = "'{$col}'";
+                $vals[] = "{$quotedCol} => " . $this->formatPhpValue($row[$col] ?? null);
             }
             $out[] = "                [" . implode(", ", $vals) . "],";
         }
@@ -846,11 +843,6 @@ class UpdateBaseData extends Command
     }
 
     // ──────────────── Helpers ────────────────
-
-    protected function makePkName(string $table): string
-    {
-        return $table . '_pk';
-    }
 
     /**
      * Get the current database driver name.

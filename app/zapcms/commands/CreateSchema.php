@@ -3,7 +3,7 @@
  * Copyright (c) 2023.  ZAP.CN  - ZAP CMS
  */
 
-namespace zapcms\console;
+namespace zapcms\commands;
 
 use zapcms\support\CreateBaseData;
 use zapcms\support\CreateTables;

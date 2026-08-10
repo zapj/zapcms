@@ -3,7 +3,7 @@
  * Copyright (c) 2024.  ZAP.CN  - ZAP CMS
  */
 
-namespace zapcms\console;
+namespace zapcms\commands;
 
 use zap\console\Command;
 use zap\console\Input;
