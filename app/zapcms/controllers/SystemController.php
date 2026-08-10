@@ -9,6 +9,7 @@ use zapcms\services\Option;
 use zap\http\Request;
 use zap\http\Response;
 use zap\view\View;
+use zap\facades\Url;
 
 class SystemController extends AdminController
 {
@@ -85,37 +86,48 @@ class SystemController extends AdminController
         ]);
     }
 
+    /**
+     * 备份数据库（结构 + 数据）
+     */
     public function backup(){
-        if( Database::backup() === true){
-            Response::json(['code'=>0,'msg'=>'备份成功']);
+        $result = Database::backup();
+        if($result !== false){
+            Response::json(['code'=>0,'msg'=>'备份成功', 'file' => basename($result)]);
         }else{
             Response::json(['code'=>1,'msg'=>'备份失败']);
         }
-
     }
 
-    public function backupList(){
-        $backupDir = var_path('backups/sql');
-        $files = [];
+    /**
+     * 仅备份数据（不含表结构）
+     */
+    public function backupData(){
+        $result = Database::backupData();
+        if($result !== false){
+            Response::json(['code'=>0,'msg'=>'数据备份成功', 'file' => basename($result)]);
+        }else{
+            Response::json(['code'=>1,'msg'=>'备份失败']);
+        }
+    }
 
-        if (is_dir($backupDir)) {
-            $items = scandir($backupDir);
-            foreach ($items as $item) {
-                if ($item === '.' || $item === '..') continue;
-                $filePath = $backupDir . '/' . $item;
-                if (is_file($filePath)) {
-                    $files[] = [
-                        'name' => $item,
-                        'size' => filesize($filePath),
-                        'mtime' => filemtime($filePath),
-                        'path' => $filePath,
-                    ];
-                }
-            }
-            // 按修改时间倒序
-            usort($files, function($a, $b) {
-                return $b['mtime'] - $a['mtime'];
-            });
+    /**
+     * 备份文件列表
+     */
+    public function backupList(){
+        $rawFiles = Database::listBackups();
+        // 映射字段以兼容视图（name/mtime 为视图使用的字段名）
+        $files = [];
+        foreach ($rawFiles as $f) {
+            $files[] = [
+                'name'       => $f['filename'],
+                'size'       => $f['size'],
+                'size_human' => $f['size_human'],
+                'mtime'      => filemtime($f['file']),
+                'time'       => $f['time'],
+                'tables'     => $f['tables'],
+                'total_rows' => $f['total_rows'],
+                'compressed' => $f['compressed'],
+            ];
         }
 
         View::render('system.backup-list', [
@@ -123,13 +135,16 @@ class SystemController extends AdminController
             'page_title' => '备份列表',
             'page_subtitle' => '数据库备份文件管理',
             'breadcrumbs' => [
-                ['title' => '控制台', 'url' => \zap\facades\Url::action('Index')],
-                ['title' => '数据库管理', 'url' => \zap\facades\Url::action('System@database')],
+                ['title' => '控制台', 'url' => Url::action('Index')],
+                ['title' => '数据库管理', 'url' => Url::action('System@database')],
                 ['title' => '备份列表'],
             ],
         ]);
     }
 
+    /**
+     * 下载备份文件
+     */
     public function backupDownload($filename = null){
         if (empty($filename)) {
             Response::json(['code'=>1,'msg'=>'参数错误']);
@@ -149,6 +164,9 @@ class SystemController extends AdminController
         exit;
     }
 
+    /**
+     * 删除备份文件（同时清理元数据 JSON）
+     */
     public function backupDelete(){
         if (!Request::isPost()) {
             Response::json(['code'=>1,'msg'=>'非法请求']);
@@ -159,15 +177,52 @@ class SystemController extends AdminController
             Response::json(['code'=>1,'msg'=>'参数错误']);
             return;
         }
-        $filePath = var_path('backups/sql') . '/' . basename($filename);
-        if (!is_file($filePath)) {
-            Response::json(['code'=>1,'msg'=>'文件不存在']);
-            return;
-        }
-        if (unlink($filePath)) {
+        if (Database::deleteBackup(basename($filename))) {
             Response::json(['code'=>0,'msg'=>'删除成功']);
         } else {
-            Response::json(['code'=>1,'msg'=>'删除失败']);
+            Response::json(['code'=>1,'msg'=>'文件不存在或删除失败']);
+        }
+    }
+
+    /**
+     * 还原数据库（从备份文件）
+     */
+    public function backupRestore(){
+        if (!Request::isPost()) {
+            Response::json(['code'=>1,'msg'=>'非法请求']);
+            return;
+        }
+        $filename = Request::post('filename');
+        if (empty($filename)) {
+            Response::json(['code'=>1,'msg'=>'参数错误']);
+            return;
+        }
+        $filePath = var_path('backups/sql') . '/' . basename($filename);
+        if (Database::restore($filePath)) {
+            Response::json(['code'=>0,'msg'=>'数据库还原成功']);
+        } else {
+            Response::json(['code'=>1,'msg'=>'数据库还原失败，请检查备份文件']);
+        }
+    }
+
+    /**
+     * 仅还原数据（跳过建表/删表语句）
+     */
+    public function backupRestoreData(){
+        if (!Request::isPost()) {
+            Response::json(['code'=>1,'msg'=>'非法请求']);
+            return;
+        }
+        $filename = Request::post('filename');
+        if (empty($filename)) {
+            Response::json(['code'=>1,'msg'=>'参数错误']);
+            return;
+        }
+        $filePath = var_path('backups/sql') . '/' . basename($filename);
+        if (Database::restoreData($filePath)) {
+            Response::json(['code'=>0,'msg'=>'数据还原成功']);
+        } else {
+            Response::json(['code'=>1,'msg'=>'数据还原失败，请检查备份文件']);
         }
     }
 

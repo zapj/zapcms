@@ -123,18 +123,21 @@ $totalTables = count($tableData);
                 <div class="mb-4">
                     <i class="fa fa-cloud-upload-alt text-primary" style="font-size: 3rem;"></i>
                 </div>
-                <h5 class="fw-bold">数据库备份</h5>
-                <p class="text-muted">将数据库结构和数据导出为 SQL 文件，保存于服务器备份目录。</p>
+                <h5 class="fw-bold">数据库备份与还原</h5>
+                <p class="text-muted">将数据库结构和数据导出为 SQL 文件，或从备份文件还原。</p>
                 <div class="d-flex justify-content-center gap-3 mt-4">
-                    <button onclick="backup()" type="button" class="btn btn-primary px-4">
+                    <button onclick="doBackup()" type="button" class="btn btn-primary px-3">
                         <i class="fa fa-cloud-upload-alt me-2"></i>立即备份
                     </button>
-                    <a href="<?php echo Url::action('System@backupList'); ?>" class="btn btn-outline-secondary px-4">
+                    <button onclick="doBackupData()" type="button" class="btn btn-outline-primary px-3">
+                        <i class="fa fa-table me-2"></i>仅备份数据
+                    </button>
+                    <a href="<?php echo Url::action('System@backupList'); ?>" class="btn btn-outline-secondary px-3">
                         <i class="fa fa-history me-2"></i>备份历史
                     </a>
                 </div>
                 <p class="text-muted small mt-3 mb-0">
-                    <i class="fa fa-info-circle me-1"></i>备份文件存储路径：<code><?php echo var_path('backups/sql'); ?></code>
+                    <i class="fa fa-info-circle me-1"></i>备份文件存储路径：<code><?php echo var_path('backups/sql'); ?></code>，自动保留最近 <?php echo \zapcms\helpers\Database::MAX_BACKUPS; ?> 个备份
                 </p>
             </div>
         </div>
@@ -217,10 +220,29 @@ $totalTables = count($tableData);
 <!--end::数据库表列表-->
 
 <script>
-function backup() {
+function doBackup() {
     const load = Zap.loading('正在备份数据库，请稍后...');
     $.ajax({
         url: '<?php echo Url::action('System@backup'); ?>',
+        method: 'post',
+        success: function (data) {
+            if (data.code === 0) {
+                ZapToast.alert(data.msg + ' (仅保留最近 <?php echo \zapcms\helpers\Database::MAX_BACKUPS; ?> 个)', {bgColor: bgSuccess, position: Toast_Pos_Center});
+            } else {
+                ZapToast.alert(data.msg, {bgColor: bgDanger, position: Toast_Pos_Center});
+            }
+        },
+        error: function () {
+            ZapToast.alert('备份请求失败，请稍后重试', {bgColor: bgDanger, position: Toast_Pos_Center});
+        }
+    }).always(function () {
+        load.dispose()
+    });
+}
+function doBackupData() {
+    const load = Zap.loading('正在备份数据，请稍后...');
+    $.ajax({
+        url: '<?php echo Url::action('System@backupData'); ?>',
         method: 'post',
         success: function (data) {
             if (data.code === 0) {

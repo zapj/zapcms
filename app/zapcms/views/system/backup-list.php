@@ -1,21 +1,12 @@
 <?php
-/*
- * Copyright (c) 2023.  ZAP.CN  - ZAP CMS - All Rights Reserved
- * @author Allen
- * @email zapcms@zap.cn
- * @date 2023/12/27 下午3:27
- * @lastModified 2023/12/27 下午3:27
- *
- */
-
-use zapcms\support\Asset;
 use zap\facades\Url;
-
 $this->layout('layouts/common');
 
 $totalSize = 0;
+$totalRows = 0;
 foreach ($files as $f) {
     $totalSize += $f['size'];
+    $totalRows += ($f['total_rows'] ?? 0);
 }
 ?>
 
@@ -38,6 +29,7 @@ foreach ($files as $f) {
                     <?php if (count($files) > 0): ?>
                     <span class="badge text-bg-primary ms-2">共 <?php echo count($files); ?> 个备份</span>
                     <small class="text-muted ms-2">总占用 <?php echo \zap\util\Fmt::ByteToHuman($totalSize); ?></small>
+                    <small class="text-muted ms-2">共 <?php echo number_format($totalRows); ?> 行数据</small>
                     <?php endif; ?>
                 </h3>
                 <div class="card-tools">
@@ -61,11 +53,13 @@ foreach ($files as $f) {
                     <table class="table table-hover table-striped align-middle mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th style="width: 60px;">#</th>
+                                <th style="width: 50px;">#</th>
                                 <th>文件名</th>
-                                <th class="text-end">文件大小</th>
+                                <th class="text-end">大小</th>
+                                <th class="text-center">表数</th>
+                                <th class="text-end">总行数</th>
                                 <th>备份时间</th>
-                                <th class="text-center" style="width: 160px;">操作</th>
+                                <th class="text-center" style="width: 220px;">操作</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -73,20 +67,34 @@ foreach ($files as $f) {
                             <tr>
                                 <td class="text-muted"><?php echo $idx + 1; ?></td>
                                 <td>
-                                    <i class="fa fa-file-code me-2 text-info"></i>
+                                    <i class="fa <?php echo !empty($file['compressed']) ? 'fa-file-archive text-warning' : 'fa-file-code text-info'; ?> me-2"></i>
                                     <code><?php echo htmlspecialchars($file['name']); ?></code>
+                                    <?php if (!empty($file['compressed'])): ?>
+                                    <span class="badge text-bg-warning ms-1">GZIP</span>
+                                    <?php endif; ?>
                                 </td>
                                 <td class="text-end">
-                                    <span class="fw-semibold"><?php echo \zap\util\Fmt::ByteToHuman($file['size']); ?></span>
+                                    <span class="fw-semibold"><?php echo htmlspecialchars($file['size_human'] ?? \zap\util\Fmt::ByteToHuman($file['size'])); ?></span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge text-bg-light"><?php echo count($file['tables'] ?? []); ?></span>
+                                </td>
+                                <td class="text-end">
+                                    <span class="text-muted"><?php echo number_format($file['total_rows'] ?? 0); ?></span>
                                 </td>
                                 <td>
                                     <span class="text-muted">
                                         <i class="fa fa-calendar me-1"></i>
-                                        <?php echo date('Y-m-d H:i:s', $file['mtime']); ?>
+                                        <?php echo !empty($file['time']) ? $file['time'] : date('Y-m-d H:i:s', $file['mtime']); ?>
                                     </span>
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-warning"
+                                                onclick="restoreBackup('<?php echo addslashes($file['name']); ?>', '<?php echo addslashes($file['name']); ?>')"
+                                                title="还原数据库">
+                                            <i class="fa fa-undo"></i> 还原
+                                        </button>
                                         <a href="<?php echo Url::action('System@backupDownload', null, [$file['name']]); ?>"
                                            class="btn btn-outline-primary" title="下载" download>
                                             <i class="fa fa-download"></i>
@@ -109,6 +117,9 @@ foreach ($files as $f) {
             <div class="card-footer text-muted">
                 <i class="fa fa-folder-open me-1"></i>
                 备份目录：<code><?php echo var_path('backups/sql'); ?></code>
+                &nbsp;|&nbsp;
+                <i class="fa fa-info-circle me-1"></i>
+                自动保留最近 <?php echo \zapcms\helpers\Database::MAX_BACKUPS; ?> 个备份
             </div>
             <?php endif; ?>
         </div>
@@ -140,6 +151,38 @@ function deleteBackup(filename) {
         }
     }).always(function () {
         load.dispose();
+    });
+}
+function restoreBackup(filename, label) {
+    Swal.fire({
+        title: '确认还原',
+        text: '将使用备份文件「' + label + '」还原数据库，当前数据将被覆盖！',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '<i class="fa fa-check me-1"></i>确定还原',
+        cancelButtonText: '取消',
+        confirmButtonColor: '#d33',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const load = Zap.loading('正在还原数据库，请勿关闭页面...');
+            $.ajax({
+                url: '<?php echo Url::action('System@backupRestore'); ?>',
+                method: 'post',
+                data: {filename: filename},
+                success: function (data) {
+                    if (data.code === 0) {
+                        Swal.fire({title:'还原成功',text:data.msg,icon:'success',timer:2000,showConfirmButton:true});
+                    } else {
+                        Swal.fire({title:'还原失败',text:data.msg,icon:'error'});
+                    }
+                },
+                error: function () {
+                    Swal.fire({title:'还原失败',text:'网络异常或服务器错误',icon:'error'});
+                }
+            }).always(function () {
+                load.dispose();
+            });
+        }
     });
 }
 </script>

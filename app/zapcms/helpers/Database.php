@@ -443,7 +443,7 @@ class Database
         } catch (\Exception $e) {
             trigger_error('数据库还原失败: ' . $e->getMessage(), E_USER_WARNING);
             if (isset($chunk)) {
-                try { DB::rollBack(); } catch (\Exception) {}
+                try { DB::rollBack(); } catch (\Exception $ignore) {}
             }
             return false;
         }
@@ -514,7 +514,7 @@ class Database
         } catch (\Exception $e) {
             trigger_error('数据还原失败: ' . $e->getMessage(), E_USER_WARNING);
             if (isset($chunk)) {
-                try { DB::rollBack(); } catch (\Exception) {}
+                try { DB::rollBack(); } catch (\Exception $ignore) {}
             }
             return false;
         }
