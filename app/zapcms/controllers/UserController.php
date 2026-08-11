@@ -8,6 +8,7 @@ use zapcms\models\Admin;
 use zapcms\models\AdminLog;
 use zap\DB;
 use zap\facades\Url;
+use zap\helpers\Pagination;
 use zap\http\Request;
 use zap\http\Response;
 use zap\util\Password;
@@ -15,10 +16,223 @@ use zap\util\Password;
 class UserController extends AdminController
 {
 
+    /**
+     * 后台会员管理 — 列表页
+     */
     public function index()
     {
-        Response::redirect(Url::action('User@profile'));
+        $keyword = Request::get('keyword', '');
+        $status  = Request::get('status', '');
+        $page    = max(1, (int)Request::get('page', 1));
+        $perPage = 20;
+
+        $query = DB::table('admin');
+
+        // 搜索
+        if ($keyword !== '') {
+            $query->whereLike('username', "%{$keyword}%");
+        }
+        // 状态筛选
+        if ($status !== '' && in_array($status, ['activated', 'disabled'], true)) {
+            $query->where('status', $status);
+        }
+
+        $total = (int)$query->count();
+        $query->orderBy('id', 'DESC');
+        $users = $query->limit($perPage)->offset(($page - 1) * $perPage)->fetchAll();
+
+        // 统计数据
+        $totalAll   = DB::table('admin')->count();
+        $activeCount = DB::table('admin')->where('status', 'activated')->count();
+        $latestUser  = $users ? ($users[0]['username'] ?? '-') : '-';
+
+        // 分页
+        $pageHelper = new Pagination($page, $perPage, Request::get());
+        $pageHelper->setTotal($total);
+        $pageHelper->url = Url::action('User@index');
+
+        // 角色列表（供 Modal 表单使用）
+        $roles = DB::table('roles')->orderBy('role_id')->fetchAll();
+
+        $data = [
+            'page_title'  => '用户管理',
+            'users'       => $users,
+            'pageHelper'  => $pageHelper,
+            'total'       => $total,
+            'totalAll'    => $totalAll,
+            'activeCount' => $activeCount,
+            'latestUser'  => $latestUser,
+            'keyword'     => $keyword,
+            'status'      => $status,
+            'roles'       => $roles,
+        ];
+
+        view('user.index', $data);
     }
+
+    /**
+     * 编辑表单（Modal 内嵌）
+     */
+    public function form()
+    {
+        $id         = (int)Request::get('id', 0);
+        $user       = [];
+        $userRoles  = [];
+
+        if ($id > 0) {
+            $user = DB::table('admin')->where('id', $id)->fetch(FETCH_ASSOC);
+            if (!$user) {
+                return '用户不存在';
+            }
+            // 获取该用户已分配的角色 ID
+            $rows = DB::table('admin_roles')->where('admin_id', $id)->fetchAll();
+            $userRoles = array_column($rows, 'role_id');
+        } else {
+            $user = [
+                'id'           => 0,
+                'username'     => '',
+                'full_name'    => '',
+                'email'        => '',
+                'phone_number' => '',
+                'status'       => Admin::STATUS_ACTIVATED,
+            ];
+        }
+
+        view('user.form', [
+            'user'       => $user,
+            'user_roles' => $userRoles,
+            'roles'      => DB::table('roles')->orderBy('role_id')->fetchAll(),
+        ]);
+    }
+
+    /**
+     * 保存 / 更新管理员（响应 Modal 表单提交）
+     */
+    public function saveUser()
+    {
+        if (!Request::isPost()) {
+            return Response::json(['code' => 1, 'msg' => '非法请求']);
+        }
+
+        $adminId   = (int)Request::post('admin_id', 0);
+        $data      = Request::post('data', []);
+        $userRoles = Request::post('user_roles', []);
+
+        $username    = trim($data['username'] ?? '');
+        $password    = trim($data['password'] ?? '');
+        $newPassword = trim($data['new_password'] ?? '');
+
+        // 验证
+        if ($username === '') {
+            return Response::json(['code' => 1, 'msg' => '用户名不能为空']);
+        }
+        $len = mb_strlen($username);
+        if ($len < 3 || $len > 20) {
+            return Response::json(['code' => 1, 'msg' => '用户名长度须在 3~20 位之间']);
+        }
+
+        // 检查用户名唯一性
+        $exist = DB::table('admin')->where('username', $username)->fetch(FETCH_ASSOC);
+        if ($exist && (int)$exist['id'] !== $adminId) {
+            return Response::json(['code' => 1, 'msg' => '用户名已被占用']);
+        }
+
+        // 新增时必须填写密码
+        if ($adminId === 0 && $password === '') {
+            return Response::json(['code' => 1, 'msg' => '密码不能为空']);
+        }
+        if ($password !== '' && mb_strlen($password) < 6) {
+            return Response::json(['code' => 1, 'msg' => '密码至少需要 6 个字符']);
+        }
+        if ($password !== $newPassword) {
+            return Response::json(['code' => 1, 'msg' => '两次输入的密码不一致']);
+        }
+
+        $now = time();
+        $row = [
+            'username'     => $username,
+            'full_name'    => trim($data['full_name'] ?? ''),
+            'email'        => trim($data['email'] ?? ''),
+            'phone_number' => trim($data['phone_number'] ?? ''),
+            'status'       => $data['status'] ?? Admin::STATUS_ACTIVATED,
+            'updated_at'   => $now,
+        ];
+
+        if ($password !== '') {
+            $row['password'] = Password::hash($password);
+        }
+
+        if ($adminId > 0) {
+            DB::update('admin', $row, ['id' => $adminId]);
+            AdminLog::log('修改管理员', "更新了管理员: {$username}");
+        } else {
+            $row['created_at'] = $now;
+            $adminId = DB::insert('admin', $row);
+            AdminLog::log('新增管理员', "添加了管理员: {$username}");
+        }
+
+        // 同步角色关联
+        DB::delete('admin_roles', ['admin_id' => $adminId]);
+        if (!empty($userRoles)) {
+            foreach ((array)$userRoles as $roleId) {
+                DB::insert('admin_roles', [
+                    'admin_id'        => $adminId,
+                    'role_id'         => (int)$roleId,
+                    'assignment_time' => $now,
+                ]);
+            }
+        }
+
+        return Response::json(['code' => 0, 'msg' => '保存成功']);
+    }
+
+    /**
+     * 删除选中的管理员
+     */
+    public function remove()
+    {
+        if (!Request::isPost()) {
+            return Response::json(['code' => 1, 'msg' => '非法请求']);
+        }
+
+        $items = Request::post('admin', []);
+        if (empty($items)) {
+            return Response::json(['code' => 1, 'msg' => '请选择需要删除的用户']);
+        }
+
+        $ids = [];
+        foreach ($items as $row) {
+            $id = (int)($row['id'] ?? 0);
+            if ($id > 0) {
+                $ids[] = $id;
+            }
+        }
+        $ids = array_unique($ids);
+
+        if (empty($ids)) {
+            return Response::json(['code' => 1, 'msg' => '没有有效的用户 ID']);
+        }
+
+        // 保护超级管理员 (id=1)
+        if (in_array(1, $ids, true)) {
+            return Response::json(['code' => 1, 'msg' => '不能删除超级管理员']);
+        }
+
+        // 禁止删除自己
+        $currentId = (int)Auth::user('id');
+        if (in_array($currentId, $ids, true)) {
+            return Response::json(['code' => 1, 'msg' => '不能删除当前登录的账号']);
+        }
+
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        DB::query("DELETE FROM ?t WHERE id IN ({$placeholders})", ['admin', ...$ids]);
+        DB::query("DELETE FROM ?t WHERE admin_id IN ({$placeholders})", ['admin_roles', ...$ids]);
+
+        AdminLog::log('删除管理员', '删除了 ' . count($ids) . ' 个管理员');
+
+        return Response::json(['code' => 0, 'msg' => '删除成功']);
+    }
+
     /**
      * 设置页 — 集成个人资料 / 修改密码 / 操作记录
      */
@@ -188,5 +402,443 @@ class UserController extends AdminController
         AdminLog::log('修改密码', '更新了登录密码');
 
         Response::redirect(Url::action('User@profile', ['tab' => 'security']))->with('success', '密码修改成功');
+    }
+
+    // ================================================================
+    //  角色管理
+    // ================================================================
+
+    /**
+     * 角色列表
+     */
+    public function roles()
+    {
+        $page    = max(1, (int)Request::get('page', 1));
+        $perPage = 20;
+
+        $total = (int)DB::table('roles')->count();
+        $roles = DB::table('roles')
+            ->orderBy('role_id', 'DESC')
+            ->limit($perPage)
+            ->offset(($page - 1) * $perPage)
+            ->fetchAll();
+
+        $pageHelper = new Pagination($page, $perPage, Request::get());
+        $pageHelper->setTotal($total);
+        $pageHelper->url = Url::action('User@roles');
+
+        view('user.roles', [
+            'data'        => $roles,
+            'pageHelper'  => $pageHelper,
+            'page_title'  => '角色管理',
+            'breadcrumbs' => [
+                ['title' => '首页', 'url' => Url::action('Index')],
+                ['title' => '用户管理', 'url' => Url::action('User@index')],
+                ['title' => '角色管理'],
+            ],
+        ]);
+    }
+
+    /**
+     * 角色编辑表单（Modal）
+     */
+    public function formRole()
+    {
+        $id           = (int)Request::get('id', 0);
+        $data         = ['role_id' => 0, 'name' => '', 'description' => ''];
+        $rolePermissions = [];
+
+        if ($id > 0) {
+            $data = DB::table('roles')->where('role_id', $id)->fetch(FETCH_ASSOC);
+            if (!$data) {
+                return '角色不存在';
+            }
+            // 已分配的权限 — 按 perm_key 索引
+            $rows = DB::table('roles_permissions')->where('role_id', $id)->fetchAll();
+            foreach ($rows as $row) {
+                $permKey = $row['perm_key'];
+                $rolePermissions[$permKey] = array_fill_keys(
+                    array_filter(explode(',', $row['extras'] ?? '')),
+                    1
+                );
+            }
+        }
+
+        // 所有权限
+        $permissions = DB::table('permissions')->orderBy('perm_id')->fetchAll();
+
+        // 系统菜单（用于菜单权限）
+        $adminMenus = $this->getAdminMenuTree();
+
+        view('user.roles_form', [
+            'data'              => $data,
+            'permissions'       => $permissions,
+            'role_permissions'  => $rolePermissions,
+            'admin_menus'       => $adminMenus,
+        ]);
+    }
+
+    /**
+     * 保存角色
+     */
+    public function saveRole()
+    {
+        if (!Request::isPost()) {
+            return Response::json(['code' => 1, 'msg' => '非法请求']);
+        }
+
+        $roleId    = (int)Request::post('role_id', 0);
+        $data      = Request::post('data', []);
+        $perms     = Request::post('perms', []);
+        $extras    = Request::post('extras', []);
+
+        $name = trim($data['name'] ?? '');
+        if ($name === '') {
+            return Response::json(['code' => 1, 'msg' => '角色名称不能为空']);
+        }
+
+        $now = time();
+        $row = [
+            'name'        => $name,
+            'description' => trim($data['description'] ?? ''),
+            'updated_at'  => $now,
+        ];
+
+        if ($roleId > 0) {
+            DB::update('roles', $row, ['role_id' => $roleId]);
+            AdminLog::log('修改角色', "修改了角色: {$name}");
+        } else {
+            $row['created_at'] = $now;
+            $roleId = DB::insert('roles', $row);
+            AdminLog::log('新增角色', "添加了角色: {$name}");
+        }
+
+        // 同步权限关联
+        DB::delete('roles_permissions', ['role_id' => $roleId]);
+        if (!empty($perms)) {
+            foreach ((array)$perms as $permKey) {
+                $permKey = trim($permKey);
+                if ($permKey === '') {
+                    continue;
+                }
+                $extraStr = '';
+                if (isset($extras[$permKey]) && is_array($extras[$permKey])) {
+                    $extraStr = implode(',', array_keys($extras[$permKey]));
+                }
+                DB::insert('roles_permissions', [
+                    'role_id'         => $roleId,
+                    'perm_key'        => $permKey,
+                    'extras'          => $extraStr ?: null,
+                    'assignment_time' => $now,
+                ]);
+            }
+        }
+
+        return Response::json(['code' => 0, 'msg' => '保存成功']);
+    }
+
+    /**
+     * 删除角色
+     */
+    public function removeRole()
+    {
+        if (!Request::isPost()) {
+            return Response::json(['code' => 1, 'msg' => '非法请求']);
+        }
+
+        $items = Request::post('data', []);
+        if (empty($items)) {
+            return Response::json(['code' => 1, 'msg' => '请选择需要删除的角色']);
+        }
+
+        $ids = [];
+        foreach ($items as $item) {
+            $id = (int)($item['role_id'] ?? 0);
+            if ($id > 0) {
+                $ids[] = $id;
+            }
+        }
+        $ids = array_unique($ids);
+
+        if (empty($ids)) {
+            return Response::json(['code' => 1, 'msg' => '没有有效的角色 ID']);
+        }
+
+        // 保护超级管理员角色
+        if (in_array(1, $ids, true)) {
+            return Response::json(['code' => 1, 'msg' => '不能删除超级管理员角色']);
+        }
+
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        DB::query("DELETE FROM ?t WHERE role_id IN ({$placeholders})", ['roles', ...$ids]);
+        DB::query("DELETE FROM ?t WHERE role_id IN ({$placeholders})", ['roles_permissions', ...$ids]);
+        DB::query("DELETE FROM ?t WHERE role_id IN ({$placeholders})", ['admin_roles', ...$ids]);
+
+        AdminLog::log('删除角色', '删除了 ' . count($ids) . ' 个角色');
+
+        return Response::json(['code' => 0, 'msg' => '删除成功']);
+    }
+
+    // ================================================================
+    //  权限管理
+    // ================================================================
+
+    /**
+     * 权限列表（树形结构）
+     */
+    public function permissions()
+    {
+        $permissions = DB::table('permissions')->orderBy('perm_id')->fetchAll();
+        // 构建树形排序：按 pid/level 分层排列
+        $tree = $this->buildPermissionTree($permissions);
+
+        $pageHelper = new Pagination(1, 999, []);
+        $pageHelper->setTotal(count($tree));
+        $pageHelper->url = '#';
+
+        view('user.permissions', [
+            'data'        => $tree,
+            'pageHelper'  => $pageHelper,
+            'page_title'  => '权限管理',
+            'breadcrumbs' => [
+                ['title' => '首页', 'url' => Url::action('Index')],
+                ['title' => '用户管理', 'url' => Url::action('User@index')],
+                ['title' => '权限管理'],
+            ],
+        ]);
+    }
+
+    /**
+     * 权限编辑表单（Modal）
+     */
+    public function formPermission()
+    {
+        $id  = (int)Request::get('id', 0);
+        $pid = (int)Request::get('pid', 0);
+
+        $data = [
+            'perm_id'     => 0,
+            'title'       => '',
+            'perm_key'    => '',
+            'extras'      => '{}',
+            'description' => '',
+            'pid'         => $pid,
+        ];
+        $extras = [];
+
+        if ($id > 0) {
+            $row = DB::table('permissions')->where('perm_id', $id)->fetch(FETCH_ASSOC);
+            if (!$row) {
+                return '权限不存在';
+            }
+            $data   = $row;
+            $pid    = (int)$data['pid'];
+            $extras = json_decode($data['extras'] ?? '{}', true);
+            if (!is_array($extras)) {
+                $extras = [];
+            }
+        }
+
+        view('user.permissions_form', [
+            'data'   => $data,
+            'pid'    => $pid,
+            'extras' => $extras,
+        ]);
+    }
+
+    /**
+     * 保存权限
+     */
+    public function savePermission()
+    {
+        if (!Request::isPost()) {
+            return Response::json(['code' => 1, 'msg' => '非法请求']);
+        }
+
+        $permId = (int)Request::post('perm_id', 0);
+        $data   = Request::post('data', []);
+        $extras = Request::post('extras', []);
+
+        $title   = trim($data['title'] ?? '');
+        $permKey = trim($data['perm_key'] ?? '');
+        $pid     = (int)($data['pid'] ?? 0);
+
+        if ($title === '') {
+            return Response::json(['code' => 1, 'msg' => '权限名称不能为空']);
+        }
+
+        // 构建 path 和 level
+        $level = 0;
+        $path  = '';
+        if ($pid > 0) {
+            $parent = DB::table('permissions')->where('perm_id', $pid)->fetch(FETCH_ASSOC);
+            if ($parent) {
+                $level = (int)$parent['level'] + 1;
+                $path  = ($parent['path'] ? $parent['path'] . ',' : '') . (string)$pid;
+            }
+        }
+
+        // 构建 extras JSON
+        $extrasJson = '{}';
+        if (!empty($extras)) {
+            $extrasMap = [];
+            foreach ($extras as $item) {
+                $key   = trim($item['key'] ?? '');
+                $title = trim($item['title'] ?? '');
+                if ($key !== '' && $title !== '') {
+                    $extrasMap[$key] = $title;
+                }
+            }
+            if (!empty($extrasMap)) {
+                $extrasJson = json_encode($extrasMap, JSON_UNESCAPED_UNICODE);
+            }
+        }
+
+        $now = time();
+        $row = [
+            'title'       => $title,
+            'perm_key'    => $permKey,
+            'pid'         => $pid,
+            'path'        => $path,
+            'level'       => $level,
+            'extras'      => $extrasJson,
+            'description' => trim($data['description'] ?? ''),
+            'updated_at'  => $now,
+        ];
+
+        if ($permId > 0) {
+            DB::update('permissions', $row, ['perm_id' => $permId]);
+            AdminLog::log('修改权限', "修改了权限: {$title}");
+        } else {
+            $row['created_at'] = $now;
+            $permId = DB::insert('permissions', $row);
+            AdminLog::log('新增权限', "添加了权限: {$title}");
+        }
+
+        return Response::json(['code' => 0, 'msg' => '保存成功']);
+    }
+
+    /**
+     * 删除权限
+     */
+    public function removePermission()
+    {
+        if (!Request::isPost()) {
+            return Response::json(['code' => 1, 'msg' => '非法请求']);
+        }
+
+        $items = Request::post('data', []);
+        if (empty($items)) {
+            return Response::json(['code' => 1, 'msg' => '请选择需要删除的权限']);
+        }
+
+        $ids = [];
+        foreach ($items as $item) {
+            $id = (int)($item['perm_id'] ?? 0);
+            if ($id > 0) {
+                $ids[] = $id;
+            }
+        }
+        $ids = array_unique($ids);
+
+        if (empty($ids)) {
+            return Response::json(['code' => 1, 'msg' => '没有有效的权限 ID']);
+        }
+
+        // 同时删除子权限
+        $allIds = $ids;
+        foreach ($ids as $pid) {
+            $children = DB::table('permissions')->where('pid', $pid)->fetchAll();
+            foreach ($children as $child) {
+                $allIds[] = (int)$child['perm_id'];
+            }
+        }
+        $allIds = array_unique($allIds);
+
+        // 删除前先收集所有 perm_key
+        $permKeys = [];
+        if (!empty($allIds)) {
+            $placeholders = implode(',', array_fill(0, count($allIds), '?'));
+            $rows = DB::query("SELECT perm_key FROM ?t WHERE perm_id IN ({$placeholders})", ['permissions', ...$allIds])->fetchAll();
+            foreach ($rows as $r) {
+                if (!empty($r['perm_key'])) {
+                    $permKeys[] = $r['perm_key'];
+                }
+            }
+            $permKeys = array_unique($permKeys);
+        }
+
+        // 删除权限
+        $placeholders = implode(',', array_fill(0, count($allIds), '?'));
+        DB::query("DELETE FROM ?t WHERE perm_id IN ({$placeholders})", ['permissions', ...$allIds]);
+
+        // 清理关联表中的权限
+        if (!empty($permKeys)) {
+            $pkPlaceholders = implode(',', array_fill(0, count($permKeys), '?'));
+            DB::query("DELETE FROM ?t WHERE perm_key IN ({$pkPlaceholders})", ['roles_permissions', ...$permKeys]);
+        }
+
+        AdminLog::log('删除权限', '删除了 ' . count($allIds) . ' 个权限');
+
+        return Response::json(['code' => 0, 'msg' => '删除成功']);
+    }
+
+    // ================================================================
+    //  辅助方法
+    // ================================================================
+
+    /**
+     * 获取后台菜单（扁平列表，带 level）
+     */
+    private function getAdminMenuTree(): array
+    {
+        $menus = DB::table('admin_menu')->orderBy('sort_order')->fetchAll();
+        $tree  = $this->toTree($menus, 0);
+        return $this->flattenTree($tree);
+    }
+
+    /**
+     * 将嵌套树展开为带 level 的扁平列表
+     */
+    private function flattenTree(array $items, array &$out = []): array
+    {
+        foreach ($items as $item) {
+            $out[] = $item;
+            if (!empty($item['children'])) {
+                $this->flattenTree($item['children'], $out);
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * 将扁平权限数组转成树形排序列表
+     */
+    private function buildPermissionTree(array $items, int $pid = 0, int $level = 0): array
+    {
+        $result = [];
+        foreach ($items as $item) {
+            if ((int)$item['pid'] === $pid) {
+                $item['level'] = $level;
+                $result[] = $item;
+                $result = array_merge($result, $this->buildPermissionTree($items, (int)$item['perm_id'], $level + 1));
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * 扁平列表 → 树
+     */
+    private function toTree(array $items, int $pid = 0): array
+    {
+        $tree = [];
+        foreach ($items as $item) {
+            if ((int)$item['pid'] === $pid) {
+                $item['children'] = $this->toTree($items, (int)$item['id']);
+                $tree[] = $item;
+            }
+        }
+        return $tree;
     }
 }

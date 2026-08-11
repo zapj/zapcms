@@ -4,12 +4,9 @@ use zap\facades\Url;
 $this->layout('layouts/common');
 
 // 统计数据
-$totalUsers = count($users);
-$activeCount = 0;
-foreach ($users as $u) {
-    if ($u['status'] === 'activated') $activeCount++;
-}
-$latestUser = $users[0]['username'] ?? '-';
+$totalUsers  = $totalAll ?? count($users);
+$activeCount = $activeCount ?? 0;
+$latestUser  = $latestUser ?? '-';
 ?>
 
 <!--begin::Stats Row-->

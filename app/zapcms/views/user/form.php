@@ -84,7 +84,7 @@
         <div class="col-sm-6">
             <label for="data_status" class="form-label fw-semibold">状态</label>
             <select class="form-select" id="data_status" name="data[status]">
-                <?php foreach (\zapcms\models\User::getStatus() as $key => $title): ?>
+                <?php foreach (\zapcms\models\Admin::getStatus() as $key => $title): ?>
                 <option value="<?php echo $key; ?>" <?php echo $key == $user['status'] ? 'selected' : ''; ?>>
                     <?php echo $title; ?>
                 </option>
