@@ -176,11 +176,14 @@ $latestUser  = $latestUser ?? '-';
                     method:'post',
                     data:$('#addOrEditUser form').serialize(),
                     success:function (data){
+                        m.hide();
                         ZapToast.alert(data.msg,{bgColor:data.code===0?bgSuccess:bgDanger,position:Toast_Pos_Center});
-                        Zap.reload();
+                        if(data.code===0){
+                            setTimeout(function(){
+                                Zap.reload();
+                            },800);
+                        }
                     }
-                }).always(function(){
-                    m.hide();
                 })
             }
         },true)

@@ -2,6 +2,7 @@
 
 namespace zapcms\controllers;
 
+use zapcms\auth\RBAC;
 use zapcms\controllers\AdminController;
 use zapcms\auth\Permissions;
 use zapcms\services\Auth;
@@ -151,12 +152,15 @@ class UserController extends AdminController
 
         $now = time();
         $row = [
-            'username'     => $username,
-            'full_name'    => trim($data['full_name'] ?? ''),
-            'email'        => trim($data['email'] ?? ''),
-            'phone_number' => trim($data['phone_number'] ?? ''),
-            'status'       => $data['status'] ?? Admin::STATUS_ACTIVATED,
-            'updated_at'   => $now,
+            'username'        => $username,
+            'full_name'       => trim($data['full_name'] ?? ''),
+            'email'           => trim($data['email'] ?? ''),
+            'phone_number'    => trim($data['phone_number'] ?? ''),
+            'status'          => $data['status'] ?? Admin::STATUS_ACTIVATED,
+            'avatar_url'      => '',
+            'last_ip'         => '',
+            'last_access_time' => 0,
+            'updated_at'      => $now,
         ];
 
         if ($password !== '') {
@@ -183,6 +187,9 @@ class UserController extends AdminController
                 ]);
             }
         }
+
+        // 失效该用户的权限缓存
+        RBAC::invalidateUser($adminId);
 
         return Response::json(['code' => 0, 'msg' => '保存成功']);
     }
@@ -535,6 +542,9 @@ class UserController extends AdminController
             }
         }
 
+        // 角色权限变更，全局失效
+        RBAC::invalidate();
+
         return Response::json(['code' => 0, 'msg' => '保存成功']);
     }
 
@@ -576,6 +586,8 @@ class UserController extends AdminController
         DB::query("DELETE FROM ?t WHERE role_id IN ({$placeholders})", ['admin_roles', ...$ids]);
 
         AdminLog::log('删除角色', '删除了 ' . count($ids) . ' 个角色');
+
+        RBAC::invalidate();
 
         return Response::json(['code' => 0, 'msg' => '删除成功']);
     }
@@ -714,6 +726,8 @@ class UserController extends AdminController
             AdminLog::log('新增权限', "添加了权限: {$title}");
         }
 
+        RBAC::invalidate();
+
         return Response::json(['code' => 0, 'msg' => '保存成功']);
     }
 
@@ -780,6 +794,8 @@ class UserController extends AdminController
         }
 
         AdminLog::log('删除权限', '删除了 ' . count($ids) . ' 个权限');
+
+        RBAC::invalidate();
 
         return Response::json(['code' => 0, 'msg' => '删除成功']);
     }

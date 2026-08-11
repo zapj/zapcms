@@ -4,18 +4,79 @@ namespace zapcms\auth;
 
 use zapcms\services\Auth;
 use zap\DB;
+use zap\facades\Cache;
 
 class RBAC
 {
+    /** 缓存 TTL（秒） */
+    protected int $cacheTtl = 3600;
+
+    /** 版本号的 TTL（30 天，基本永不过期） */
+    protected int $versionTtl = 2592000;
+
     protected ?int $userId = null;
+    protected ?int $cacheVersion = null;
     protected ?array $roleIds = null;
     protected ?array $permissionKeys = null;
     protected ?array $rolePermissions = null;
-    /** @var array|null [perm_key => []] 或 [perm_key => ['view'=>true, ...]] */
+    /** @var array|null [perm_key => []]  */
     protected ?array $userExtrasCache = null;
 
+    // ================================================================
+    //  缓存控制
+    // ================================================================
+
     /**
-     * 设置当前用户上下文
+     * 全局缓存失效 — 权限/角色变更时调用
+     */
+    public static function invalidate(): void
+    {
+        Cache::increment('rbac_version', 1);
+    }
+
+    /**
+     * 单个用户缓存失效 — 用户角色分配变更时调用
+     */
+    public static function invalidateUser(int $userId): void
+    {
+        $version = Cache::get('rbac_version', 0) ?: 0;
+        // 删除当前版本 + 前一个版本的 key（防止并发漏删）
+        foreach ([$version, $version - 1] as $v) {
+            if ($v >= 0) {
+                Cache::delete("rbac:v{$v}:roles:{$userId}");
+                Cache::delete("rbac:v{$v}:perms:{$userId}");
+                // extras 是 map 存储，key 里包含 permKey，逐个清除太麻烦
+                // 直接干掉 permsKey 即可，下次 rebuild 全刷新
+            }
+        }
+        Cache::delete("rbac:extras:{$userId}");
+    }
+
+    /**
+     * 获取当前缓存版本号
+     */
+    protected function getVersion(): int
+    {
+        if ($this->cacheVersion === null) {
+            $this->cacheVersion = Cache::get('rbac_version', 0, $this->versionTtl);
+        }
+        return $this->cacheVersion;
+    }
+
+    /**
+     * 拼接带版本的缓存 key
+     */
+    protected function cacheKey(string $type): string
+    {
+        return "rbac:v{$this->getVersion()}:{$type}:{$this->getUserId()}";
+    }
+
+    // ================================================================
+    //  用户上下文
+    // ================================================================
+
+    /**
+     * 设置当前用户上下文，并重置所有内存缓存
      */
     public function setUser(?int $userId): self
     {
@@ -44,12 +105,12 @@ class RBAC
 
     /**
      * 权限检查（支持子权限粒度）
-     * @param string $permKey  权限标识
+     * @param string $permKey   权限标识
      * @param string|null $extraKey  子权限 key（如 view/add/edit），null 仅检查主权限
      *
      * 规则：
      *  - 超级管理员（role_id=1）拥有全部
-     *  - 拥有主权限但权限本身没有定义 extras  → 拥有全部（无需关心子项）
+     *  - 拥有主权限但权限本身没有定义 extras → 拥有全部
      *  - 拥有主权限且定义了 extras，但未指派任何子项 → 子权限全部拒绝
      *  - 拥有主权限且指派了部分子项 → 仅指派的通过
      */
@@ -70,23 +131,20 @@ class RBAC
             return in_array($permKey, $permissionKeys, true);
         }
 
-        // 检查子权限：先看用户有没有这个权限
+        // 检查子权限
         $extrasData = $this->getUserExtras($permKey);
         if ($extrasData === null) {
-            return false;            // 没有该权限
+            return false;
         }
 
-        // 移除内部标记
         $hasDefinedExtras = !empty($extrasData['__has_extras__']);
         unset($extrasData['__has_extras__']);
 
         if (!$hasDefinedExtras) {
-            // 权限本身没有定义 extras → 拥有主权限即拥有全部
             return true;
         }
 
         if (empty($extrasData)) {
-            // 权限定义了 extras 但一个都没指派 → 拒绝所有子权限
             return false;
         }
 
@@ -97,25 +155,27 @@ class RBAC
     //  查询方法
     // ================================================================
 
-    /**
-     * 获取当前用户拥有的所有角色
-     */
     public function roles(?int $userId = null): array
     {
         $userId = $userId ?? $this->getUserId();
-        return DB::table('roles', 'r')
-            ->join('admin_roles', 'ar', 'r.role_id=ar.role_id')
-            ->where('ar.admin_id', $userId)
-            ->fetchAll(FETCH_ASSOC);
+
+        // 非当前用户不走缓存，直接查
+        if ($userId !== $this->userId) {
+            return DB::table('roles', 'r')
+                ->join('admin_roles', 'ar', 'r.role_id=ar.role_id')
+                ->where('ar.admin_id', $userId)
+                ->fetchAll(FETCH_ASSOC);
+        }
+
+        $key = $this->cacheKey('roles');
+        return Cache::get($key, function () use ($userId) {
+            return DB::table('roles', 'r')
+                ->join('admin_roles', 'ar', 'r.role_id=ar.role_id')
+                ->where('ar.admin_id', $userId)
+                ->fetchAll(FETCH_ASSOC);
+        }, $this->cacheTtl);
     }
 
-    /**
-     * 获取当前用户对某个权限的子权限集合
-     * @return array|null
-     *   null          = 没有该权限
-     *   ['view'=>true,...] = 拥有的子权限
-     *   （调用方通过 getExtrasCount 判断是否有全部）
-     */
     public function getExtras(string $permKey, ?int $userId = null): ?array
     {
         $data = $this->getUserExtras($permKey, $userId);
@@ -126,9 +186,6 @@ class RBAC
         return $data;
     }
 
-    /**
-     * 该权限是否拥有全部子权限（含本身就没有定义 extras 的权限）
-     */
     public function hasFullExtras(string $permKey, ?int $userId = null): bool
     {
         $data = $this->getUserExtras($permKey, $userId);
@@ -138,18 +195,11 @@ class RBAC
         return true;
     }
 
-    /**
-     * 获取当前用户拥有的所有权限标识（去重）
-     */
     public function permissions(?int $userId = null): array
     {
         return $this->getPermissionKeys($userId);
     }
 
-    /**
-     * 检查当前用户是否拥有指定角色
-     * @param int|string $roleId  角色 ID 或角色名称
-     */
     public function hasRole($roleId, ?int $userId = null): bool
     {
         $userId = $userId ?? $this->getUserId();
@@ -170,9 +220,6 @@ class RBAC
     //  内部方法
     // ================================================================
 
-    /**
-     * 当前用户是否为超级管理员
-     */
     public function isSuperAdmin(?int $userId = null): bool
     {
         $roleIds = $this->getRoleIds($userId);
@@ -180,37 +227,59 @@ class RBAC
     }
 
     /**
-     * 获取用户的所有角色 ID
+     * 获取用户的所有角色 ID（带缓存）
      */
     protected function getRoleIds(?int $userId = null): array
     {
         $userId = $userId ?? $this->getUserId();
 
-        if ($this->roleIds !== null && $userId === $this->userId) {
+        // 非当前用户不走缓存
+        if ($userId !== $this->userId) {
+            $rows = DB::table('admin_roles')->where('admin_id', $userId)->fetchAll();
+            return array_column($rows, 'role_id');
+        }
+
+        if ($this->roleIds !== null) {
             return $this->roleIds;
         }
 
-        $rows = DB::table('admin_roles')
-            ->where('admin_id', $userId)
-            ->fetchAll();
-        $this->roleIds = array_column($rows, 'role_id');
+        $key = $this->cacheKey('roles');
+        $this->roleIds = Cache::get($key, function () use ($userId) {
+            $rows = DB::table('admin_roles')->where('admin_id', $userId)->fetchAll();
+            return array_column($rows, 'role_id');
+        }, $this->cacheTtl);
+
         return $this->roleIds;
     }
 
     /**
-     * 获取用户所有的 perm_key（去重），超级管理员拥有全部权限
+     * 获取用户所有的 perm_key，超级管理员拥有全部权限（带缓存）
      */
     protected function getPermissionKeys(?int $userId = null): array
     {
         $userId = $userId ?? $this->getUserId();
 
-        if ($this->permissionKeys !== null && $userId === $this->userId) {
+        // 非当前用户不走缓存
+        if ($userId !== $this->userId) {
+            return $this->queryPermissionKeys($userId);
+        }
+
+        if ($this->permissionKeys !== null) {
             return $this->permissionKeys;
         }
 
+        $key = $this->cacheKey('perms');
+        $this->permissionKeys = Cache::get($key, fn() => $this->queryPermissionKeys($userId), $this->cacheTtl);
+        return $this->permissionKeys;
+    }
+
+    /**
+     * 从 DB 查询用户的 perm_key 列表
+     */
+    protected function queryPermissionKeys(int $userId): array
+    {
         $roleIds = $this->getRoleIds($userId);
         if (empty($roleIds)) {
-            $this->permissionKeys = [];
             return [];
         }
 
@@ -219,8 +288,7 @@ class RBAC
                 ->where('perm_key', '!=', '')
                 ->select('perm_key')
                 ->fetchAll();
-            $this->permissionKeys = array_column($rows, 'perm_key');
-            return $this->permissionKeys;
+            return array_column($rows, 'perm_key');
         }
 
         $placeholders = implode(',', array_fill(0, count($roleIds), '?'));
@@ -228,35 +296,53 @@ class RBAC
             "SELECT DISTINCT perm_key FROM ?t WHERE role_id IN ({$placeholders})",
             ['roles_permissions', ...$roleIds]
         )->fetchAll();
-        $this->permissionKeys = array_column($rows, 'perm_key');
-        return $this->permissionKeys;
+        return array_column($rows, 'perm_key');
     }
 
     /**
-     * 获取用户对某个权限的子权限映射
-     * @return array|null
-     *   null                                    = 没有该权限
-     *   ['__has_extras__'=>false] + data        = 权限无 extras 定义 → 拥有全部
-     *   ['__has_extras__'=>true] + data (空)    = 有 extras 但未指派 → 无子权限
-     *   ['__has_extras__'=>true, 'view'=>true]  = 指派的子权限
+     * 获取用户对某个权限的子权限映射（带缓存）
      */
     protected function getUserExtras(string $permKey, ?int $userId = null): ?array
     {
         $userId = $userId ?? $this->getUserId();
 
+        // 超级管理员拥有全部
         if ($this->isSuperAdmin($userId)) {
             return ['__has_extras__' => false];
         }
 
-        if ($this->userExtrasCache !== null && $userId === $this->userId) {
+        // 非当前用户不走缓存
+        if ($userId !== $this->userId) {
+            return $this->queryUserExtras($permKey, $userId);
+        }
+
+        if ($this->userExtrasCache !== null) {
             return $this->userExtrasCache[$permKey] ?? null;
         }
 
-        $roleIds = $this->getRoleIds($userId);
-        $this->userExtrasCache = [];
+        // 缓存整个用户的 extras map
+        $key = $this->cacheKey('extras');
+        $this->userExtrasCache = Cache::get($key, fn() => $this->queryUserExtrasAll($userId), $this->cacheTtl);
 
+        return $this->userExtrasCache[$permKey] ?? null;
+    }
+
+    /**
+     * 从 DB 查询单个 permKey 的 extras
+     */
+    protected function queryUserExtras(string $permKey, int $userId): ?array
+    {
+        return $this->queryUserExtrasAll($userId)[$permKey] ?? null;
+    }
+
+    /**
+     * 查询用户所有权限的 extras map（含内部标记 __has_extras__）
+     */
+    protected function queryUserExtrasAll(int $userId): array
+    {
+        $roleIds = $this->getRoleIds($userId);
         if (empty($roleIds)) {
-            return null;
+            return [];
         }
 
         $placeholders = implode(',', array_fill(0, count($roleIds), '?'));
@@ -265,58 +351,46 @@ class RBAC
             ['roles_permissions', ...$roleIds]
         )->fetchAll();
 
+        $result = [];
         foreach ($rows as $row) {
             $pk = $row['perm_key'];
-            $extraStr = $row['extras'] ?? '';
-
-            if (!isset($this->userExtrasCache[$pk])) {
-                $this->userExtrasCache[$pk] = [];
+            if (!isset($result[$pk])) {
+                $result[$pk] = [];
             }
-
+            $extraStr = $row['extras'] ?? '';
             if (!empty($extraStr)) {
-                $parts = explode(',', $extraStr);
-                foreach ($parts as $part) {
+                foreach (explode(',', $extraStr) as $part) {
                     $part = trim($part);
                     if ($part !== '') {
-                        $this->userExtrasCache[$pk][$part] = true;
+                        $result[$pk][$part] = true;
                     }
                 }
             }
-            // $extraStr 为空时：此角色未指派任何子权限
-            // 不往 this->userExtrasCache[$pk] 里加任何 key
-            // 等其他角色的 extras 合并进来
         }
 
-        // 对每个 perm_key，补上 __has_extras__ 标记
-        // 需要批量查 permissions 表确认哪些权限定义了 extras
-        if (!empty($this->userExtrasCache)) {
-            $pkList = array_keys($this->userExtrasCache);
-            $pkPlaceholders = implode(',', array_fill(0, count($pkList), '?'));
+        // 批量补 __has_extras__ 标记
+        if (!empty($result)) {
+            $pkList = array_keys($result);
+            $pkp = implode(',', array_fill(0, count($pkList), '?'));
             $permRows = DB::query(
-                "SELECT perm_key, extras FROM ?t WHERE perm_key IN ({$pkPlaceholders})",
+                "SELECT perm_key, extras FROM ?t WHERE perm_key IN ({$pkp})",
                 ['permissions', ...$pkList]
             )->fetchAll();
 
-            $permDefinedExtras = [];
+            $defined = [];
             foreach ($permRows as $pr) {
-                $prPk = $pr['perm_key'];
-                $prExtras = json_decode($pr['extras'] ?? '{}', true);
-                $permDefinedExtras[$prPk] = !empty($prExtras);
+                $decoded = json_decode($pr['extras'] ?? '{}', true);
+                $defined[$pr['perm_key']] = !empty($decoded);
             }
-
-            foreach ($this->userExtrasCache as $pk => &$data) {
-                $data['__has_extras__'] = $permDefinedExtras[$pk] ?? false;
+            foreach ($result as $pk => &$data) {
+                $data['__has_extras__'] = $defined[$pk] ?? false;
             }
             unset($data);
         }
 
-        return $this->userExtrasCache[$permKey] ?? null;
+        return $result;
     }
 
-    /**
-     * 获取当前用户按角色分组的权限详情（含 extras）
-     * @return array [role_id => [perm_key => [extras]]]
-     */
     public function permissionsByRole(?int $userId = null): array
     {
         $userId = $userId ?? $this->getUserId();
