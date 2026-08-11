@@ -6,7 +6,6 @@
     "ext-gd": "*",
     "monolog/monolog": "^2.9",
     "ext-json": "*",
-    "twig/twig": "^3.0",
     "ezyang/htmlpurifier": "dev-master",
     "phpmailer/phpmailer": "dev-master",
     "overtrue/pinyin": "^3.0"

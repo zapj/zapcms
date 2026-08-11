@@ -7,9 +7,10 @@
  *   ?action=check     — 环境检测
  *   ?action=database  — 数据库配置 & 执行安装
  *   ?action=done      — 完成页
- * 以及两个 API 端点：
+ * 以及三个 API 端点：
  *   ?action=checkDatabaseConnection   — AJAX：测试数据库连接
- *   ?action=createDBSchemaBaseData    — AJAX：建表写配置
+ *   ?action=createDBSchema           — AJAX：创建数据表
+ *   ?action=importBaseData           — AJAX：导入初始数据 & 完成安装
  */
 
 require '../vendor/autoload.php';
@@ -37,7 +38,7 @@ $app = new \zap\App(realpath('../'));
 $action = $_GET['action'] ?? 'index';
 
 // 纯 API 端点不走视图布局
-$apiActions = ['checkDatabaseConnection', 'createDBSchemaBaseData'];
+$apiActions = ['checkDatabaseConnection', 'createDBSchema', 'importBaseData'];
 $isApi = in_array($action, $apiActions, true);
 
 if (!$isApi) {
@@ -152,7 +153,46 @@ function checkDatabaseConnectionAction()
     }
 }
 
-function createDBSchemaBaseDataAction()
+/**
+ * AJAX 第 2 步：创建数据表
+ */
+function createDBSchemaAction()
+{
+    $token = \zap\http\Request::post('token', '');
+    if (!$token || !hash_equals(session()->get('install_token', ''), $token)) {
+        json_response(['code' => 1, 'msg' => '无效的请求令牌，请刷新页面重试']);
+    }
+
+    $db     = \zap\http\Request::post('db', []);
+    $driver = $db['driver'] ?? 'mysql';
+    $dbname = $db['dbname'] ?? 'zapcms';
+    $host   = $db['host'] ?? 'localhost';
+    $username = $db['username'] ?? 'root';
+    $password = $db['password'] ?? '';
+    $port   = $db['port'] ?? '3306';
+    $prefix = $db['prefix'] ?? '';
+
+    // 写临时数据库配置
+    writeTempDbConfig($driver, $host, $port, $dbname, $username, $password, $prefix);
+
+    try {
+        ob_start();
+        $schema = new \zapcms\support\CreateTables();
+        $schema->createSchema();
+        ob_get_clean();
+
+        json_response(['code' => 0, 'msg' => '数据表创建成功']);
+    } catch (PDOException $e) {
+        json_response(['code' => 1, 'msg' => '创建数据表失败', 'detail' => $e->getMessage()]);
+    } catch (\Throwable $e) {
+        json_response(['code' => 1, 'msg' => '创建数据表过程发生错误', 'detail' => $e->getMessage()]);
+    }
+}
+
+/**
+ * AJAX 第 3 步：导入初始数据 & 完成安装
+ */
+function importBaseDataAction()
 {
     $token = \zap\http\Request::post('token', '');
     if (!$token || !hash_equals(session()->get('install_token', ''), $token)) {
@@ -182,7 +222,79 @@ function createDBSchemaBaseDataAction()
         json_response(['code' => 1, 'msg' => implode('<br>', $errors)]);
     }
 
-    // 写临时数据库配置
+    // 写临时数据库配置（第二个请求中 config 可能已丢失，需重新写入）
+    writeTempDbConfig($driver, $host, $port, $dbname, $username, $password, $prefix);
+
+    try {
+        ob_start();
+        $schema = new \zapcms\support\CreateTables();
+        $schema->installBaseData();
+        $schema->installDemoData();
+        ob_get_clean();
+
+        // 写入最终数据库配置文件
+        if (is_file(config_path('database.php'))) {
+            rename(config_path('database.php'), config_path('backup.database.php'));
+        }
+        \zapcms\support\ZapConfig::createConfig(config('database'), config_path('database.php'));
+
+        \zapcms\services\Option::update('website.title', $websiteTitle);
+        \zapcms\services\Option::update('website.slogan', $websiteSlogan);
+        \zapcms\services\Option::update('website.email', $websiteEmail);
+
+        \zap\DB::update('admin', [
+            'username' => $websiteUsername,
+            'password' => \zap\util\Password::hash($websitePassword),
+        ], ['id' => 1]);
+
+        $lockDir = var_path('');
+        if (!is_dir($lockDir)) {
+            @mkdir($lockDir, 0755, true);
+        }
+        file_put_contents(var_path('install.lock'), date('Y-m-d H:i:s'));
+
+        $scheme  = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $baseUrl = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+        session()->set('install_done', true);
+        session()->set('install_admin_url', $baseUrl . Z_ADMIN_PREFIX);
+        session()->set('install_username', $websiteUsername);
+        session()->set('install_password', $websitePassword);
+
+        session()->forget('install_token');
+
+        json_response([
+            'code' => 0,
+            'msg'  => '安装完成！',
+            'data' => [
+                'admin_url' => $baseUrl . Z_ADMIN_PREFIX,
+                'home_url'  => $baseUrl,
+                'username'  => $websiteUsername,
+                'password'  => $websitePassword,
+            ],
+        ]);
+    } catch (PDOException $e) {
+        json_response(['code' => 1, 'msg' => '导入初始数据失败', 'detail' => $e->getMessage()]);
+    } catch (\Throwable $e) {
+        json_response(['code' => 1, 'msg' => '安装过程发生错误', 'detail' => $e->getMessage()]);
+    }
+}
+
+// ───────────────────────────────────────────────────────────
+//  辅助函数
+// ───────────────────────────────────────────────────────────
+
+/**
+ * 写入临时数据库配置，供建表 / 导入数据使用。
+ */
+function writeTempDbConfig(
+    string $driver,
+    string $host,
+    string $port,
+    string $dbname,
+    string $username,
+    string $password,
+    string $prefix
+): void {
     config_set('database', ['default' => 'default', 'connections' => []]);
 
     if ($driver === 'sqlite') {
@@ -207,55 +319,7 @@ function createDBSchemaBaseDataAction()
             'collate'  => 'utf8mb4_unicode_ci',
         ]);
     }
-
-    try {
-        ob_start();
-        $schema = new \zapcms\support\CreateTables();
-        $schema->createSchema();
-        $schema->installBaseData();
-        $schema->installDemoData();
-        $output = ob_get_clean();
-
-        if (is_file(config_path('database.php'))) {
-            rename(config_path('database.php'), config_path('backup.database.php'));
-        }
-        \zapcms\support\ZapConfig::createConfig(config('database'), config_path('database.php'));
-
-        \zapcms\services\Option::update('website.title', $websiteTitle);
-        \zapcms\services\Option::update('website.slogan', $websiteSlogan);
-        \zapcms\services\Option::update('website.email', $websiteEmail);
-
-        \zap\DB::update('admin', [
-            'username' => $websiteUsername,
-            'password' => \zap\util\Password::hash($websitePassword),
-        ], ['id' => 1]);
-
-        $lockDir = var_path('');
-        if (!is_dir($lockDir)) {
-            @mkdir($lockDir, 0755, true);
-        }
-        file_put_contents(var_path('install.lock'), date('Y-m-d H:i:s'));
-
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        session()->set('install_done', true);
-        session()->set('install_admin_url', $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . Z_ADMIN_PREFIX);
-        session()->set('install_username', $websiteUsername);
-        session()->set('install_password', $websitePassword);
-
-        session()->forget('install_token');
-
-        json_response(['code' => 0, 'msg' => '安装完成！']);
-
-    } catch (PDOException $e) {
-        json_response(['code' => 1, 'msg' => '创建表结构与导入数据失败', 'detail' => $e->getMessage()]);
-    } catch (\Throwable $e) {
-        json_response(['code' => 1, 'msg' => '安装过程发生错误', 'detail' => $e->getMessage()]);
-    }
 }
-
-// ───────────────────────────────────────────────────────────
-//  辅助函数
-// ───────────────────────────────────────────────────────────
 
 function buildEnvChecks(): array
 {

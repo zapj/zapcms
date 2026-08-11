@@ -95,8 +95,8 @@
                 <div class="install-console" id="installConsole"></div>
             </div>
 
-            <!-- 安装完成面板 (初始隐藏) -->
-            <div id="doneWrap" class="d-none text-center mt-3">
+            <!-- 安装完成面板 -->
+            <div id="doneWrap" class="d-none text-center">
                 <div class="mb-3">
                     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#198754" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
@@ -107,7 +107,7 @@
                 <div class="done-info text-start mx-auto mb-3" style="max-width: 360px;">
                     <dl class="mb-0">
                         <dt>后台地址</dt>
-                        <dd><a href="../<?= htmlspecialchars(Z_ADMIN_PREFIX) ?>" target="_blank"><?= htmlspecialchars(Z_ADMIN_PREFIX) ?></a></dd>
+                        <dd><a id="doneAdminUrl" href="#" target="_blank">—</a></dd>
                         <dt>用户名</dt>
                         <dd><code id="doneUser">—</code></dd>
                         <dt>密码</dt>
@@ -119,11 +119,11 @@
                     建议通过 FTP 或服务器管理面板删除 <code>/install/</code> 目录，防止被他人利用重复安装。
                 </div>
                 <div class="mt-4 d-flex justify-content-center gap-2">
-                    <a href="../<?= htmlspecialchars(Z_ADMIN_PREFIX) ?>" target="_blank" class="btn btn-success px-4">
+                    <a id="btnAdminUrl" href="#" target="_blank" class="btn btn-success px-4">
                         进入后台
                     </a>
-                    <a href="../" target="_blank" class="btn btn-outline-secondary px-4">
-                        访问网站首页
+                    <a id="btnHomeUrl" href="#" target="_blank" class="btn btn-outline-secondary px-4">
+                        打开网站
                     </a>
                 </div>
             </div>
@@ -201,42 +201,75 @@ function installZapCMS(){
         }
         log('数据库连接成功', 'ok');
 
-        // ── 第 2 步：建表写配置 ──
-        log('创建数据表 & 导入初始数据...', 'info');
+        // ── 第 2 步：创建数据表 ──
+        log('创建数据表...', 'info');
         return $.ajax({
-            url: 'index.php?action=createDBSchemaBaseData',
+            url: 'index.php?action=createDBSchema',
             data: $(form).serialize(),
             method: 'POST'
         });
     }).then(function(data){
         if (data.code !== 0) {
-            log('安装失败: ' + (data.msg || ''), 'err');
+            log('建表失败: ' + (data.msg || ''), 'err');
             if (data.detail) log('  ↳ ' + data.detail, 'err');
-            throw new Error('install_fail');
+            throw new Error('create_schema');
         }
         log('数据表创建完成', 'ok');
+
+        // ── 第 3 步：导入初始数据 ──
+        log('导入初始数据...', 'info');
+        return $.ajax({
+            url: 'index.php?action=importBaseData',
+            data: $(form).serialize(),
+            method: 'POST'
+        });
+    }).then(function(data){
+        if (data.code !== 0) {
+            log('导入数据失败: ' + (data.msg || ''), 'err');
+            if (data.detail) log('  ↳ ' + data.detail, 'err');
+            throw new Error('import_data');
+        }
         log('初始数据导入完成', 'ok');
         log('配置文件写入完成', 'ok');
         log('安装成功！', 'end');
 
-        // 隐藏表单字段和安装按钮，显示完成面板
+        // 用 API 返回数据填充完成面板
+        if (data && data.data) {
+            document.getElementById('doneAdminUrl').href  = data.data.admin_url;
+            document.getElementById('doneAdminUrl').textContent = data.data.admin_url;
+            document.getElementById('btnAdminUrl').href = data.data.admin_url;
+            document.getElementById('btnHomeUrl').href = data.data.home_url;
+            document.getElementById('doneUser').textContent = data.data.username;
+            document.getElementById('donePass').textContent = data.data.password;
+        }
+
+        // 标记步骤
+        var currentStep = document.querySelector('.step-item.active');
+        if (currentStep) currentStep.classList.remove('active');
+        var dbStep = document.querySelectorAll('.step-indicator .step-item')[2];
+        if (dbStep) {
+            dbStep.classList.add('done');
+            dbStep.querySelector('.step-num').textContent = '\u2713';
+        }
+        var doneStep = document.querySelectorAll('.step-indicator .step-item')[3];
+        if (doneStep) doneStep.classList.add('active');
+
+        // 隐藏日志 & 卡片标题
+        wrapEl.classList.add('d-none');
+        document.querySelector('.install-card .card-header').innerHTML = '<span class="check-pass me-2">\u2713</span> 安装完成';
         document.getElementById('installFooter').classList.add('d-none');
-        // 隐藏表单内除 consoleWrap 和 doneWrap 外的所有直接子元素
-        var cardBody = form.parentNode;
-        var children = cardBody.children;
+
+        // 隐藏表单输入区
+        var children = form.children;
         for (var i = 0; i < children.length; i++) {
             var el = children[i];
             if (el.id !== 'consoleWrap' && el.id !== 'doneWrap') {
                 el.classList.add('d-none');
             }
         }
-        // 显示完成面板
         document.getElementById('doneWrap').classList.remove('d-none');
-        document.getElementById('doneUser').textContent = adminUser;
-        document.getElementById('donePass').textContent = adminPass;
-
     }).catch(function(err){
-        if (err && (err.message === 'db_connect' || err.message === 'install_fail')) {
+        if (err && (err.message === 'db_connect' || err.message === 'create_schema' || err.message === 'import_data')) {
             // 已在上面记录了错误
         } else if (err && err.statusText === 'error') {
             // jQuery 网络层错误

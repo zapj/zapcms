@@ -208,6 +208,16 @@ class TableSchema
      */
     public function addPrimaryKey($columns): void
     {
+        // SQLite: skip if column already has autoincrement primary key
+        if ($this->driver === 'sqlite' && !is_array($columns)) {
+            foreach ($this->sql as $item) {
+                if ($item instanceof ColumnSchema
+                    && $item->getColumnName() === $columns
+                    && $item->hasAutoPk()) {
+                    return;
+                }
+            }
+        }
         $cols = $this->normaliseColumns($columns);
         $this->sql[] = "PRIMARY KEY ({$cols})";
     }
@@ -246,6 +256,7 @@ class TableSchema
         $tableBody   = [];
         $afterTable  = [];
         $isFirst     = true;
+        $autoPkCols  = []; // SQLite: columns whose autoincrement already carries PRIMARY KEY
 
         foreach ($this->sql as $item) {
             $str = (string)$item;
@@ -258,14 +269,26 @@ class TableSchema
             }
 
             // Separate CREATE INDEX statements (SQLite / PostgreSQL)
-            if (str_starts_with($str, 'CREATE INDEX')) {
+            if (substr($str, 0, 12) === 'CREATE INDEX') {
                 $afterTable[] = $str;
+                continue;
+            }
+
+            // SQLite: collect columns that already have autoincrement (implicit PK)
+            if ($this->driver === 'sqlite' && $item instanceof ColumnSchema) {
+                if ($item->hasAutoPk()) {
+                    $autoPkCols[] = $item->getColumnName();
+                }
+            }
+
+            // Skip duplicate PRIMARY KEY for SQLite autoincrement columns
+            if (!empty($autoPkCols) && $this->isAutoPkConstraint($str, $autoPkCols)) {
                 continue;
             }
 
             // Ensure trailing comma on each column / constraint line
             $trimmed = rtrim($str);
-            if ($trimmed !== '' && !str_ends_with($trimmed, ',')) {
+            if ($trimmed !== '' && substr($trimmed, -1) !== ',') {
                 $str = $trimmed . ',';
             }
             $tableBody[] = $str;
@@ -291,6 +314,28 @@ class TableSchema
     }
 
     // ─── Internals ───────────────────────────────────────────────
+
+    /**
+     * Does this string represent a PRIMARY KEY constraint whose columns
+     * are all already covered by SQLite autoincrement (implicit PK)?
+     */
+    protected function isAutoPkConstraint(string $str, array $autoPkCols): bool
+    {
+        if (substr($str, 0, 12) !== 'PRIMARY KEY(') {
+            return false;
+        }
+        preg_match('/PRIMARY KEY\((.+)\)/', $str, $m);
+        if (empty($m[1])) {
+            return false;
+        }
+        $cols = array_map('trim', explode(',', $m[1]));
+        foreach ($cols as $col) {
+            if (!in_array($col, $autoPkCols, true)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     protected function makeColumn(string $name, string $type): ColumnSchema
     {

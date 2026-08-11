@@ -243,7 +243,12 @@ class AlertTable
         $valueParts = [];
 
         foreach ($rows as $row) {
-            $values      = array_map(fn($v) => is_string($v) ? "'" . addslashes($v) . "'" : $v, $row);
+            $values      = array_map(function ($v) {
+                if ($v === null) {
+                    return 'NULL';
+                }
+                return is_string($v) ? "'" . addslashes($v) . "'" : $v;
+            }, $row);
             $valueParts[] = '(' . implode(',', $values) . ')';
         }
 

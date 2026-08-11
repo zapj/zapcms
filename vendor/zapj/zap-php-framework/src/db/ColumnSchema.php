@@ -118,6 +118,18 @@ class ColumnSchema
         return "{$this->columnName} {$type}{$nullable}{$this->default}{$unique}{$this->autoIncrement}{$comment}";
     }
 
+    // ─── Helpers ─────────────────────────────────────────────────
+
+    public function getColumnName(): string
+    {
+        return $this->columnName;
+    }
+
+    public function hasAutoPk(): bool
+    {
+        return strpos($this->autoIncrement, 'PRIMARY KEY') !== false;
+    }
+
     // ─── Data Type Mapping ───────────────────────────────────────
 
     public function columnDataType(): string
