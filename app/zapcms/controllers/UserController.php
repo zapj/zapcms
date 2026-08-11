@@ -677,15 +677,15 @@ class UserController extends AdminController
             }
         }
 
-        // 构建 extras JSON
+        // 构建 extras JSON（注意：循环变量不要与外层 $title/$permKey 同名，避免覆盖）
         $extrasJson = '{}';
         if (!empty($extras)) {
             $extrasMap = [];
-            foreach ($extras as $item) {
-                $key   = trim($item['key'] ?? '');
-                $title = trim($item['title'] ?? '');
-                if ($key !== '' && $title !== '') {
-                    $extrasMap[$key] = $title;
+            foreach ($extras as $row) {
+                $extraKey   = trim($row['key'] ?? '');
+                $extraTitle = trim($row['title'] ?? '');
+                if ($extraKey !== '' && $extraTitle !== '') {
+                    $extrasMap[$extraKey] = $extraTitle;
                 }
             }
             if (!empty($extrasMap)) {
