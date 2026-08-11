@@ -22,7 +22,7 @@ $this->beginBlock('content');
                                 </div>
                             </div>
                             <div class="col-sm-6">
-                                <h1 class="product-title"><?php echo htmlspecialchars($article['title']); ?></h1>
+                                <h2 class="product-title"><?php echo htmlspecialchars($article['title']); ?></h2>
                                 <?php if (!empty($article['excerpt'])): ?>
                                 <p class="product-excerpt text-muted"><?php echo htmlspecialchars($article['excerpt']); ?></p>
                                 <?php endif; ?>

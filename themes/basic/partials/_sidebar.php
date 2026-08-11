@@ -9,13 +9,20 @@ $catalogs = !empty($subCatalogList) ? $subCatalogList : ($state->subCatalogList 
 $currentId = $nodeId ?? $state->nodeId ?? 0;
 
 if (empty($catalogs)) return;
+// 获取 catlogPaths 第一个的title
+$firstCatalog = $state->catalogPaths[0];
+$firstCatalogTitle = $firstCatalog['title'] ?? '';
+
+$lastCatalog = end($state->catalogPaths);
+$lastCatalogId = $lastCatalog['id'] ?? 0;
+
 ?>
 <aside class="sidebar col-sm-3">
     <div class="widget">
-        <h4><?php echo $title; ?></h4>
+        <h4><?php echo e($firstCatalogTitle ?? $title); ?></h4>
         <ul>
             <?php foreach ($catalogs as $catalog): ?>
-                <li<?php if ($currentId == $catalog['id']) echo ' class="current"'; ?>>
+                <li<?php if ($lastCatalogId == $catalog['id']) echo ' class="current"'; ?>>
                     <a href="<?php echo site_url('/' . $catalog['slug']); ?>"
                        title="<?php echo htmlspecialchars($catalog['title']); ?>">
                         <?php echo htmlspecialchars($catalog['title']); ?>

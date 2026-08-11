@@ -2,6 +2,9 @@
 defined('IN_ZAPCMS') or die('No permission to access');
 $this->extend('layout/default');
 $this->beginBlock('content');
+/**
+ * @var array $article
+ */
 ?>
     <?php echo $this->partial('partials/_breadcrumb'); ?>
     <div class="container">

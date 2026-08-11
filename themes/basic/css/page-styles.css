@@ -24,10 +24,9 @@
 
 /* ─── 通用区块标题 ─── */
 .section-title {
-    font-size: 32px;
+    font-size: 24px;
     font-weight: 700;
     color: #333;
-    margin-bottom: 5px;
     text-align: center;
 }
 .section-title + .desc {
@@ -106,7 +105,9 @@
     background: #fff;
     border-radius: 20px;
     overflow: hidden;
+    margin-top: 30px;
     margin-bottom: 30px;
+    padding: 20px;
     box-shadow: 0 5px 30px rgba(0, 0, 0, 0.05);
     transition: all 0.4s ease;
 }
