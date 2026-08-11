@@ -148,6 +148,13 @@ class Startup
     {
         $segments = $urlPath === '' ? [] : array_map('urldecode', preg_split('#/#', trim($urlPath, '/'), -1, PREG_SPLIT_NO_EMPTY));
 
+        // ──── 模块前缀路由（配置文件驱动，O(1) 查表，零目录扫描）────
+        $prefixes = config('module.prefixes', []);
+        if (isset($segments[0], $prefixes[$segments[0]])) {
+            $this->dispatchModule($prefixes[$segments[0]], $segments);
+            return;
+        }
+
         if (isset($segments[0]) && preg_match('/^[a-z]+[-_0-9a-z]+$/i', $segments[0])) {
             $controllerClass = $this->namespace . '\\' . Router::convertToName($segments[0]) . 'Controller';
             if (class_exists($controllerClass)) {
@@ -164,6 +171,44 @@ class Startup
 
         $this->hasParams = !((count($segments) == 0));
         $this->router->params = array_values($segments);
+    }
+
+    /**
+     * 模块前缀路由分发
+     *   /{$prefix}/{$controller}/{$action}/{$params...}
+     *   → \mods\{$module}\controllers\{Controller}Controller@{$action}
+     */
+    private function dispatchModule(string $module, array $segments): void
+    {
+        unset($segments[0]);                          // 去掉 URL 前缀
+        $ctrl   = $segments[1] ?? 'Index';
+        $action = $segments[2] ?? 'index';
+        $action = lcfirst(Router::convertToName($action));
+        unset($segments[1], $segments[2]);            // 去掉 controller、action
+        $params = array_values($segments);
+
+        // 优先走模块入口类 Mod::invoke()
+        $modClass = "\\mods\\{$module}\\Mod";
+        if (class_exists($modClass)) {
+            $this->controllerClass = $modClass;
+            $this->method          = 'invoke';
+            $this->router->params  = [$module, $ctrl, $action, $params];
+            $this->hasParams       = true;
+            return;
+        }
+
+        // 走模块控制器
+        $controllerName = str_replace('-', '', ucwords($ctrl, '-'));
+        $className      = "\\mods\\{$module}\\controllers\\{$controllerName}Controller";
+        if (class_exists($className)) {
+            $this->controllerClass = $className;
+            $this->method          = $action;
+            $this->router->params  = $params;
+            $this->hasParams       = !empty($params);
+            return;
+        }
+
+        $this->notFound = true;
     }
 
     /**
