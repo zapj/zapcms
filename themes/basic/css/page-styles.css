@@ -224,9 +224,9 @@ ul.list-inline.post-meta li i { color: #667eea; }
 .sidebar .widget {
     background: #fff;
     border-radius: 12px;
-    padding: 25px;
+    padding: 10px;
     margin-bottom: 30px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    /* box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05); */
 }
 .sidebar .widget h4 {
     font-size: 20px;
