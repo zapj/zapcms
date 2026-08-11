@@ -63,14 +63,17 @@
                                 foreach ($extrasPerms as $key=>$value){
                                     ?>
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" id="extra_id_<?php echo $key;?>" value="<?php echo $key;?>" name="extras[<?php echo $item['perm_key'];?>][]"
+                                        <input class="form-check-input" type="checkbox" id="extra_<?php echo md5($item['perm_key'].'_'.$key);?>" value="<?php echo $key;?>" name="extras[<?php echo $item['perm_key'];?>][]"
                                             <?php if(isset($role_permissions[$item['perm_key']][$key])){echo 'checked';} ?>
                                         >
-                                        <label class="form-check-label" for="extra_id_<?php echo $key;?>"><?php echo $value;?></label>
+                                        <label class="form-check-label" for="extra_<?php echo md5($item['perm_key'].'_'.$key);?>"><?php echo $value;?></label>
                                     </div>
                                     <?php
                                 }
                                 ?>
+                                <small class="text-muted ms-1">（不勾选子项 = 仅拥有该菜单入口权限）</small>
+                            <?php }else{ ?>
+                                <small class="text-muted">— 拥有全部 —</small>
                             <?php } ?>
                             <?php
                             };

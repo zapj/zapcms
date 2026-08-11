@@ -524,7 +524,7 @@ class UserController extends AdminController
                 }
                 $extraStr = '';
                 if (isset($extras[$permKey]) && is_array($extras[$permKey])) {
-                    $extraStr = implode(',', array_keys($extras[$permKey]));
+                    $extraStr = implode(',', $extras[$permKey]);
                 }
                 DB::insert('roles_permissions', [
                     'role_id'         => $roleId,
