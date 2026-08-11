@@ -905,8 +905,8 @@ class UpdateBaseData extends Command
         $this->out->writeln("  -f\tForce mode: clear known system config tables, then reinstall");
         $this->out->writeln("  -d\tDemo mode: also clear and reinstall demo content tables");
         $this->out->writeln("  -e\tExport mode: dump ALL DB tables → CreateTables.php + CreateBaseData.php");
-        $this->out->writeln("    \t  php console zap:UpdateBaseData -e");
-        $this->out->writeln("    \t  php console zap:UpdateBaseData -e /path/dir");
+        $this->out->writeln("    \t  php console zapcms:UpdateBaseData -e");
+        $this->out->writeln("    \t  php console zapcms:UpdateBaseData -e /path/dir");
         $this->out->writeln("");
         $this->out->writeln("Usage:");
         $this->out->writeln("  php console zapcms:UpdateBaseData -f              # Update system config");
