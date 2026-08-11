@@ -8,6 +8,9 @@ $this->layout('layouts/common');
 
 $this->view->page_title = '系统设置';
 $this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置';
+/**
+ * @var array $options
+ */
 ?>
 
 <form id="zapForm">
