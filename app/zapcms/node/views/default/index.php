@@ -110,7 +110,7 @@ if (!empty($catalogPaths)) {
                                 <tr>
                                     <td class="text-muted small"><?php echo $row['id']; ?></td>
                                     <td>
-                                        <a href="<?php echo Url::action("Node@{$_controller}/edit/{$row['id']}", ['cid' => $catalogId]); ?>"
+                                        <a href="<?php echo Url::action("Node@{$row['node_type']}/edit/{$row['id']}", ['cid' => $catalogId]); ?>"
                                            class="text-decoration-none fw-semibold">
                                             <?php echo htmlspecialchars($row['title']); ?>
                                         </a>
@@ -148,7 +148,7 @@ if (!empty($catalogPaths)) {
                                                 <i class="fa fa-eye"></i>
                                             </a>
                                             <?php endif; ?>
-                                            <a href="<?php echo Url::action("Node@{$_controller}/edit/{$row['id']}", ['cid' => $catalogId]); ?>"
+                                            <a href="<?php echo Url::action("Node@{$row['node_type']}/edit/{$row['id']}", ['cid' => $catalogId]); ?>"
                                                class="btn btn-outline-primary" title="编辑">
                                                 <i class="fa fa-edit"></i>
                                             </a>
