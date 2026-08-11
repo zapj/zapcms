@@ -252,7 +252,8 @@ class UpdateBaseData extends Command
                 continue;
             }
             $colList = "'" . implode("', '", $idxCols) . "'";
-            $out[] = "            \$table->addIndex('{$idx['name']}',{$colList});";
+            $idxName = $this->buildIndexName($idxCols);
+                        $out[] = "            \$table->addIndex('{$idxName}',{$colList});";
         }
 
         $out[] = '';
@@ -848,6 +849,16 @@ class UpdateBaseData extends Command
     /**
      * Get the current database driver name.
      */
+    /**
+     * Generate a clean short index name from column list.
+     * e.g. ['object_id'] → 'idx_object_id'
+     *      ['category_id','status'] → 'idx_category_id_status'
+     */
+    protected function buildIndexName(array $columns): string
+    {
+        return 'idx_' . implode('_', $columns);
+    }
+
     protected function getDriver(): string
     {
         return DB::getPDO()->driver;

@@ -179,7 +179,11 @@ class TableSchema
     public function addIndex(string $indexName, $column): void
     {
         $columns = $this->normaliseColumns($column);
-        $this->sql[] = "INDEX {$indexName}({$columns})";
+        if ($this->driver === 'mysql') {
+            $this->sql[] = "INDEX {$indexName}({$columns})";
+        } else {
+            $this->sql[] = "CREATE INDEX IF NOT EXISTS {$indexName} ON {$this->tableName}({$columns});";
+        }
     }
 
     public function addForeign(string $indexName, string $column, string $refTable, string $refColumn,
@@ -239,16 +243,51 @@ class TableSchema
      */
     public function toSql(): string
     {
-        $this->sql[count($this->sql) - 1] .= rtrim(end($this->sql), ',');
+        $tableBody   = [];
+        $afterTable  = [];
+        $isFirst     = true;
 
-        // Build table engine / charset clause
-        if ($this->driver === 'mysql') {
-            $this->sql[] = ") ENGINE={$this->engine} DEFAULT CHARSET={$this->charset};";
-        } else {
-            $this->sql[] = ');';
+        foreach ($this->sql as $item) {
+            $str = (string)$item;
+
+            if ($isFirst) {
+                // "CREATE TABLE ... ("
+                $tableBody[] = $str;
+                $isFirst     = false;
+                continue;
+            }
+
+            // Separate CREATE INDEX statements (SQLite / PostgreSQL)
+            if (str_starts_with($str, 'CREATE INDEX')) {
+                $afterTable[] = $str;
+                continue;
+            }
+
+            // Ensure trailing comma on each column / constraint line
+            $trimmed = rtrim($str);
+            if ($trimmed !== '' && !str_ends_with($trimmed, ',')) {
+                $str = $trimmed . ',';
+            }
+            $tableBody[] = $str;
         }
 
-        return implode("\n", $this->sql);
+        // Remove trailing comma from last body line
+        $lastIdx = count($tableBody) - 1;
+        if ($lastIdx >= 0) {
+            $tableBody[$lastIdx] = rtrim($tableBody[$lastIdx], ",\r\n\t ");
+        }
+
+        // Close table
+        if ($this->driver === 'mysql') {
+            $tableBody[] = ") ENGINE={$this->engine} DEFAULT CHARSET={$this->charset};";
+        } else {
+            $tableBody[] = ');';
+        }
+
+        // Append CREATE INDEX statements after table creation
+        $tableBody = array_merge($tableBody, $afterTable);
+
+        return implode("\n", $tableBody);
     }
 
     // ─── Internals ───────────────────────────────────────────────
