@@ -142,6 +142,12 @@ if (!empty($catalogPaths)) {
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
+                                            <?php if (!empty($row['slug'])): ?>
+                                            <a href="<?php echo site_url('/' . $row['slug']); ?>"
+                                               target="_blank" class="btn btn-outline-secondary" title="前台查看">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                            <?php endif; ?>
                                             <a href="<?php echo Url::action("Node@{$_controller}/edit/{$row['id']}", ['cid' => $catalogId]); ?>"
                                                class="btn btn-outline-primary" title="编辑">
                                                 <i class="fa fa-edit"></i>
@@ -191,21 +197,35 @@ if (!empty($catalogPaths)) {
 
 <script>
 function deleteNode(id, title) {
-    if (confirm('确定要删除 "' + title + '" 吗？此操作不可恢复！')) {
-        var formData = new FormData();
-        formData.append('id', id);
-        fetch('<?php echo Url::action("Node@{$_controller}/remove"); ?>', {
-            method: 'POST',
-            body: formData
-        })
-        .then(function(r) { return r.json(); })
-        .then(function(res) {
-            if (res.code === 0) {
-                location.reload();
-            } else {
-                alert(res.msg || '删除失败');
+    Swal.fire({
+        title: '确认删除',
+        html: '确定要删除 <strong>"' + title + '"</strong> 吗？<br><span class="text-danger small">此操作不可恢复！</span>',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '<i class="fa fa-trash me-1"></i>确认删除',
+        cancelButtonText: '取消',
+        confirmButtonColor: '#dc3545',
+        reverseButtons: true
+    }).then((result) => {
+        if (!result.isConfirmed) return;
+        var load = Zap.loading('正在删除...');
+        $.ajax({
+            url: '<?php echo Url::action("Node@{$_controller}/remove"); ?>',
+            method: 'post',
+            data: {id: id},
+            dataType: 'json',
+            success: function(res) {
+                if (res.code === 0) {
+                    Swal.fire({title:'已删除',text:res.msg||'删除成功',icon:'success',timer:1500,showConfirmButton:false})
+                        .then(function(){ location.reload(); });
+                } else {
+                    Swal.fire({title:'删除失败',text:res.msg||'操作失败',icon:'error'});
+                }
+            },
+            error: function() {
+                Swal.fire({title:'删除失败',text:'网络异常，请稍后重试',icon:'error'});
             }
-        });
-    }
+        }).always(function(){ load.dispose(); });
+    });
 }
 </script>

@@ -12,6 +12,11 @@ register_scripts(base_url('/assets/plugins/zapuploader.js'));
 
 $this->view->page_title = !empty($sub_title) ? $sub_title : ($title ?? '编辑');
 $this->view->page_subtitle = $title ?? '';
+
+/**
+ * @var \zapcms\models\Node $node
+ * @var int $catalogId
+ */
 ?>
 <form id="zapForm" method="post">
     <input type="hidden" value="<?php echo $node->id; ?>" name="node_id">
@@ -48,6 +53,24 @@ $this->view->page_subtitle = $title ?? '';
                                 <label for="node_title" class="form-label">标题 <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control form-control-sm" name="node[title]" id="node_title"
                                        placeholder="请输入标题" required value="<?php echo $node->title; ?>">
+                            </div>
+                            <div class="mb-2 row g-2">
+                                <div class="col">
+                                    <label for="node_slug" class="form-label">
+                                        URL 别名 <span class="text-muted small">(slug)</span>
+                                    </label>
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text text-muted small"><?php echo site_url('/'); ?></span>
+                                        <input type="text" class="form-control form-control-sm font-monospace" name="node[slug]"
+                                               id="node_slug" placeholder="自动生成" value="<?php echo $node->slug; ?>">
+                                        <button class="btn btn-outline-secondary btn-sm" type="button" onclick="generateSlug()" title="根据标题自动生成">
+                                            <i class="fa fa-magic"></i>
+                                        </button>
+                                    </div>
+                                    <div id="slug_preview" class="form-text small text-success" style="display:none;">
+                                        <i class="fa fa-link me-1"></i><span></span>
+                                    </div>
+                                </div>
                             </div>
                             <div class="mb-2">
                                 <label for="node_content" class="form-label">内容</label>
@@ -212,6 +235,33 @@ function removeImage() {
     $('#node-image').val('');
     $('#node-image-thumb').attr('src','').hide();
 }
+function generateSlug() {
+    const title = $('#node_title').val().trim();
+    if (!title) return;
+    // 简单生成 slug：拼音化或直接使用英文/数字
+    const slug = title.toLowerCase()
+        .replace(/[^\w\u4e00-\u9fa5]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    $('#node_slug').val(slug);
+    updateSlugPreview();
+}
+function updateSlugPreview() {
+    const slug = $('#node_slug').val().trim();
+    const preview = $('#slug_preview');
+    if (slug) {
+        preview.find('span').text('<?php echo site_url('/'); ?>' + slug);
+        preview.show();
+    } else {
+        preview.hide();
+    }
+}
+$(function(){
+    $('#node_slug').on('input', updateSlugPreview);
+    $('#node_title').on('change', function(){
+        if (!$('#node_slug').val()) generateSlug();
+    });
+    updateSlugPreview();
+});
 </script>
 <?php
 \zapcms\services\Editor::instance()->create('.summernote', [

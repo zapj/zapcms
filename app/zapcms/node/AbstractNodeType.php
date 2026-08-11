@@ -77,7 +77,19 @@ class AbstractNodeType
             $node['update_time'] = time();
             $node['pub_time'] = strtotime($node['pub_time']) ?: time();
             $node['content'] = HtmlXss::clean($node['content']);
-//            $node['slug'] = Str::slug($node['title']);
+            // slug：优先使用手动输入，否则从标题生成
+            if (!empty($node['slug'])) {
+                $node['slug'] = Str::slug($node['slug']);
+            } elseif (!empty($node['title'])) {
+                $node['slug'] = Str::slug($node['title']);
+            }
+            // slug 唯一性校验
+            if (!empty($node['slug'])) {
+                $exist = DB::table('node')->where('id','!=',$id)->where('slug',$node['slug'])->fetchColumn();
+                if ($exist) {
+                    $node['slug'] = $node['slug'] . '-' . $id;
+                }
+            }
             NodeRelation::delete(['node_id'=>$id]);
             foreach ($catalogArray as $catalog_id=>$level){
                 NodeRelation::create(['node_id'=>$id,'catalog_id'=>$catalog_id,'level'=>$level]);
@@ -103,9 +115,19 @@ class AbstractNodeType
         if(Request::isPost()){
             $node = Request::post('node');
             $catalogArray = Request::post('catalog',[]);
-            $node['node_type'] = $this->nodeType;
+        $node['node_type'] = $this->nodeType;
             $node['add_time'] = time();
-            $node['slug'] = Str::slug($node['title']);
+            // slug：优先使用手动输入，否则从标题生成
+            if (!empty($node['slug'])) {
+                $node['slug'] = Str::slug($node['slug']);
+            } else {
+                $node['slug'] = Str::slug($node['title']);
+            }
+            // slug 唯一性校验
+            $exist = DB::table('node')->where('slug',$node['slug'])->fetchColumn();
+            if ($exist) {
+                $node['slug'] = $node['slug'] . '-' . time();
+            }
             $node['update_time'] = time();
             $node['content'] = HtmlXss::clean($node['content']);
             $node['pub_time']  = strtotime($node['pub_time']) ?: time();
