@@ -34,19 +34,19 @@ use zap\DB;
 class Category
 {
     //表名
-    protected $table;
+    protected string $table;
     //分类Path
-    protected $pathColumn = 'path';
+    protected string $pathColumn = 'path';
     //父级ID列名
-    protected $parentColumn = 'pid';
+    protected string $parentColumn = 'pid';
 
-    protected $primaryKey = 'id';
+    protected string $primaryKey = 'id';
     //分类层级
-    protected $levelColumn = 'level';
+    protected string $levelColumn = 'level';
 
-    protected $defaultLevel = 1;
+    protected int $defaultLevel = 1;
 
-    public function __construct($table, $primaryKey = 'id', $parentColumn = 'pid', $pathColumn = 'path', $levelColumn = 'level')
+    public function __construct(string $table, string $primaryKey = 'id', string $parentColumn = 'pid', string $pathColumn = 'path', string $levelColumn = 'level')
     {
         $this->table = $table;
         $this->primaryKey = $primaryKey;
