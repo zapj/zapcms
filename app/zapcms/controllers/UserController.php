@@ -3,6 +3,7 @@
 namespace zapcms\controllers;
 
 use zapcms\controllers\AdminController;
+use zapcms\auth\Permissions;
 use zapcms\services\Auth;
 use zapcms\models\Admin;
 use zapcms\models\AdminLog;
@@ -588,9 +589,7 @@ class UserController extends AdminController
      */
     public function permissions()
     {
-        $permissions = DB::table('permissions')->orderBy('perm_id')->fetchAll();
-        // 构建树形排序：按 pid/level 分层排列
-        $tree = $this->buildPermissionTree($permissions);
+        $tree = Permissions::instance()->getFlatTree();
 
         $pageHelper = new Pagination(1, 999, []);
         $pageHelper->setTotal(count($tree));
@@ -745,40 +744,42 @@ class UserController extends AdminController
             return Response::json(['code' => 1, 'msg' => '没有有效的权限 ID']);
         }
 
-        // 同时删除子权限
-        $allIds = $ids;
-        foreach ($ids as $pid) {
-            $children = DB::table('permissions')->where('pid', $pid)->fetchAll();
-            foreach ($children as $child) {
-                $allIds[] = (int)$child['perm_id'];
+        // 删除前收集所有被删除的 perm_key（含子权限）
+        $permKeys = [];
+        foreach ($ids as $id) {
+            $perm = Permissions::instance()->get($id);
+            if ($perm && !empty($perm['perm_key'])) {
+                $permKeys[] = $perm['perm_key'];
             }
         }
-        $allIds = array_unique($allIds);
-
-        // 删除前先收集所有 perm_key
-        $permKeys = [];
-        if (!empty($allIds)) {
-            $placeholders = implode(',', array_fill(0, count($allIds), '?'));
-            $rows = DB::query("SELECT perm_key FROM ?t WHERE perm_id IN ({$placeholders})", ['permissions', ...$allIds])->fetchAll();
-            foreach ($rows as $r) {
-                if (!empty($r['perm_key'])) {
-                    $permKeys[] = $r['perm_key'];
+        // 收集子权限的 perm_key（Categories::remove 会级联删除子权限）
+        $allPerms = Permissions::instance()->getFlatTree();
+        foreach ($allPerms as $perm) {
+            foreach ($ids as $pid) {
+                $prefix = $pid . ',';
+                // path 格式：祖先看父级 ID，或者自己的 pid 就是目标 ID
+                $inPath = '/' . $pid . '/' === '/' . ($perm['path'] ?? '') . '/' || 
+                          strpos(',' . ($perm['path'] ?? '') . ',', ',' . $pid . ',') !== false ||
+                          (int)$perm['pid'] === $pid;
+                if ($perm['perm_id'] !== $pid && $inPath && !empty($perm['perm_key'])) {
+                    $permKeys[] = $perm['perm_key'];
                 }
             }
-            $permKeys = array_unique($permKeys);
+        }
+        $permKeys = array_unique($permKeys);
+
+        // 使用 Permissions 模型执行级联删除
+        foreach ($ids as $id) {
+            Permissions::instance()->remove($id);
         }
 
-        // 删除权限
-        $placeholders = implode(',', array_fill(0, count($allIds), '?'));
-        DB::query("DELETE FROM ?t WHERE perm_id IN ({$placeholders})", ['permissions', ...$allIds]);
-
-        // 清理关联表中的权限
+        // 清理 roles_permissions 中的关联记录
         if (!empty($permKeys)) {
             $pkPlaceholders = implode(',', array_fill(0, count($permKeys), '?'));
             DB::query("DELETE FROM ?t WHERE perm_key IN ({$pkPlaceholders})", ['roles_permissions', ...$permKeys]);
         }
 
-        AdminLog::log('删除权限', '删除了 ' . count($allIds) . ' 个权限');
+        AdminLog::log('删除权限', '删除了 ' . count($ids) . ' 个权限');
 
         return Response::json(['code' => 0, 'msg' => '删除成功']);
     }
@@ -809,22 +810,6 @@ class UserController extends AdminController
             }
         }
         return $out;
-    }
-
-    /**
-     * 将扁平权限数组转成树形排序列表
-     */
-    private function buildPermissionTree(array $items, int $pid = 0, int $level = 0): array
-    {
-        $result = [];
-        foreach ($items as $item) {
-            if ((int)$item['pid'] === $pid) {
-                $item['level'] = $level;
-                $result[] = $item;
-                $result = array_merge($result, $this->buildPermissionTree($items, (int)$item['perm_id'], $level + 1));
-            }
-        }
-        return $result;
     }
 
     /**

@@ -73,7 +73,6 @@ class UpdateBaseData extends Command
         $truncateTables = [
             'admin_menu',
             'permissions',
-            'permissions_path',
             'roles_permissions',
             'admin_roles',
         ];
@@ -95,7 +94,7 @@ class UpdateBaseData extends Command
 
         // Reset auto-increment for MySQL / PGSQL
         if ($driver === 'pgsql') {
-            foreach (['admin_menu', 'permissions', 'permissions_path', 'node_types'] as $t) {
+            foreach (['admin_menu', 'permissions', 'node_types'] as $t) {
                 $seq = "{$t}_id_seq";
                 $pdo->rawExec("ALTER SEQUENCE {$seq} RESTART WITH 1");
             }
@@ -910,10 +909,10 @@ class UpdateBaseData extends Command
         $this->out->writeln("    \t  php console zap:UpdateBaseData -e /path/dir");
         $this->out->writeln("");
         $this->out->writeln("Usage:");
-        $this->out->writeln("  php console zap:UpdateBaseData -f              # Update system config");
-        $this->out->writeln("  php console zap:UpdateBaseData -f -d           # Update config + demo data");
-        $this->out->writeln("  php console zap:UpdateBaseData -e              # Export schema + data classes");
-        $this->out->writeln("  php console zap:UpdateBaseData -e /my/dir      # Export to custom directory");
+        $this->out->writeln("  php console zapcms:UpdateBaseData -f              # Update system config");
+        $this->out->writeln("  php console zapcms:UpdateBaseData -f -d           # Update config + demo data");
+        $this->out->writeln("  php console zapcms:UpdateBaseData -e              # Export schema + data classes");
+        $this->out->writeln("  php console zapcms:UpdateBaseData -e /my/dir      # Export to custom directory");
         return self::SUCCESS;
     }
 }
