@@ -17,6 +17,7 @@ class UpdateController extends AdminController
 
     public function __construct()
     {
+        parent::__construct();
         $this->updater = new ZapUpdate();
     }
 

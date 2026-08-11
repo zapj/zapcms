@@ -20,6 +20,7 @@ class PluginController extends AdminController
 
     public function __construct()
     {
+        parent::__construct();
         $this->pm      = new ZapPackageManager();
         $this->updater = new ZapUpdate();
     }

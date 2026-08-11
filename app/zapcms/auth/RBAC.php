@@ -44,9 +44,8 @@ class RBAC
         foreach ([$version, $version - 1] as $v) {
             if ($v >= 0) {
                 Cache::delete("rbac:v{$v}:roles:{$userId}");
+                Cache::delete("rbac:v{$v}:role_rows:{$userId}");
                 Cache::delete("rbac:v{$v}:perms:{$userId}");
-                // extras 是 map 存储，key 里包含 permKey，逐个清除太麻烦
-                // 直接干掉 permsKey 即可，下次 rebuild 全刷新
             }
         }
         Cache::delete("rbac:extras:{$userId}");
@@ -167,7 +166,7 @@ class RBAC
                 ->fetchAll(FETCH_ASSOC);
         }
 
-        $key = $this->cacheKey('roles');
+        $key = $this->cacheKey('role_rows');
         return Cache::get($key, function () use ($userId) {
             return DB::table('roles', 'r')
                 ->join('admin_roles', 'ar', 'r.role_id=ar.role_id')
@@ -222,8 +221,12 @@ class RBAC
 
     public function isSuperAdmin(?int $userId = null): bool
     {
-        $roleIds = $this->getRoleIds($userId);
-        return in_array(1, $roleIds, true);
+        // 直接查 DB 避免缓存污染导致误判
+        $uid = $userId ?? $this->getUserId();
+        return DB::table('admin_roles')
+            ->where('admin_id', $uid)
+            ->where('role_id', 1)
+            ->exists();
     }
 
     /**
@@ -244,10 +247,26 @@ class RBAC
         }
 
         $key = $this->cacheKey('roles');
-        $this->roleIds = Cache::get($key, function () use ($userId) {
-            $rows = DB::table('admin_roles')->where('admin_id', $userId)->fetchAll();
-            return array_column($rows, 'role_id');
-        }, $this->cacheTtl);
+
+        // 先尝试从缓存读取，并验证格式（修复旧版 roles() 污染缓存的问题）
+        $cached = Cache::get($key);
+        if (is_array($cached) && !empty($cached)) {
+            $first = reset($cached);
+            // 如果缓存数据是关联数组（被旧版 roles() 污染），丢弃并重新查询
+            if (is_array($first)) {
+                Cache::delete($key);
+                $cached = null;
+            }
+        }
+
+        if (is_array($cached)) {
+            $this->roleIds = $cached;
+        } else {
+            $this->roleIds = Cache::get($key, function () use ($userId) {
+                $rows = DB::table('admin_roles')->where('admin_id', $userId)->fetchAll();
+                return array_column($rows, 'role_id');
+            }, $this->cacheTtl);
+        }
 
         return $this->roleIds;
     }
@@ -293,8 +312,8 @@ class RBAC
 
         $placeholders = implode(',', array_fill(0, count($roleIds), '?'));
         $rows = DB::query(
-            "SELECT DISTINCT perm_key FROM ?t WHERE role_id IN ({$placeholders})",
-            ['roles_permissions', ...$roleIds]
+            "SELECT DISTINCT perm_key FROM {roles_permissions} WHERE role_id IN ({$placeholders})",
+            $roleIds
         )->fetchAll();
         return array_column($rows, 'perm_key');
     }
@@ -347,8 +366,8 @@ class RBAC
 
         $placeholders = implode(',', array_fill(0, count($roleIds), '?'));
         $rows = DB::query(
-            "SELECT perm_key, extras FROM ?t WHERE role_id IN ({$placeholders})",
-            ['roles_permissions', ...$roleIds]
+            "SELECT perm_key, extras FROM {roles_permissions} WHERE role_id IN ({$placeholders})",
+            $roleIds
         )->fetchAll();
 
         $result = [];
@@ -373,8 +392,8 @@ class RBAC
             $pkList = array_keys($result);
             $pkp = implode(',', array_fill(0, count($pkList), '?'));
             $permRows = DB::query(
-                "SELECT perm_key, extras FROM ?t WHERE perm_key IN ({$pkp})",
-                ['permissions', ...$pkList]
+                "SELECT perm_key, extras FROM {permissions} WHERE perm_key IN ({$pkp})",
+                $pkList
             )->fetchAll();
 
             $defined = [];

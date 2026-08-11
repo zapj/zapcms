@@ -38,7 +38,36 @@ body.sidebar-mini.sidebar-open .docs-btn-text {
                 use zapcms\services\AdminMenu;
 
                 $menuTree = AdminMenu::instance()->getTreeArray();
-                
+
+                // 根据用户权限过滤菜单（约定：admin_menu_{id} 对应菜单项权限 key）
+                $rbac = app()->rbac;
+                if ($rbac !== null && !$rbac->isSuperAdmin()) {
+                    $visibleTree = [];
+                    foreach ($menuTree as $group) {
+                        $groupId = $group['id'] ?? 0;
+                        if (!$rbac->check("admin_menu_{$groupId}")) {
+                            continue;
+                        }
+
+                        $rawChildren = $group['children'] ?? [];
+                        $visibleChildren = [];
+                        foreach ($rawChildren as $child) {
+                            $childId = $child['id'] ?? 0;
+                            if ($rbac->check("admin_menu_{$childId}")) {
+                                $visibleChildren[] = $child;
+                            }
+                        }
+                        $group['children'] = $visibleChildren;
+
+                        // 分组没有 link_to 且所有子项都被过滤掉 → 隐藏该分组
+                        if (empty($visibleChildren) && empty($group['link_to'])) {
+                            continue;
+                        }
+
+                        $visibleTree[] = $group;
+                    }
+                    $menuTree = $visibleTree;
+                }
 
                 foreach ($menuTree as $group):
                     $groupTitle = $group['title'] ?? $group['name'] ?? '';

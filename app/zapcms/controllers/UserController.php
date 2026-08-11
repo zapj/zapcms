@@ -233,8 +233,8 @@ class UserController extends AdminController
         }
 
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
-        DB::query("DELETE FROM ?t WHERE id IN ({$placeholders})", ['admin', ...$ids]);
-        DB::query("DELETE FROM ?t WHERE admin_id IN ({$placeholders})", ['admin_roles', ...$ids]);
+        DB::query("DELETE FROM {admin} WHERE id IN ({$placeholders})", $ids);
+        DB::query("DELETE FROM {admin_roles} WHERE admin_id IN ({$placeholders})", $ids);
 
         AdminLog::log('删除管理员', '删除了 ' . count($ids) . ' 个管理员');
 
@@ -581,9 +581,9 @@ class UserController extends AdminController
         }
 
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
-        DB::query("DELETE FROM ?t WHERE role_id IN ({$placeholders})", ['roles', ...$ids]);
-        DB::query("DELETE FROM ?t WHERE role_id IN ({$placeholders})", ['roles_permissions', ...$ids]);
-        DB::query("DELETE FROM ?t WHERE role_id IN ({$placeholders})", ['admin_roles', ...$ids]);
+        DB::query("DELETE FROM {roles} WHERE role_id IN ({$placeholders})", $ids);
+        DB::query("DELETE FROM {roles_permissions} WHERE role_id IN ({$placeholders})", $ids);
+        DB::query("DELETE FROM {admin_roles} WHERE role_id IN ({$placeholders})", $ids);
 
         AdminLog::log('删除角色', '删除了 ' . count($ids) . ' 个角色');
 
@@ -790,7 +790,7 @@ class UserController extends AdminController
         // 清理 roles_permissions 中的关联记录
         if (!empty($permKeys)) {
             $pkPlaceholders = implode(',', array_fill(0, count($permKeys), '?'));
-            DB::query("DELETE FROM ?t WHERE perm_key IN ({$pkPlaceholders})", ['roles_permissions', ...$permKeys]);
+            DB::query("DELETE FROM {roles_permissions} WHERE perm_key IN ({$pkPlaceholders})", $permKeys);
         }
 
         AdminLog::log('删除权限', '删除了 ' . count($ids) . ' 个权限');
