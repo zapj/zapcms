@@ -53,6 +53,11 @@ class Node extends Model
         }
     }
 
+    public static function getTypeTitle($nodeType): string
+    {
+        return \zapcms\services\NodeType::getTitle($nodeType) ?: $nodeType;
+    }
+
     public function getStatus(): array
     {
         return [

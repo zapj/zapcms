@@ -34,7 +34,7 @@ class NodeType
         return static::$nodeTypes;
     }
 
-    public static function getKeyPair($key = 'type_name',$value = 'title')
+    public static function getKeyPair(string $key = 'type_name', string $value = 'title')
     {
         return DB::table('node_types')->select([$key,$value])
             ->where('status',1)
@@ -43,7 +43,7 @@ class NodeType
     }
 
 
-    public static function getNodeType($type_name,$key = null)
+    public static function getNodeType(string $type_name, ?string $key = null)
     {
         if(is_null(static::$nodeTypes)){
             static::getNodeTypes();
@@ -52,18 +52,18 @@ class NodeType
     }
 
 
-    public static function getTitle($type_name)
+    public static function getTitle(string $type_name)
     {
        return static::getNodeType($type_name,'title');
     }
 
-    public static function getClass($type_name)
+    public static function getClass(string $type_name)
     {
         $node_type = static::getNodeType($type_name,'node_type');
         return $node_type ?? AbstractNodeType::class;
     }
 
-    public static function getID($type_name)
+    public static function getID(string $type_name)
     {
         return static::getNodeType($type_name,'type_id');
     }

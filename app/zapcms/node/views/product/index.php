@@ -98,7 +98,7 @@ if (!empty($catalogPaths)) {
                                 <tr>
                                     <th style="width:60px">ID</th>
                                     <th>标题</th>
-                                    <th style="width:120px">所属栏目</th>
+                                    <th style="width:120px">类型</th>
                                     <th style="width:100px">状态</th>
                                     <th style="width:140px">发布时间</th>
                                     <th style="width:130px">操作</th>
@@ -118,14 +118,7 @@ if (!empty($catalogPaths)) {
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <?php if (!empty($row['catalog_name'])): ?>
-                                            <span class="badge bg-info text-dark"><?php echo htmlspecialchars($row['catalog_name']); ?></span>
-                                        <?php elseif (!empty($row['catalog_id'])): ?>
-                                            <?php $cat = $menu->get($row['catalog_id']); ?>
-                                            <?php echo $cat ? '<span class="badge bg-info text-dark">' . htmlspecialchars($cat['title']) . '</span>' : '<span class="text-muted">-</span>'; ?>
-                                        <?php else: ?>
-                                            <span class="text-muted">-</span>
-                                        <?php endif; ?>
+                                        <span class="badge bg-info text-dark"><?php echo \zapcms\models\Node::getTypeTitle($row['node_type']); ?></span>
                                     </td>
                                     <td>
                                         <?php $status = $row['status'] ?? 'draft'; ?>
