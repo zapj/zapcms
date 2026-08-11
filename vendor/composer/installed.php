@@ -39,6 +39,15 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
+        'overtrue/pinyin' => array(
+            'pretty_version' => '3.0.6',
+            'version' => '3.0.6.0',
+            'reference' => '3b781d267197b74752daa32814d3a2cf5d140779',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../overtrue/pinyin',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'phpmailer/phpmailer' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',

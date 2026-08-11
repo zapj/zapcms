@@ -4,10 +4,10 @@ namespace zapcms\controllers;
 
 use zapcms\controllers\AdminController;
 use zapcms\services\Catalog;
+use zapcms\services\SlugHelper;
 use zap\DB;
 use zap\http\Request;
 use zap\http\Response;
-use zap\util\Str;
 use zap\view\View;
 
 /*
@@ -45,7 +45,7 @@ class CatalogController extends AdminController
         if($catalog['node_type'] == 'link-url'){
             $catalog['slug'] = '--zap-link-url';
         }else{
-            $catalog['slug'] = Str::slug(empty($catalog['slug']) ? $catalog['title'] : $catalog['slug']);
+            $catalog['slug'] = SlugHelper::generate(empty($catalog['slug']) ? $catalog['title'] : $catalog['slug']);
         }
 
         $catalog['show_position'] = join(',', $catalog['show_position'] ?? []);

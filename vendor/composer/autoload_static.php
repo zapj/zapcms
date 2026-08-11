@@ -52,6 +52,10 @@ class ComposerStaticInit501184272d4d7ed612cf428f1bb86753
             'Psr\\Log\\' => 8,
             'PHPMailer\\PHPMailer\\' => 20,
         ),
+        'O' => 
+        array (
+            'Overtrue\\Pinyin\\' => 16,
+        ),
         'M' => 
         array (
             'Monolog\\' => 8,
@@ -102,6 +106,10 @@ class ComposerStaticInit501184272d4d7ed612cf428f1bb86753
         'PHPMailer\\PHPMailer\\' => 
         array (
             0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
+        ),
+        'Overtrue\\Pinyin\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/overtrue/pinyin/src',
         ),
         'Monolog\\' => 
         array (

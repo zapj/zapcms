@@ -49,6 +49,7 @@ class CreateBaseData
                 ['id' => '12', 'title' => '固定链接设置', 'pid' => '3', 'path' => '3,12,', 'level' => '2', 'icon' => 'fa-solid fa-link', 'link_to' => 'System@permalink', 'link_target' => '_self', 'link_type' => 'action', 'active_rule' => '(system/permalink.*)', 'show_position' => '1,2', 'sort_order' => '5', 'updated_at' => '1786074715', 'created_at' => '1786074715'],
                 ['id' => '13', 'title' => '代码编辑器', 'pid' => '3', 'path' => '3,13,', 'level' => '2', 'icon' => 'fa-solid fa-terminal', 'link_to' => 'Development', 'link_target' => '_self', 'link_type' => 'action', 'active_rule' => '(development[/.]?.*)', 'show_position' => '1,2', 'sort_order' => '8', 'updated_at' => '1786360533', 'created_at' => '1786332308'],
                 ['id' => '14', 'title' => '数据库管理', 'pid' => '3', 'path' => '3,14,', 'level' => '2', 'icon' => 'fa-solid fa-database', 'link_to' => 'System@database', 'link_target' => '_self', 'link_type' => 'action', 'active_rule' => '(system/database|system/backup-.*)', 'show_position' => '', 'sort_order' => '6', 'updated_at' => '1786359365', 'created_at' => '1786359365'],
+                ['id' => '15', 'title' => 'Slug 生成设置', 'pid' => '3', 'path' => '3,15,', 'level' => '2', 'icon' => 'fa-solid fa-language', 'link_to' => 'System@slugSettings', 'link_target' => '_self', 'link_type' => 'action', 'active_rule' => '(system/slug-settings.*)', 'show_position' => '1,2', 'sort_order' => '5.4', 'updated_at' => '1786074715', 'created_at' => '1786074715'],
             ]);
         });
 

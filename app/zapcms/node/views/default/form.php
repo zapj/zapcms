@@ -210,6 +210,13 @@ $this->view->page_subtitle = $title ?? '';
 </style>
 
 <script>
+    // Slug 配置（从后端获取）
+    var slugConfig = {
+        separator: '<?php echo option('slug.separator', '-'); ?>',
+        style: '<?php echo option('slug.style', 'default'); ?>',
+        ajaxUrl: '<?php echo url_action('System@ajaxSlug'); ?>'
+    };
+
 $(function(){
     $.datetimepicker.setLocale('zh');
     $('.datetimepicker').datetimepicker({ format: 'Y-m-d H:i:s' });
@@ -236,20 +243,32 @@ function removeImage() {
     $('#node-image-thumb').attr('src','').hide();
 }
 function generateSlug() {
-    const title = $('#node_title').val().trim();
+    var title = $('#node_title').val().trim();
     if (!title) return;
-    // 简单生成 slug：拼音化或直接使用英文/数字
-    const slug = title.toLowerCase()
-        .replace(/[^\w\u4e00-\u9fa5]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-    $('#node_slug').val(slug);
-    updateSlugPreview();
+    var sep = slugConfig.separator;
+
+    if (slugConfig.style === 'pinyin' || slugConfig.style === 'translate') {
+        // 拼音/翻译模式：通过 AJAX 从服务端生成
+        $.getJSON(slugConfig.ajaxUrl, { title: title }, function(res) {
+            if (res.code === 0 && res.slug) {
+                $('#node_slug').val(res.slug);
+                updateSlugPreview();
+            }
+        });
+    } else {
+        // 默认模式：客户端生成（保留中文，清理特殊字符）
+        var slug = title.toLowerCase();
+        slug = slug.replace(/[^\w\u4e00-\u9fa5]+/g, sep);
+        slug = slug.replace(new RegExp('^' + sep.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '+|' + sep.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '+$', 'g'), '');
+        $('#node_slug').val(slug);
+        updateSlugPreview();
+    }
 }
 function updateSlugPreview() {
-    const slug = $('#node_slug').val().trim();
-    const preview = $('#slug_preview');
+    var slug = $('#node_slug').val().trim();
+    var preview = $('#slug_preview');
     if (slug) {
-        preview.find('span').text('<?php echo site_url('/'); ?>' + slug);
+        preview.find('span').text('<?php echo site_url("/"); ?>' + slug);
         preview.show();
     } else {
         preview.hide();

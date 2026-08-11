@@ -6,6 +6,7 @@ use zapcms\helpers\Database;
 use zapcms\controllers\AdminController;
 use zapcms\services\Mailer;
 use zapcms\services\Option;
+use zapcms\services\SlugHelper;
 use zap\http\Request;
 use zap\http\Response;
 use zap\view\View;
@@ -262,6 +263,91 @@ class SystemController extends AdminController
         ];
 
         \view('system.sitemap', $data);
+    }
+
+    /**
+     * Slug 生成设置页面
+     */
+    public function slugSettings()
+    {
+        if (Request::isPost()) {
+            $options = Request::post('options', []);
+
+            $allowedKeys = ['slug.separator', 'slug.style', 'slug.max_length', 'slug.baidu_appid', 'slug.baidu_key'];
+
+            foreach ($options as $key => $value) {
+                if (!in_array($key, $allowedKeys, true)) {
+                    continue;
+                }
+                // 基本校验
+                if ($key === 'slug.separator') {
+                    $value = in_array($value, ['-', '_'], true) ? $value : '-';
+                }
+                if ($key === 'slug.style') {
+                    $value = in_array($value, ['default', 'pinyin', 'translate'], true) ? $value : 'default';
+                }
+                if ($key === 'slug.max_length') {
+                    $value = max(0, (int) $value);
+                }
+                if ($key === 'slug.baidu_appid' || $key === 'slug.baidu_key') {
+                    $value = trim($value);
+                }
+
+                $existing = Option::get($key);
+                if ($existing !== null) {
+                    Option::update($key, (string) $value, 0, 1);
+                } else {
+                    Option::add($key, (string) $value, 0, 1);
+                }
+            }
+
+            Response::json(['code' => 0, 'msg' => 'Slug 设置已保存']);
+        }
+
+        $data = [
+            'page_title'     => 'Slug 生成设置',
+            'page_subtitle'  => '配置 URL 别名生成规则，支持拼音和翻译',
+            'breadcrumbs'    => [
+                ['title' => '控制台', 'url' => Url::action('Index')],
+                ['title' => '设置'],
+                ['title' => 'Slug 设置'],
+            ],
+            'slug_separator'    => option('slug.separator', '-'),
+            'slug_style'        => option('slug.style', 'default'),
+            'slug_max_length'   => option('slug.max_length', '0'),
+            'slug_baidu_appid'  => option('slug.baidu_appid', ''),
+            'slug_baidu_key'    => option('slug.baidu_key', ''),
+        ];
+
+        View::render('system.slug-settings', $data);
+    }
+
+    /**
+     * AJAX 接口：实时生成 Slug（用于前端表单）
+     */
+    public function ajaxSlug()
+    {
+        $title = trim(Request::get('title', Request::post('title', '')));
+        if (empty($title)) {
+            Response::json(['code' => 1, 'msg' => '请输入标题']);
+            return;
+        }
+
+        // 支持预览时覆写配置参数
+        $style     = Request::get('style', Request::post('style', null));
+        $separator = Request::get('separator', Request::post('separator', null));
+
+        // 参数校验
+        if ($style !== null && !in_array($style, ['default', 'pinyin', 'translate'], true)) {
+            $style = null;
+        }
+        if ($separator !== null && !in_array($separator, ['-', '_'], true)) {
+            $separator = null;
+        }
+
+        $slug = SlugHelper::generate($title, null, $style, $separator);
+
+        Response::json(['code' => 0, 'slug' => $slug]);
     }
 
     /**

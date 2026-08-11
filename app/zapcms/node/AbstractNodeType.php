@@ -4,6 +4,7 @@ namespace zapcms\node;
 
 use zapcms\services\BreadCrumb;
 use zapcms\services\Catalog;
+use zapcms\services\SlugHelper;
 use zapcms\support\HtmlXss;
 use zapcms\models\Node;
 use zapcms\models\NodeRelation;
@@ -79,9 +80,9 @@ class AbstractNodeType
             $node['content'] = HtmlXss::clean($node['content']);
             // slug：优先使用手动输入，否则从标题生成
             if (!empty($node['slug'])) {
-                $node['slug'] = Str::slug($node['slug']);
+                $node['slug'] = SlugHelper::generate($node['slug']);
             } elseif (!empty($node['title'])) {
-                $node['slug'] = Str::slug($node['title']);
+                $node['slug'] = SlugHelper::generate($node['title']);
             }
             // slug 唯一性校验
             if (!empty($node['slug'])) {
@@ -119,9 +120,9 @@ class AbstractNodeType
             $node['add_time'] = time();
             // slug：优先使用手动输入，否则从标题生成
             if (!empty($node['slug'])) {
-                $node['slug'] = Str::slug($node['slug']);
+                $node['slug'] = SlugHelper::generate($node['slug']);
             } else {
-                $node['slug'] = Str::slug($node['title']);
+                $node['slug'] = SlugHelper::generate($node['title']);
             }
             // slug 唯一性校验
             $exist = DB::table('node')->where('slug',$node['slug'])->fetchColumn();
