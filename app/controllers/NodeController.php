@@ -51,8 +51,19 @@ class NodeController extends Controller
 
     function article(){
         $node = pageState()->node;
-        $slug = $node['slug'];
-        BreadCrumb::instance()->add($node['title'],site_url("/{$slug}"),true);
+        //获取 url path
+        pageState()->catalogPaths = $this->getCatalogPathByNodeId(pageState()->nodeId);
+        $slugs = [];
+        foreach (pageState()->catalogPaths as $catalog){
+            $slugs[] = $catalog['slug'];
+            BreadCrumb::instance()->add($catalog['title'],site_url("/{$catalog['slug']}"));
+        }
+        $slug = pageState()->node['slug'];
+        BreadCrumb::instance()->add(pageState()->node['title'],site_url("/{$slug}"),true);
+
+        //侧边栏菜单
+        $topCatalog = current(pageState()->catalogPaths);
+        pageState()->subCatalogList = Catalog::instance()->getSubCatalogList($topCatalog['id']);
         view('article', ['article' => $node]);
     }
 

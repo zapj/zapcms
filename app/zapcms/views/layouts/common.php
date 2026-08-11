@@ -11,6 +11,7 @@ use \zap\facades\Url;
     <link href="<?php echo base_url();?>/assets/admin/css/zap-admin.css" rel="stylesheet">
     <link href="<?php echo base_url();?>/assets/admin/css/zap-admin-custom.css" rel="stylesheet">
     
+    <script src="<?php echo base_url();?>/assets/sweetalert2.all.min.js"></script>
     <script src="<?php echo base_url();?>/assets/jquery/jquery-3.6.4.min.js"></script>
     <link href="<?php echo base_url();?>/assets/fontawesome/6.4.2/css/all.css" rel="stylesheet">
     <script>
