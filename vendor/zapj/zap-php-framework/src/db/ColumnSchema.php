@@ -181,9 +181,17 @@ class ColumnSchema
             case 'blob':
                 return 'BLOB';
             case 'integer':
-            case 'tinyint':
             case 'smallint':
                 return 'INTEGER';
+            case 'tinyint':
+                return 'TINYINT';
+            case 'bigint':
+                return 'BIGINT';
+            case 'decimal':
+                return "DECIMAL({$this->length},{$this->decimals})";
+            case 'timestamp':
+            case 'datetime':
+                return 'TIMESTAMP';
             default:
                 return 'INT';
         }

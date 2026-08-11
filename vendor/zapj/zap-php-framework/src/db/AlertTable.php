@@ -239,7 +239,8 @@ class AlertTable
         }
         // Use first row for keys
         $keys       = array_keys(reset($rows));
-        $columns    = implode('`,`', $keys);
+        $q          = $this->quoteChar();
+        $columns    = $q . implode("{$q},{$q}", $keys) . $q;
         $valueParts = [];
 
         foreach ($rows as $row) {
@@ -252,7 +253,7 @@ class AlertTable
             $valueParts[] = '(' . implode(',', $values) . ')';
         }
 
-        $this->dataSql[] = "INSERT INTO {$this->tableName} (`{$columns}`) VALUES " . implode(',', $valueParts) . ';';
+        $this->dataSql[] = "INSERT INTO {$this->tableName} ({$columns}) VALUES " . implode(',', $valueParts) . ';';
     }
 
     /**
@@ -335,9 +336,18 @@ class AlertTable
 
     private function buildInsert(array $row): string
     {
-        $columns = implode('`,`', array_keys($row));
+        $q       = $this->quoteChar();
+        $columns = $q . implode("{$q},{$q}", array_keys($row)) . $q;
         $values  = implode("','", array_map(fn($v) => addslashes((string)$v), $row));
-        return "INSERT INTO {$this->tableName} (`{$columns}`) VALUES ('{$values}');";
+        return "INSERT INTO {$this->tableName} ({$columns}) VALUES ('{$values}');";
+    }
+
+    /**
+     * Get the proper identifier quoting character for the current driver.
+     */
+    private function quoteChar(): string
+    {
+        return $this->driver === 'mysql' ? '`' : '"';
     }
 
     private function exec(string $sql): bool

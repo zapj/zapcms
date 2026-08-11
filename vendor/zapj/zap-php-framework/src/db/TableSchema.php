@@ -321,10 +321,9 @@ class TableSchema
      */
     protected function isAutoPkConstraint(string $str, array $autoPkCols): bool
     {
-        if (substr($str, 0, 12) !== 'PRIMARY KEY(') {
+        if (!preg_match('/^PRIMARY\s+KEY\s*\((.+)\)$/i', trim($str), $m)) {
             return false;
         }
-        preg_match('/PRIMARY KEY\((.+)\)/', $str, $m);
         if (empty($m[1])) {
             return false;
         }

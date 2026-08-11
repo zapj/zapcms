@@ -1,4 +1,10 @@
 {
+  "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/zapj/zap-php-framework.git"
+        }
+  ],
   "require": {
     "php": ">=7.4",
     "zapj/zap-php-framework": "dev-main",
