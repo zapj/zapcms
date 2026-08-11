@@ -18,10 +18,12 @@ class ColumnSchema
     protected string $driver;
     protected string $type;
     protected int $length = 11;
+    protected int $decimals = 2;
     protected string $autoIncrement = '';
     protected bool $nullable = false;
     protected string $default = '-Z-NULL';
     protected bool $unsigned = false;
+    protected bool $unique = false;
     protected string $comment = '';
 
     public function __construct(string $name, string $type, string $driver)
@@ -70,6 +72,18 @@ class ColumnSchema
         return $this;
     }
 
+    public function unique(): self
+    {
+        $this->unique = true;
+        return $this;
+    }
+
+    public function decimals(int $decimals): self
+    {
+        $this->decimals = $decimals;
+        return $this;
+    }
+
     public function comment(string $text): self
     {
         $this->comment = $text;
@@ -95,12 +109,13 @@ class ColumnSchema
     {
         $type     = $this->columnDataType();
         $nullable = $this->nullable ? '' : ' NOT NULL ';
+        $unique   = $this->unique ? ' UNIQUE ' : '';
         $comment  = $this->buildComment();
 
         if ($this->driver === 'sqlite') {
-            return "{$this->columnName} {$type}{$nullable}{$this->default}{$this->autoIncrement}";
+            return "{$this->columnName} {$type}{$nullable}{$this->default}{$unique}{$this->autoIncrement}";
         }
-        return "{$this->columnName} {$type}{$nullable}{$this->default}{$this->autoIncrement}{$comment}";
+        return "{$this->columnName} {$type}{$nullable}{$this->default}{$unique}{$this->autoIncrement}{$comment}";
     }
 
     // ─── Data Type Mapping ───────────────────────────────────────
@@ -173,6 +188,8 @@ class ColumnSchema
                 return "VARCHAR({$this->length})";
             case 'bigint':
                 return "BIGINT({$this->length}){$this->autoIncrement}";
+            case 'decimal':
+                return "DECIMAL({$this->length},{$this->decimals})";
             default:
                 return 'INTEGER';
         }
@@ -198,7 +215,7 @@ class ColumnSchema
             case 'integer':
                 return "INT({$this->length}){$unsigned}{$this->autoIncrement}";
             case 'decimal':
-                return "DECIMAL({$this->length},2){$unsigned}";
+                return "DECIMAL({$this->length},{$this->decimals}){$unsigned}";
             case 'boolean':
                 return "TINYINT(1)";
             case 'datetime':

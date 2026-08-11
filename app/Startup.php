@@ -137,7 +137,11 @@ class Startup
             echo $e->getMessage();
         } catch (\Throwable $e) {
             http_response_code(500);
-            echo '[' . get_class($e) . '] ' . $e->getMessage();
+            if(req()->isAjax()){
+                response(['code' => 1, 'error' => $e->getMessage()])->withJson();
+            } else {
+                echo '[' . get_class($e) . '] ' . $e->getMessage();
+            }
         }
     }
 
@@ -175,40 +179,21 @@ class Startup
 
     /**
      * 模块前缀路由分发
+     *
+     * 将前缀 URL 派发给 ModController::_invoke()，由 ModController 统一处理
+     * 别名解析、Mod::invoke 入口、控制器查找、视图路径设置。
+     *
      *   /{$prefix}/{$controller}/{$action}/{$params...}
-     *   → \mods\{$module}\controllers\{Controller}Controller@{$action}
+     *   → ModController::_invoke($module, [controller, action, params...])
      */
     private function dispatchModule(string $module, array $segments): void
     {
-        unset($segments[0]);                          // 去掉 URL 前缀
-        $ctrl   = $segments[1] ?? 'Index';
-        $action = $segments[2] ?? 'index';
-        $action = lcfirst(Router::convertToName($action));
-        unset($segments[1], $segments[2]);            // 去掉 controller、action
-        $params = array_values($segments);
-
-        // 优先走模块入口类 Mod::invoke()
-        $modClass = "\\mods\\{$module}\\Mod";
-        if (class_exists($modClass)) {
-            $this->controllerClass = $modClass;
-            $this->method          = 'invoke';
-            $this->router->params  = [$module, $ctrl, $action, $params];
-            $this->hasParams       = true;
-            return;
-        }
-
-        // 走模块控制器
-        $controllerName = str_replace('-', '', ucwords($ctrl, '-'));
-        $className      = "\\mods\\{$module}\\controllers\\{$controllerName}Controller";
-        if (class_exists($className)) {
-            $this->controllerClass = $className;
-            $this->method          = $action;
-            $this->router->params  = $params;
-            $this->hasParams       = !empty($params);
-            return;
-        }
-
-        $this->notFound = true;
+        unset($segments[0]);                            // 去掉 URL 前缀
+        // 剩余段原样传给 ModController::_invoke($module, $params)
+        $this->controllerClass = '\app\controllers\ModController';
+        $this->method          = $module;               // _invoke 的 $module 参数
+        $this->router->params  = array_values($segments); // _invoke 的 $params 参数
+        $this->hasParams       = !empty($this->router->params);
     }
 
     /**

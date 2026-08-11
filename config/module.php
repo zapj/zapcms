@@ -14,5 +14,6 @@
 return [
     'prefixes' => [
         // 'shop' => 'shopv2',
+        'shop' => 'shop', 
     ],
 ];

@@ -1,0 +1,15 @@
+{
+    "name": "shop",
+    "title": "商城模块",
+    "version": "1.0.0",
+    "description": "产品展示、购物车、订单基础模块",
+    "author": "ZAP CMS",
+    "website": "https://zapcms.com",
+    "min_zapcms": "1.0",
+    "admin_menu": [
+        {"title": "产品管理", "url": "/z-admin/mod/shop/product", "icon": "fa-cubes"},
+        {"title": "订单管理", "url": "/z-admin/mod/shop/order", "icon": "fa-receipt"},
+        {"title": "商城设置", "url": "/z-admin/mod/shop/settings", "icon": "fa-cog"}
+    ],
+    "dependencies": {}
+}

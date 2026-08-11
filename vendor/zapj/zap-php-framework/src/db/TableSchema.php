@@ -103,9 +103,9 @@ class TableSchema
         return $this->makeColumn($column, 'boolean');
     }
 
-    public function decimal(string $column, int $length = 10): ColumnSchema
+    public function decimal(string $column, int $length = 10, int $decimals = 2): ColumnSchema
     {
-        return $this->makeColumn($column, 'decimal')->length($length);
+        return $this->makeColumn($column, 'decimal')->length($length)->decimals($decimals);
     }
 
     public function text(string $column): ColumnSchema

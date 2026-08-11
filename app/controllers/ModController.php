@@ -26,8 +26,20 @@ class ModController extends Controller
      */
     public function _invoke($module, $params): void
     {
+        if (empty($module)) {
+            http_response_code(404);
+            echo "Module name is required.";
+            return;
+        }
+
         // ──── 应用别名 ────
         $module = $this->resolveAlias($module);
+
+        if (!is_dir(base_path("mods/{$module}"))) {
+            http_response_code(404);
+            echo "Module [{$module}] is not installed.";
+            return;
+        }
 
         // ──── 加载模块视图目录 ────
         View::paths(base_path("mods/{$module}/views"));

@@ -77,9 +77,9 @@ class AlertTable
         return $this->addedColumn($column, 'boolean');
     }
 
-    public function decimal(string $column, int $length = 10): ColumnSchema
+    public function decimal(string $column, int $length = 10, int $decimals = 2): ColumnSchema
     {
-        return $this->addedColumn($column, 'decimal')->length($length);
+        return $this->addedColumn($column, 'decimal')->length($length)->decimals($decimals);
     }
 
     public function text(string $column): ColumnSchema
