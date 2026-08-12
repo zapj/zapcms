@@ -82,15 +82,6 @@ $this->view->page_subtitle = $title ?? '';
                                           placeholder="产品简介或卖点"><?php echo $node->excerpt; ?></textarea>
                             </div>
                             <div class="mb-2">
-                                <label for="node_price" class="form-label">产品价格 <span class="text-muted small">(元，自定义字段)</span></label>
-                                <div class="input-group input-group-sm" style="max-width:260px;">
-                                    <span class="input-group-text">¥</span>
-                                    <input type="number" step="0.01" min="0" class="form-control form-control-sm"
-                                           name="meta[price]" id="node_price"
-                                           placeholder="如 199.00" value="<?php echo $node->get_node_meta('price'); ?>">
-                                </div>
-                            </div>
-                            <div class="mb-2">
                                 <label for="node_content" class="form-label">详情</label>
                                 <textarea name="node[content]" id="node_content"
                                           class="form-control summernote"><?php echo $node->content; ?></textarea>
@@ -107,6 +98,8 @@ $this->view->page_subtitle = $title ?? '';
                                            value="<?php echo $node->sort_order ?? 0; ?>" style="width:100px;">
                                 </div>
                             </div>
+
+                            <?php include __DIR__ . '/../_meta_fields.php'; ?>
                         </div>
                         <div class="tab-pane" id="tab2">
                             <div class="mb-2">
@@ -236,7 +229,9 @@ var slugConfig = {
 
 $(function(){
     $.datetimepicker.setLocale('zh');
-    $('.datetimepicker').datetimepicker({ format: 'Y-m-d H:i:s' });
+    $('.datetimepicker').each(function(){
+        $(this).datetimepicker({ format: $(this).data('format') || 'Y-m-d H:i:s' });
+    });
     $('#zapForm').validate({ignore:'', messages:{"node[title]":"产品名称必须填写"}});
 });
 function save() {

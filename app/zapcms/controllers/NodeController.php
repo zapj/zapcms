@@ -9,6 +9,7 @@ use zap\http\Response;
 use zap\http\Router;
 use zapcms\node\AbstractNodeType;
 use zap\view\View;
+use zapcms\services\BreadCrumb;
 
 class NodeController extends AdminController
 {
@@ -56,7 +57,8 @@ class NodeController extends AdminController
     function types(){
         $search  = req()->get('search', '');
         $status  = req()->get('status', '');
-
+        BreadCrumb::instance()->add('内容管理',url_action('Node'));
+        BreadCrumb::instance()->add('内容模型');
         $query = DB::table('node_types');
         if ($search) {
             $query->where(function($q) use ($search) {
@@ -71,29 +73,48 @@ class NodeController extends AdminController
 
         $data = $query->fetchAll();
 
+        // 统计各模型自定义字段数
+        $fieldCount = [];
+        $typeIds = array_column($data, 'type_id');
+        if ($typeIds) {
+            $fields = DB::table('node_type_field')->whereIn('node_type_id', $typeIds)->fetchAll();
+            foreach ($fields as $f) {
+                $fieldCount[(int)$f['node_type_id']] = ($fieldCount[(int)$f['node_type_id']] ?? 0) + 1;
+            }
+        }
+
         View::render("node.types", [
             'data'        => $data,
+            'fieldCount'  => $fieldCount,
             'search'      => $search,
             'status'      => $status,
             'title'       => '内容模型管理',
             'page_title'  => '内容模型',
             'page_subtitle' => '管理网站的内容类型',
+            'breadcrumbs' => BreadCrumb::instance()->toArray(),
         ]);
     }
 
     function typesForm(){
         $id  = req()->get('id', 0);
         $row = [];
+        $fields = [];
         if ($id > 0) {
             $row = DB::table('node_types')->where('type_id', (int)$id)->first();
             if (!$row) {
                 throw new \RuntimeException('模型不存在');
             }
+            $fields = DB::table('node_type_field')->where('node_type_id', (int)$id)
+                ->orderBy('sort_order', 'ASC')->orderBy('field_id', 'ASC')->fetchAll();
         }
+        BreadCrumb::instance()->add('内容管理', url_action('Node'));
+        BreadCrumb::instance()->add($id > 0 ? '编辑模型' : '添加模型');
         View::render("node.types_form", [
             'row'         => $row,
+            'fields'      => $fields,
             'id'          => (int)$id,
             'page_title'  => $id > 0 ? '编辑模型' : '添加模型',
+            'breadcrumbs' => BreadCrumb::instance()->toArray(),
         ]);
     }
 
@@ -128,13 +149,82 @@ class NodeController extends AdminController
         if ($id > 0) {
             $data['updated_at'] = $now;
             DB::table('node_types')->where('type_id', (int)$id)->update($data);
+            $typeId = (int)$id;
         } else {
             $data['created_at'] = $now;
             $data['updated_at'] = $now;
-            DB::table('node_types')->insert($data);
+            $typeId = (int)DB::table('node_types')->insert($data);
         }
 
+        // 保存自定义字段（全量替换）
+        $this->saveTypeFields($typeId);
+
         Response::json(['code' => 0, 'msg' => '保存成功']);
+    }
+
+    /**
+     * 字段类型白名单
+     */
+    private const FIELD_TYPES = [
+        'text', 'textarea', 'number', 'date', 'datetime',
+        'select', 'radio', 'checkbox', 'switch', 'image',
+    ];
+
+    /**
+     * 保存模型自定义字段（全量替换 node_type_field）
+     */
+    private function saveTypeFields(int $typeId): void
+    {
+        DB::table('node_type_field')->where('node_type_id', $typeId)->delete();
+
+        $fields = req()->post('field', []);
+        if (!is_array($fields)) {
+            return;
+        }
+
+        $sort = 0;
+        foreach ($fields as $field) {
+            $name = trim((string)($field['field_name'] ?? ''));
+            if ($name === '' || !preg_match('/^[a-z][a-z0-9_]*$/', $name)) {
+                continue;
+            }
+            $type = trim((string)($field['type'] ?? 'text'));
+            if (!in_array($type, self::FIELD_TYPES, true)) {
+                $type = 'text';
+            }
+            $sortOrder = isset($field['sort_order']) && $field['sort_order'] !== ''
+                ? (int)$field['sort_order']
+                : $sort;
+            DB::table('node_type_field')->insert([
+                'node_type_id' => $typeId,
+                'field_name'   => $name,
+                'field_label'  => trim((string)($field['field_label'] ?? $name)),
+                'field_value'  => (string)($field['field_value'] ?? ''),
+                'sort_order'   => $sortOrder,
+                'type'         => $type,
+                'placeholder'  => (string)($field['placeholder'] ?? ''),
+                'required'     => !empty($field['required']) ? 1 : 0,
+                'help'         => (string)($field['help'] ?? ''),
+            ]);
+            $sort = max($sort, $sortOrder + 1);
+        }
+    }
+
+    /**
+     * 快速切换模型启用状态
+     */
+    function typesStatus(){
+        $id     = (int)req()->post('id', 0);
+        $status = (int)req()->post('status', 0);
+        if ($id <= 0) {
+            Response::json(['code' => 1, 'msg' => '参数错误']);
+            return;
+        }
+        DB::table('node_types')->where('type_id', $id)->update([
+            'status'     => $status ? 1 : 0,
+            'updated_at' => time(),
+        ]);
+        Response::json(['code' => 0, 'msg' => $status ? '已启用' : '已禁用']);
     }
 
     function typesDelete(){
@@ -143,6 +233,8 @@ class NodeController extends AdminController
             Response::json(['code' => 1, 'msg' => '参数错误']);
             return;
         }
+        // 同步清理该模型的字段配置
+        DB::table('node_type_field')->where('node_type_id', (int)$id)->delete();
         DB::table('node_types')->where('type_id', (int)$id)->delete();
         Response::json(['code' => 0, 'msg' => '删除成功']);
     }

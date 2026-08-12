@@ -89,6 +89,8 @@ $this->view->page_subtitle = $title ?? '';
                                            value="<?php echo $node->sort_order ?? 0; ?>" style="width:100px;">
                                 </div>
                             </div>
+
+                            <?php include __DIR__ . '/_meta_fields.php'; ?>
                         </div>
                         <div class="tab-pane" id="tab2">
                             <div class="mb-2">
@@ -219,7 +221,9 @@ $this->view->page_subtitle = $title ?? '';
 
 $(function(){
     $.datetimepicker.setLocale('zh');
-    $('.datetimepicker').datetimepicker({ format: 'Y-m-d H:i:s' });
+    $('.datetimepicker').each(function(){
+        $(this).datetimepicker({ format: $(this).data('format') || 'Y-m-d H:i:s' });
+    });
     $('#zapForm').validate({ignore:'', messages:{"node[title]":"标题必须填写"}});
 });
 function save() {

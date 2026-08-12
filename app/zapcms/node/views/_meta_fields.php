@@ -1,0 +1,135 @@
+<?php
+/**
+ * 自定义字段渲染（共享 partial）
+ * 依赖变量：
+ *   - $node_fields : 字段配置数组（NodeType::getFields 返回）
+ *   - $node        : \zapcms\models\Node 实例
+ *
+ * 支持类型：text / textarea / number / date / datetime / select / radio / checkbox / switch / image
+ */
+if (empty($node_fields)) {
+    return;
+}
+?>
+<hr>
+<h6 class="text-muted small mb-2"><i class="fa fa-list-alt me-1"></i>自定义字段</h6>
+<?php foreach ($node_fields as $nf): ?>
+    <?php
+    $nfType  = $nf['type'] ?? 'text';
+    $nfName  = $nf['field_name'];
+    $nfLabel = $nf['field_label'] ?: $nfName;
+    $nfValue = $node->get_node_meta($nfName);
+    $nfPh    = e($nf['placeholder'] ?? '');
+    $nfHelp  = (string)($nf['help'] ?? '');
+    $nfReq   = !empty($nf['required']);
+    $reqAttr = $nfReq ? ' required' : '';
+    $star    = $nfReq ? ' <span class="text-danger">*</span>' : '';
+    $metaName = 'meta[' . $nfName . ']';
+    $metaId   = 'meta_' . $nfName;
+
+    // 选项列表：每行一个 「值:标签」
+    $options = [];
+    foreach (preg_split('/\r\n|\r|\n/', (string)($nf['field_value'] ?? '')) as $opt) {
+        $opt = trim($opt);
+        if ($opt === '') {
+            continue;
+        }
+        $parts = explode(':', $opt, 2);
+        $options[] = [
+            'value' => trim($parts[0]),
+            'label' => isset($parts[1]) ? trim($parts[1]) : trim($parts[0]),
+        ];
+    }
+
+    // checkbox 多选回显（兼容 JSON 与逗号分隔旧数据）
+    $checkedVals = [];
+    if ($nfType === 'checkbox' && $nfValue !== '' && $nfValue !== null) {
+        $decoded = json_decode((string)$nfValue, true);
+        $checkedVals = is_array($decoded)
+            ? array_map('strval', $decoded)
+            : preg_split('/\s*,\s*/', (string)$nfValue, -1, PREG_SPLIT_NO_EMPTY);
+    }
+    ?>
+    <div class="mb-2">
+        <label class="form-label"<?php echo in_array($nfType, ['radio', 'checkbox', 'switch'], true) ? '' : ' for="' . $metaId . '"'; ?>>
+            <?php echo e($nfLabel); ?><?php echo $star; ?>
+        </label>
+
+        <?php if ($nfType === 'textarea'): ?>
+            <textarea class="form-control form-control-sm" name="<?php echo $metaName; ?>" id="<?php echo $metaId; ?>"
+                      rows="3" placeholder="<?php echo $nfPh; ?>"<?php echo $reqAttr; ?>><?php echo e($nfValue); ?></textarea>
+
+        <?php elseif ($nfType === 'select'): ?>
+            <select class="form-select form-select-sm" name="<?php echo $metaName; ?>" id="<?php echo $metaId; ?>"<?php echo $reqAttr; ?>>
+                <option value="">请选择</option>
+                <?php foreach ($options as $opt): ?>
+                    <option value="<?php echo e($opt['value']); ?>" <?php echo (string)$nfValue === $opt['value'] ? 'selected' : ''; ?>><?php echo e($opt['label']); ?></option>
+                <?php endforeach; ?>
+            </select>
+
+        <?php elseif ($nfType === 'number'): ?>
+            <input type="number" step="0.01" min="0" class="form-control form-control-sm" name="<?php echo $metaName; ?>"
+                   id="<?php echo $metaId; ?>" placeholder="<?php echo $nfPh; ?>" value="<?php echo e($nfValue); ?>"<?php echo $reqAttr; ?>>
+
+        <?php elseif ($nfType === 'date'): ?>
+            <input type="text" class="form-control form-control-sm datetimepicker" data-format="Y-m-d" name="<?php echo $metaName; ?>"
+                   id="<?php echo $metaId; ?>" placeholder="<?php echo $nfPh ?: 'Y-m-d'; ?>" value="<?php echo e($nfValue); ?>"<?php echo $reqAttr; ?>>
+
+        <?php elseif ($nfType === 'datetime'): ?>
+            <input type="text" class="form-control form-control-sm datetimepicker" data-format="Y-m-d H:i:s" name="<?php echo $metaName; ?>"
+                   id="<?php echo $metaId; ?>" placeholder="<?php echo $nfPh ?: 'Y-m-d H:i:s'; ?>" value="<?php echo e($nfValue); ?>"<?php echo $reqAttr; ?>>
+
+        <?php elseif ($nfType === 'radio'): ?>
+            <div class="d-flex flex-wrap gap-3 pt-1">
+                <?php foreach ($options as $opt): ?>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="<?php echo $metaName; ?>" id="<?php echo $metaId; ?>_<?php echo e($opt['value']); ?>"
+                               value="<?php echo e($opt['value']); ?>" <?php echo (string)$nfValue === $opt['value'] ? 'checked' : ''; ?><?php echo $reqAttr; ?>>
+                        <label class="form-check-label small" for="<?php echo $metaId; ?>_<?php echo e($opt['value']); ?>"><?php echo e($opt['label']); ?></label>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+        <?php elseif ($nfType === 'checkbox'): ?>
+            <div class="d-flex flex-wrap gap-3 pt-1">
+                <?php foreach ($options as $opt): ?>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="<?php echo $metaName; ?>[]" id="<?php echo $metaId; ?>_<?php echo e($opt['value']); ?>"
+                               value="<?php echo e($opt['value']); ?>" <?php echo in_array($opt['value'], $checkedVals, true) ? 'checked' : ''; ?>>
+                        <label class="form-check-label small" for="<?php echo $metaId; ?>_<?php echo e($opt['value']); ?>"><?php echo e($opt['label']); ?></label>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+        <?php elseif ($nfType === 'switch'): ?>
+            <div class="form-check form-switch pt-1">
+                <input class="form-check-input" type="checkbox" role="switch" name="<?php echo $metaName; ?>" id="<?php echo $metaId; ?>"
+                       value="1" <?php echo (string)$nfValue === '1' ? 'checked' : ''; ?><?php echo $reqAttr; ?>>
+                <label class="form-check-label small" for="<?php echo $metaId; ?>"><?php echo $nfHelp ?: '开 / 关'; ?></label>
+            </div>
+
+        <?php elseif ($nfType === 'image'): ?>
+            <div class="d-flex align-items-center gap-2">
+                <img src="<?php echo \zapcms\helpers\ThumbHelper::thumb($nfValue, 80, 80); ?>"
+                     class="img-thumbnail rounded" id="<?php echo $metaId; ?>_thumb" style="width:80px;height:80px;object-fit:cover;" alt="">
+                <input type="hidden" name="<?php echo $metaName; ?>" id="<?php echo $metaId; ?>" value="<?php echo e($nfValue); ?>">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-zap-toggle="image"
+                        data-zap-target="#<?php echo $metaId; ?>|#<?php echo $metaId; ?>_thumb">
+                    <i class="fa fa-upload me-1"></i>选择图片
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-sm"
+                        onclick="$('#<?php echo $metaId; ?>').val('');$('#<?php echo $metaId; ?>_thumb').attr('src','').hide();">
+                    <i class="fa fa-trash"></i>
+                </button>
+            </div>
+
+        <?php else: ?>
+            <input type="text" class="form-control form-control-sm" name="<?php echo $metaName; ?>"
+                   id="<?php echo $metaId; ?>" placeholder="<?php echo $nfPh; ?>" value="<?php echo e($nfValue); ?>"<?php echo $reqAttr; ?>>
+        <?php endif; ?>
+
+        <?php if ($nfHelp !== '' && $nfType !== 'switch'): ?>
+            <div class="form-text"><?php echo e($nfHelp); ?></div>
+        <?php endif; ?>
+    </div>
+<?php endforeach; ?>

@@ -1,11 +1,11 @@
-<?php use zap\facades\Url; ?>
-<?php $this->layout('layouts/common'); ?>
-<a href="<?= Url::action('Node/typesForm')?>" class="btn btn-primary btn-sm">
-    <i class="bi bi-plus-lg"></i> 添加模型
-</a>
+<?php 
+use zap\facades\Url; 
 
+
+?>
+<?php $this->layout('layouts/common'); ?>
 <div class="card">
-    <div class="card-header">
+    <div class="card-header d-flex flex-wrap gap-2 align-items-center justify-content-between">
         <form class="row g-2" method="get" action="<?= Url::action('Node/types')?>">
             <div class="col-auto">
                 <input type="text" name="search" class="form-control form-control-sm"
@@ -29,6 +29,9 @@
                 </a>
             </div>
         </form>
+        <a href="<?= Url::action('Node/typesForm')?>" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg"></i> 添加模型
+        </a>
     </div>
 
     <?php if (empty($data)): ?>
@@ -46,10 +49,10 @@
                     <th>标题</th>
                     <th>描述</th>
                     <th>处理类</th>
-                    <th>版本</th>
+                    <th class="text-center" style="width:80px">字段</th>
                     <th class="text-center">排序</th>
-                    <th class="text-center">状态</th>
-                    <th class="text-end" style="width:140px">操作</th>
+                    <th class="text-center" style="width:80px">状态</th>
+                    <th class="text-end" style="width:150px">操作</th>
                 </tr>
             </thead>
             <tbody>
@@ -60,19 +63,27 @@
                     <td><strong><?=e($row['title'])?></strong></td>
                     <td class="text-muted small"><?=e(mb_strlen($row['description'] ?? '') > 30 ? mb_substr($row['description'], 0, 30) . '…' : ($row['description'] ?? ''))?></td>
                     <td><small class="text-monospace"><?=e($row['node_type'] ?? '—')?></small></td>
-                    <td><?=e($row['version'] ?? '0.0.0')?></td>
+                    <td class="text-center">
+                        <a href="<?= Url::action('Node/typesForm', ['id' => $row['type_id']])?>#fields"
+                           class="badge text-decoration-none bg-<?=($fieldCount[$row['type_id']] ?? 0) ? 'info' : 'light text-dark border'?>"
+                           title="配置该模型的自定义字段">
+                            <?=$fieldCount[$row['type_id']] ?? 0?> 项
+                        </a>
+                    </td>
                     <td class="text-center"><?=$row['sort_order']?></td>
                     <td class="text-center">
-                        <span class="badge bg-<?=$row['status'] ? 'success' : 'secondary'?>">
+                        <span class="badge bg-<?=$row['status'] ? 'success' : 'secondary'?> type-status"
+                              style="cursor:pointer;" title="点击切换状态"
+                              data-id="<?=$row['type_id']?>" data-status="<?=$row['status'] ? 0 : 1?>">
                             <?=$row['status'] ? '启用' : '禁用'?>
                         </span>
                     </td>
                     <td class="text-end">
                         <a href="<?= Url::action('Node/typesForm', ['id' => $row['type_id']])?>"
-                           class="btn btn-outline-primary btn-xs" title="编辑">
+                           class="btn btn-outline-primary btn-sm" title="编辑">
                             <i class="bi bi-pencil"></i> 编辑
                         </a>
-                        <button type="button" class="btn btn-outline-danger btn-xs"
+                        <button type="button" class="btn btn-outline-danger btn-sm"
                                 onclick="deleteType(<?=$row['type_id']?>, '<?=e($row['title'])?>')" title="删除">
                             <i class="bi bi-trash"></i> 删除
                         </button>
@@ -87,26 +98,65 @@
 
 <script>
 function deleteType(id, title) {
-    if (!confirm('确认删除模型「' + title + '」？此操作不可恢复。')) return;
+    Swal.fire({
+        title: '确认删除模型？',
+        text: '「' + title + '」及其字段配置将被删除，此操作不可恢复。',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        confirmButtonText: '确认删除',
+        cancelButtonText: '取消'
+    }).then(function(result) {
+        if (!result.isConfirmed) return;
 
-    var formData = new FormData();
-    formData.append('id', id);
+        var formData = new FormData();
+        formData.append('id', id);
 
-    fetch('<?= Url::action('Node/typesDelete')?>', {
-        method: 'POST',
-        body: formData,
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(res) {
-        if (res.code === 0) {
-            location.reload();
-        } else {
-            alert(res.msg || '删除失败');
-        }
-    })
-    .catch(function() {
-        alert('网络错误，请重试');
+        fetch('<?= Url::action('Node/typesDelete')?>', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+            if (res.code === 0) {
+                location.reload();
+            } else {
+                Swal.fire({ icon: 'error', title: '删除失败', text: res.msg || '未知错误' });
+            }
+        })
+        .catch(function() {
+            Swal.fire({ icon: 'error', title: '网络错误', text: '请重试' });
+        });
     });
 }
+
+// 点击状态徽标快速切换启用/禁用
+document.querySelectorAll('.type-status').forEach(function(el) {
+    el.addEventListener('click', function() {
+        var id = this.dataset.id;
+        var status = this.dataset.status;
+        var formData = new FormData();
+        formData.append('id', id);
+        formData.append('status', status);
+
+        fetch('<?= Url::action('Node/typesStatus')?>', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+            if (res.code === 0) {
+                Swal.fire({ icon: 'success', title: res.msg || '操作成功', showConfirmButton: false, timer: 1000, toast: true, position: 'top-end' });
+                location.reload();
+            } else {
+                Swal.fire({ icon: 'error', title: '操作失败', text: res.msg || '未知错误' });
+            }
+        })
+        .catch(function() {
+            Swal.fire({ icon: 'error', title: '网络错误', text: '请重试' });
+        });
+    });
+});
 </script>

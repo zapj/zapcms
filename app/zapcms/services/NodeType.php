@@ -68,5 +68,27 @@ class NodeType
         return static::getNodeType($type_name,'type_id');
     }
 
+    /**
+     * 获取内容模型的动态字段配置（按排序返回）
+     */
+    public static function getFields(string $type_name): array
+    {
+        $typeId = static::getID($type_name);
+        if (empty($typeId)) {
+            return [];
+        }
+        return DB::table('node_type_field')->where('node_type_id', (int)$typeId)
+            ->orderBy('sort_order', 'ASC')->orderBy('field_id', 'ASC')
+            ->get(FETCH_ASSOC);
+    }
+
+    /**
+     * 获取某类型配置的自定义字段名列表
+     */
+    public static function getFieldNames(string $type_name): array
+    {
+        $fields = static::getFields($type_name);
+        return array_map(function ($f) { return $f['field_name']; }, $fields);
+    }
 
 }

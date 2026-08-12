@@ -4,6 +4,7 @@ namespace zapcms\node;
 
 use zapcms\services\BreadCrumb;
 use zapcms\services\Catalog;
+use zapcms\services\NodeType;
 use zapcms\services\SlugHelper;
 use zapcms\support\HtmlXss;
 use zapcms\models\Node;
@@ -197,6 +198,7 @@ class AbstractNodeType
         $data['breadcrumbs'] = BreadCrumb::instance()->toArray();
         $data['menu'] = Catalog::instance();
         $data['node_type'] = $this->nodeType;
+        $data['node_fields'] = NodeType::getFields((string)$this->nodeType);
         try{
             View::render("{$controller}.". ($name ?? $action),$data);
         }catch (ViewNotFoundException $e){
