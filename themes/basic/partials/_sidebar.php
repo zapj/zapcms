@@ -5,6 +5,7 @@ $state = pageState();
 $title = htmlspecialchars(
     ($node['title'] ?? '') ?: ($state->node['title'] ?? '')
 );
+
 $catalogs = !empty($subCatalogList) ? $subCatalogList : ($state->subCatalogList ?? []);
 $currentId = $nodeId ?? $state->nodeId ?? 0;
 
@@ -21,7 +22,7 @@ $lastCatalogId = $lastCatalog['id'] ?? 0;
 ?>
 <aside class="sidebar col-sm-3">
     <div class="widget">
-        <h4><?php echo e($firstCatalogTitle ?? $title); ?></h4>
+        <h4><?php echo e(!empty($firstCatalogTitle) ? $firstCatalogTitle :$title); ?></h4>
         <ul>
             <?php foreach ($catalogs as $catalog): ?>
                 <li<?php if ($lastCatalogId == $catalog['id']) echo ' class="current"'; ?>>
