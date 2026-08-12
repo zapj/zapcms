@@ -2,6 +2,7 @@
 defined('IN_ZAPCMS') or die('No permission to access');
 $this->extend('layout/default');
 $banners = option_get_json('basic_home.slide','[]',true);
+
 ?>
 <main class="site-main">
     <!-- Slider main container -->

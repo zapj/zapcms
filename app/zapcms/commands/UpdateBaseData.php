@@ -122,7 +122,7 @@ class UpdateBaseData extends Command
     {
         $exportPath = $this->input->getParam('e');
         if ($exportPath === true || $exportPath === null) {
-            $dir = APP_PATH . '/app/zapcms/support';
+            $dir = ROOT_PATH . '/app/zapcms/support';
         } else {
             $dir = rtrim($exportPath, '/\\');
         }

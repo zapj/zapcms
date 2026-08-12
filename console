@@ -7,10 +7,10 @@ if (!in_array(PHP_SAPI, ['cli', 'phpdbg', 'embed'], true)) {
 }
 set_time_limit(0);
 
-define("APP_PATH", realpath(dirname(__FILE__) . '/'));
-require APP_PATH . '/vendor/autoload.php';
+define("ROOT_PATH", realpath(dirname(__FILE__) . '/'));
+require ROOT_PATH . '/vendor/autoload.php';
 
-$console = new \zap\console\Console(APP_PATH);
+$console = new \zap\console\Console(ROOT_PATH);
 $console->addCommand('app/zapcms/commands','zapcms');
 $console->addCommand('app/commands','app');
 $code = $console->execute();
