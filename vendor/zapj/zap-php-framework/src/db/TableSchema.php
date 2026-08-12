@@ -174,10 +174,18 @@ class TableSchema
     // ─── Index & Constraint Management ───────────────────────────
 
     /**
+     * 支持联合索引：可传数组 addIndex('idx', ['a','b'])
+     * 或多个参数 addIndex('idx', 'a', 'b')
+     *
+     * @param string          $indexName
      * @param string|string[] $column
+     * @param string[]        $moreColumns
      */
-    public function addIndex(string $indexName, $column): void
+    public function addIndex(string $indexName, $column, ...$moreColumns): void
     {
+        if (!is_array($column)) {
+            $column = array_merge([$column], $moreColumns);
+        }
         $columns = $this->normaliseColumns($column);
         if ($this->driver === 'mysql') {
             $this->sql[] = "INDEX {$indexName}({$columns})";

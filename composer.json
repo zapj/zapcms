@@ -5,6 +5,13 @@
             "url": "https://github.com/zapj/zap-php-framework.git"
         }
   ],
+  "name": "zapj/zapcms",
+  "description": "A simple CMS based on zap-php-framework",
+  "type": "project",
+  "support": {
+    "email": "zapcms@zap.cn",
+    "docs": "https://zap.cn/docs/zapcms-docs"
+  },
   "require": {
     "php": ">=7.4",
     "zapj/zap-php-framework": "dev-main",

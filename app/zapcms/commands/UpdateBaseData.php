@@ -252,7 +252,7 @@ class UpdateBaseData extends Command
             }
             $colList = "'" . implode("', '", $idxCols) . "'";
             $idxName = $this->buildIndexName($idxCols);
-                        $out[] = "            \$table->addIndex('{$idxName}',{$colList});";
+            $out[] = "            \$table->addIndex('{$idxName}',[{$colList}]);";
         }
 
         $out[] = '';
