@@ -2,7 +2,7 @@
 /*
  * 插件市场
  * 支持搜索、分类筛选、分页浏览、安装
- * AdminLTE 风格
+ * 
  */
 !IS_AJAX && $this->layout('layouts/common');
 

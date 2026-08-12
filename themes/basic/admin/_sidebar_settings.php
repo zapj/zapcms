@@ -2,7 +2,7 @@
 defined('IN_ZAPCMS_ADMIN') or die('No permission');
 
 /**
- * 主题设置 - 侧边栏导航模块 (AdminLTE 风格)
+ * 主题设置 - 侧边栏导航模块 
  * 
  * 其他主题可直接复制此文件并根据需要修改 $menuItems 数组。
  * 使用方式：在主题的 zap/settings.php 中 include 此文件。

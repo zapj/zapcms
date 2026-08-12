@@ -137,9 +137,8 @@
         var indexUrl  = "<?php echo url_action('Index');?>";
         var baseUrl   = "<?php echo base_url();?>";
 
-        // 初始化 AdminLTE
+   
         $(function () {
-            // AdminLTE 自检测无需额外初始化
             // 回车键提交
             $('#loginForm').on('keypress', function(e) {
                 if (e.which === 13) {

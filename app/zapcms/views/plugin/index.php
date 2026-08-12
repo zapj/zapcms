@@ -1,7 +1,6 @@
 <?php
 /*
  * 插件管理 - 已安装列表
- * AdminLTE 风格卡片布局
  */
 !IS_AJAX && $this->layout('layouts/common');
 

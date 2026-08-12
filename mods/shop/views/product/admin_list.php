@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>产品管理 — 商城</title>
-    <link rel="stylesheet" href="/assets/admin-lte/css/adminlte.min.css">
 </head>
 <body>
 <div class="container-fluid p-3">

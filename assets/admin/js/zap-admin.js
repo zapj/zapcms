@@ -2,7 +2,7 @@
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
     typeof define === 'function' && define.amd ? define(['exports'], factory) :
-    (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.adminlte = {}));
+    (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.zapAdmin = {}));
 })(this, (function (exports) { 'use strict';
 
     const domContentLoadedCallbacks = [];
@@ -938,7 +938,7 @@
                         label.append(indicator);
                     }
                 }
-                if (!htmlInput.classList.contains('disable-adminlte-validations')) {
+                if (!htmlInput.classList.contains('disable-zapadmin-validations')) {
                     htmlInput.addEventListener('invalid', () => {
                         this.handleFormError(htmlInput);
                     });
@@ -1074,4 +1074,4 @@
     exports.initAccessibility = initAccessibility;
 
 }));
-//# sourceMappingURL=adminlte.js.map
+

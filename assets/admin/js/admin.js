@@ -395,32 +395,134 @@ function ZapFaIcons(target,callback){
         title: 'FA ICONS',
         content:ZapModal.loadding(),
         backdrop:false,
+        dialog_class:'modal-dialog-scrollable modal-dialog-centered modal-xl',
         url: ZAP_BASE_URL + '/finder/faicons',
         callback:function(){
-            const $callback = callback
+            const $callback = callback;
             const $targetArray = typeof target === 'string' ? [target] : target;
-            $('#faIcons .modal-body').on('click','button',(e)=>{
-                let className = 'fa fa-square-poll-horizontal';
-                if(e.target.tagName === 'I'){
-                    className = e.target.className
-                }else if(e.target.tagName === 'INPUT' || e.target.tagName ===  'BUTTON'){
-                    className = e.target.querySelector('i').className
+            const $body = $('#faIcons .modal-body');
+            const $grid = $body.find('.row');
+            const $buttons = $grid.find('button');
+            const $icons = $buttons.find('i');
+
+            // 为每个图标补充类名/名称/提示信息
+            $icons.each(function(){
+                const cls = this.className;
+                // 取最后一个 fa-xxx 作为图标名（跳过 fa-solid/fa-regular/fa-brands 前缀）
+                const name = (cls.match(/fa-[\w-]+/g) || []).pop() || '';
+                this.setAttribute('data-icon-name', name);
+                this.setAttribute('data-icon-class', cls);
+                this.setAttribute('title', cls);
+            });
+
+            const total = $icons.length;
+
+            // 顶部工具栏：搜索 + 分类 + 实时预览
+            $body.prepend(`
+                <div class="fa-icons-toolbar">
+                    <div class="input-group input-group-sm mb-2">
+                        <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" id="faIconsSearch" class="form-control"
+                               placeholder="搜索图标名称，如 user / home / settings / arrow ..."/>
+                        <span class="input-group-text fa-icons-count">${total} 个图标</span>
+                    </div>
+                    <div class="d-flex gap-1 flex-wrap align-items-center">
+                        <div class="btn-group btn-group-sm" role="group" id="faIconsFilter">
+                            <button type="button" class="btn btn-outline-primary active" data-type="all">全部</button>
+                            <button type="button" class="btn btn-outline-primary" data-type="fa-solid">Solid</button>
+                            <button type="button" class="btn btn-outline-primary" data-type="fa-regular">Regular</button>
+                            <button type="button" class="btn btn-outline-primary" data-type="fa-brands">Brands</button>
+                        </div>
+                        <div class="fa-icons-preview ms-auto d-flex align-items-center gap-2 border rounded px-2 py-1">
+                            <i class="fa-solid fa-circle-notch"></i>
+                            <code class="small text-muted">悬停预览图标类名</code>
+                        </div>
+                    </div>
+                </div>
+            `);
+
+            const $search = $('#faIconsSearch');
+            const $count = $body.find('.fa-icons-count');
+            const $previewIcon = $body.find('.fa-icons-preview i');
+            const $previewCode = $body.find('.fa-icons-preview code');
+
+            // 打开时若有已选图标，预览区默认展示当前值
+            let currentIcon = '';
+            for(const $target of $targetArray){
+                if($($target).is('input')){
+                    currentIcon = $($target).val();
+                }else if($($target).is('i')){
+                    currentIcon = $($target).attr('class');
                 }
+                if(currentIcon && currentIcon.indexOf('fa-') !== -1){ break; }
+            }
+            if(currentIcon){
+                $previewIcon.attr('class', currentIcon);
+                $previewCode.text(currentIcon);
+            }
+
+            // 过滤：关键字 + 分类
+            function applyFilter(){
+                const kw = $search.val().trim().toLowerCase();
+                const type = $('#faIconsFilter .active').data('type');
+                let visible = 0;
+                $icons.each(function(){
+                    const name = this.getAttribute('data-icon-name');
+                    const cls = this.getAttribute('data-icon-class');
+                    let show = true;
+                    if(type !== 'all' && cls.indexOf(type) !== 0){ show = false; }
+                    if(show && kw && name.indexOf(kw) === -1){ show = false; }
+                    $(this).closest('.col-1').toggle(show);
+                    if(show){ visible++; }
+                });
+                $count.text(visible + ' / ' + total + ' 个图标');
+                if($body.find('.col-1:visible').length === 0){
+                    if($('#faIconsEmpty').length === 0){
+                        $grid.after('<div id="faIconsEmpty" class="fa-icons-empty text-center"><i class="fa-solid fa-magnifying-glass mb-2 d-block fa-2x"></i>没有找到匹配的图标，换个关键词试试</div>');
+                    }
+                }else{
+                    $('#faIconsEmpty').remove();
+                }
+            }
+
+            // 搜索输入
+            $search.on('input', applyFilter);
+            // 分类切换
+            $('#faIconsFilter button').on('click', function(){
+                $('#faIconsFilter .active').removeClass('active');
+                $(this).addClass('active');
+                applyFilter();
+            });
+
+            // 悬停实时预览
+            $buttons.on('mouseenter', function(){
+                const i = $(this).find('i')[0];
+                if(!i) return;
+                $previewIcon.attr('class', i.className);
+                $previewCode.text(i.className);
+            });
+
+            // 点击选中图标（仅网格内的按钮，避免误伤工具栏的筛选按钮）
+            $body.off('click.faIcons').on('click.faIcons','.row button',function(){
+                const i = $(this).find('i')[0];
+                let className = i ? i.className : 'fa fa-square-poll-horizontal';
 
                 if(typeof $callback === 'function'){
                     $callback($targetArray,className)
                 }
-        // console.log($($target))
                 $targetArray.forEach(($target)=>{
                     if($($target).is('input')){
                         $($target).val(className);
                     }else if($($target).is('i')){
                         $($target).prop('class',className);
                     }
-                })
+                });
 
                 m.hide();
-            })
+            });
+
+            // 打开后自动聚焦搜索框
+            setTimeout(()=>{ $search.trigger('focus'); }, 120);
         }
     },true)
     m.show();

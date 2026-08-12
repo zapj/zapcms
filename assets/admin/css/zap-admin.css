@@ -16180,10 +16180,7 @@ html.maximized-card {
   width: 32px;
 }
 
-/* ==========================================================================
-   AdminLTE Accessibility Styles - WCAG 2.1 AA Compliance
-   ========================================================================== */
-/* Skip Links - WCAG 2.4.1: Bypass Blocks */
+
 .skip-link {
   position: absolute;
   top: -40px;
@@ -17251,4 +17248,3 @@ fieldset legend {
   justify-content: center;
 }
 
-/*# sourceMappingURL=adminlte.css.map */
