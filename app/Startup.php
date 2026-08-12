@@ -235,20 +235,23 @@ class Startup
                 ->fetch(FETCH_ASSOC);
             $node or $this->router->trigger404();
 
-            // catalog 类型的内容存在 catalog 表中，需要从 catalog 表补充 content 字段
             if ($node['node_type'] === 'catalog' && empty($node['content'])) {
-                $catalog = DB::table('catalog')->where('slug', $slug)->fetch(FETCH_ASSOC);
-                if ($catalog && !empty($catalog['content'])) {
-                    $node['content'] = $catalog['content'];
-                }
+                
+                $catalog = DB::table('catalog')->where('id', $node['id'])->fetch(FETCH_ASSOC);
+                // if ($catalog && !empty($catalog['content'])) {
+                //     $node['content'] = $catalog['content'];
+                // }
+                $pageState->catalog = $catalog;
             }
 
             $pageState->node = $node;
             $pageState->nodeId = $node['id'];
             $pageState->nodeType = $node['node_type'];
             $pageState->nodeMimeType = $node['mime_type'];
-
-            if (!$this->resetRoute($node['node_type'], empty($node['mime_type']) ? 'index' : $node['mime_type'])) {
+            
+            if($node['node_type'] === 'catalog' && $this->resetRoute($node['mime_type'], 'index')) {
+                
+            } else if (!$this->resetRoute($node['node_type'], empty($node['mime_type']) ? 'index' : $node['mime_type'])) {
                 DB::update('node', ['hits' => DB::raw('hits+1')], ['id' => $node['id']]);
                 $this->resetRoute('node', $node['node_type']);
             }

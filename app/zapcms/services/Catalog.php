@@ -107,4 +107,36 @@ class Catalog extends Category
         ]);
     }
 
+    /**
+     * 获取指定显示位置的栏目菜单（左侧导航 POSITION_LEFT / 右侧导航 POSITION_RIGHT）
+     * 用于模板页面没有相关联的栏目菜单时，作为侧边栏的兜底菜单
+     * @param int $position 显示位置：self::POSITION_LEFT(2) 或 self::POSITION_RIGHT(3)
+     * @return array 顶级栏目树，子栏目同样按位置过滤
+     */
+    public function getPositionMenu(int $position = self::POSITION_LEFT): array
+    {
+        $menu = [];
+        foreach ($this->getTreeArray() as $tree){
+            if(!$this->isPositionEnabled($tree, $position)){
+                continue;
+            }
+            if(!empty($tree['children'])){
+                $tree['children'] = array_values(array_filter($tree['children'], function ($child) use ($position){
+                    return $this->isPositionEnabled($child, $position);
+                }));
+            }
+            $menu[] = $tree;
+        }
+        return $menu;
+    }
+
+    /**
+     * 判断栏目 show_position 是否包含指定显示位置
+     */
+    private function isPositionEnabled(array $catalog, int $position): bool
+    {
+        $positions = array_map('intval', array_filter(explode(',', $catalog['show_position'] ?? '')));
+        return in_array($position, $positions, true);
+    }
+
 }

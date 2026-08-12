@@ -5,6 +5,8 @@ $this->beginBlock('content');
 /**
  * @var array $article
  */
+// 主图：原图存在生成对应尺寸缩略图（原名+尺寸），不存在则显示占位图原名，不产生重复缩略图
+$imageUrl = \zapcms\helpers\ThumbHelper::thumb($article['image'] ?? '', 750, 480);
 ?>
     <?php echo $this->partial('partials/_breadcrumb'); ?>
     <div class="container">
@@ -16,13 +18,11 @@ $this->beginBlock('content');
                         <div class="row">
                             <div class="col-sm-6">
                                 <div class="product-gallery text-center">
-                                    <?php if (!empty($article['image'])): ?>
-                                    <img src="<?php echo htmlspecialchars($article['image']); ?>" class="img-responsive" alt="<?php echo htmlspecialchars($article['title']); ?>">
-                                    <?php endif; ?>
+                                    <img src="<?php echo $imageUrl; ?>" class="product-detail-img img-responsive" alt="<?php echo htmlspecialchars($article['title'] ?? ''); ?>">
                                 </div>
                             </div>
                             <div class="col-sm-6">
-                                <h2 class="product-title"><?php echo htmlspecialchars($article['title']); ?></h2>
+                                <h2 class="product-title"><?php echo htmlspecialchars($article['title'] ?? ''); ?></h2>
                                 <?php if (!empty($article['excerpt'])): ?>
                                 <p class="product-excerpt text-muted"><?php echo htmlspecialchars($article['excerpt']); ?></p>
                                 <?php endif; ?>

@@ -1,3 +1,11 @@
+<?php
+use zapcms\helpers\ThumbHelper;
+
+// 主图：原图存在则生成对应尺寸缩略图（原名+尺寸），不存在则显示占位图原名，不产生重复缩略图
+$imageUrl = ThumbHelper::thumb($product['image'] ?? '', 750, 500);
+$stock    = (int) ($product['stock'] ?? 0);
+$unit     = htmlspecialchars($product['unit'] ?? '件');
+?>
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -5,6 +13,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($product['title']) ?> — 商城</title>
     <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .product-main-img {
+            width: 100%;
+            height: 360px;
+            object-fit: cover;
+            border-radius: .5rem;
+            background: #f5f6fa;
+        }
+        @media (max-width: 767.98px) {
+            .product-main-img { height: 260px; }
+        }
+    </style>
 </head>
 <body>
 
@@ -18,39 +38,40 @@
     </nav>
 
     <div class="row g-4">
-        <?php if (!empty($product['image'])): ?>
         <div class="col-md-5">
-            <img src="<?= htmlspecialchars($product['image']) ?>"
-                 class="img-fluid rounded" alt="<?= htmlspecialchars($product['title']) ?>">
+            <img src="<?= htmlspecialchars($imageUrl) ?>" class="product-main-img" alt="<?= htmlspecialchars($product['title']) ?>">
         </div>
-        <?php endif; ?>
 
         <div class="col-md-7">
             <h3><?= htmlspecialchars($product['title']) ?></h3>
 
             <div class="my-3">
-                <?php if ($product['origin_price'] > $product['price']): ?>
+                <?php if (!empty($product['origin_price']) && floatval($product['origin_price']) > floatval($product['price'])): ?>
                 <span class="text-decoration-line-through text-muted me-2 fs-5">
-                    ¥<?= number_format($product['origin_price'], 2) ?>
+                    ¥<?= number_format(floatval($product['origin_price']), 2) ?>
                 </span>
                 <?php endif; ?>
-                <span class="text-danger fw-bold fs-3">¥<?= number_format($product['price'], 2) ?></span>
-                <span class="text-muted ms-2">/ <?= htmlspecialchars($product['unit'] ?? '件') ?></span>
+                <span class="text-danger fw-bold fs-3">¥<?= number_format(floatval($product['price']), 2) ?></span>
+                <span class="text-muted ms-2">/ <?= $unit ?></span>
             </div>
 
             <div class="mb-3">
-                <span class="text-muted">库存：<?= (int) $product['stock'] ?> <?= htmlspecialchars($product['unit'] ?? '件') ?></span>
+                <?php if ($stock > 0): ?>
+                <span class="text-success"><i class="bi bi-check-circle"></i> 有货（<?= $stock ?> <?= $unit ?>）</span>
+                <?php else: ?>
+                <span class="text-danger"><i class="bi bi-x-circle"></i> 暂时缺货</span>
+                <?php endif; ?>
             </div>
 
             <form action="/mod/shop/cart/add" method="post" class="d-flex align-items-center gap-2 mb-4">
                 <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
                 <div class="input-group" style="width:130px">
                     <button type="button" class="btn btn-outline-secondary" onclick="this.nextElementSibling.stepDown()">−</button>
-                    <input type="number" name="quantity" value="1" min="1" max="<?= $product['stock'] ?>"
-                           class="form-control text-center">
+                    <input type="number" name="quantity" value="1" min="1" max="<?= $stock ?: 1 ?>"
+                           class="form-control text-center" <?= $stock <= 0 ? 'disabled' : '' ?>>
                     <button type="button" class="btn btn-outline-secondary" onclick="this.previousElementSibling.stepUp()">+</button>
                 </div>
-                <button type="submit" class="btn btn-danger btn-lg">
+                <button type="submit" class="btn btn-danger btn-lg" <?= $stock <= 0 ? 'disabled' : '' ?>>
                     <i class="bi bi-cart"></i> 加入购物车
                 </button>
             </form>

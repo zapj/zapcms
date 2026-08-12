@@ -29,6 +29,7 @@ class ThumbHelper
         }
         $file = storage_path($file);
         if(!is_file($file)){
+            // 原图不存在：直接返回占位图（保持原名，不生成缩略图副本，避免产生大量重复图片）
             // 为占位图也生成对应尺寸的缩略图
             $placeholder = app()->basePath('/assets/images/placeholder.jpg');
             if(is_file($placeholder)){
