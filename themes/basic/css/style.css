@@ -1341,6 +1341,7 @@ p.text {
     /* padding: 30px; */
     border-radius: 16px;
     box-shadow: 0 5px 30px rgba(0,0,0,0.05);
+    margin-bottom: 60px;
 }
 
 .widget h4, h2.page-title, h2.category-title {
