@@ -375,6 +375,15 @@ class Query
                     'value'    => $condition,
                     'boolean'  => 'AND',
                 ];
+            } elseif (!array_key_exists('operator', $condition) && !array_key_exists('value', $condition)) {
+                // Positional format: [col => [operator, value, boolean]]
+                // e.g. ['title' => ['LIKE', '%foo%', 'AND']]
+                $values    = array_values($condition);
+                $condition = [
+                    'operator' => $values[0] ?? '=',
+                    'value'    => $values[1] ?? null,
+                    'boolean'  => $values[2] ?? 'AND',
+                ];
             }
 
             $operator = strtoupper($condition['operator'] ?? '=');

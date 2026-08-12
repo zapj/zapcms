@@ -2,7 +2,7 @@
 
 namespace zap\util;
 
-use zap\InvalidArgumentException;
+use \InvalidArgumentException;
 
 /**
  * Class UUID

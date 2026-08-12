@@ -32,7 +32,7 @@ class UserController extends AdminController
 
         // 搜索
         if ($keyword !== '') {
-            $query->whereLike('username', "%{$keyword}%");
+            $query->where('username', 'LIKE', "%{$keyword}%");
         }
         // 状态筛选
         if ($status !== '' && in_array($status, ['activated', 'disabled'], true)) {

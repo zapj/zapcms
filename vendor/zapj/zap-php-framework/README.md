@@ -56,12 +56,8 @@ define('VENDOR_PATH', ROOT_PATH . DIRECTORY_SEPARATOR . 'vendor');
 
 require_once VENDOR_PATH . '/autoload.php';
 
-(new \zap\App())
-    ->environment('development')    // 开发/生产环境
-    ->withRoutes()
-    ->withView()
-    ->withMiddlewares()
-    ->run();
+// 启动应用（自动加载 config/route.php 中的路由并分发请求）
+(new \zap\App(ROOT_PATH))->run();
 ```
 
 ---
@@ -2769,11 +2765,14 @@ $decrypted = OpenSSL::decrypt($encrypted, 'your-secret-key');
 
 ## 错误处理
 
-框架内置错误处理器，根据环境模式切换行为：
+框架内置错误处理器，根据 `config/config.php` 中的 `debug` 配置切换行为：
 
 ```php
-(new \zap\App())->environment('development');  // 显示详细错误
-(new \zap\App())->environment('production');   // 不显示敏感信息
+// config/config.php
+return [
+    'debug' => true,   // 开发环境：显示详细错误
+    // 'debug' => false, // 生产环境：不显示敏感信息
+];
 ```
 
 ---

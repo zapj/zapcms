@@ -51,6 +51,37 @@ class Html
         return $el;
     }
 
+    // ========== Doctype ==========
+
+    /**
+     * 生成文档类型声明（DOCTYPE）
+     *
+     * @param string $type 类型：html5（默认）/ html4-strict / html4-trans / html4-frameset
+     *                     / xhtml1-strict / xhtml1-trans / xhtml1-frameset / xhtml11
+     * @return string 如 "<!DOCTYPE html>"
+     *
+     * @example
+     * <code>
+     * echo Html::doctype();              // <!DOCTYPE html>
+     * echo Html::doctype('xhtml1-strict'); // <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" ...>
+     * </code>
+     */
+    public static function doctype(string $type = 'html5'): string
+    {
+        static $doctypes = [
+            'html5'           => '<!DOCTYPE html>',
+            'html4-strict'    => '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">',
+            'html4-trans'     => '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">',
+            'html4-frameset'  => '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">',
+            'xhtml1-strict'   => '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">',
+            'xhtml1-trans'    => '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">',
+            'xhtml1-frameset' => '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">',
+            'xhtml11'         => '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">',
+        ];
+
+        return $doctypes[strtolower($type)] ?? $doctypes['html5'];
+    }
+
     // ========== Convenience Methods ==========
 
     /** &lt;a href="..."&gt;content&lt;/a&gt; */
