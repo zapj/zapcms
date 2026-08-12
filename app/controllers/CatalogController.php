@@ -56,9 +56,9 @@ class CatalogController extends Controller
                 $query->limit($page->getLimit(),$page->getOffset());
                 $view->articles = $query->get(FETCH_ASSOC);
                 $view->page = $page;
-                // 没有子栏目时（如FAQ），用文章列表作为侧边菜单
+                //// 模板页面没有相关联的栏目菜单时，读取左侧导航栏目菜单作为兜底（侧边栏位于页面左侧）
                 if (empty(pageState()->subCatalogList) && !empty($view->articles)) {
-                    pageState()->subCatalogList = $view->articles;
+                    pageState()->subCatalogList = \zapcms\services\Catalog::instance()->getPositionMenu(\zapcms\services\Catalog::POSITION_LEFT);
                 }
             }
 
