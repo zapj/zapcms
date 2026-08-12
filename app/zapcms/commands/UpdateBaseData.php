@@ -70,11 +70,13 @@ class UpdateBaseData extends Command
         $driver = $this->getDriver();
 
         // Tables to fully truncate (pure system config, safe to replace completely)
+        // options included: -f means "reset system configuration to base defaults"
         $truncateTables = [
             'admin_menu',
             'permissions',
             'roles_permissions',
             'admin_roles',
+            'options',
         ];
 
         foreach ($truncateTables as $table) {
@@ -108,6 +110,14 @@ class UpdateBaseData extends Command
             $quoted = $pdo->quoteTable($table);
             $pdo->rawExec("DELETE FROM {$quoted}");
             $this->out->writeln("  Cleared: {$table}");
+        }
+
+        // Remove orphan polymorphic comments pointing to cleared node content
+        try {
+            $pdo->rawExec("DELETE FROM " . $pdo->quoteTable('comments') . " WHERE object_type = 'node'");
+            $this->out->writeln("  Cleared: comments (object_type=node)");
+        } catch (\Throwable $e) {
+            $this->out->writeln("  Skipped: comments ({$e->getMessage()})");
         }
     }
 
@@ -350,6 +360,13 @@ class UpdateBaseData extends Command
      */
     protected function exportTableData(string $fullName, string $logicalName): string
     {
+        // Runtime/sensitive tables must never be exported into base data:
+        // admin_logs contains IPs, user agents and operation traces.
+        if (in_array($logicalName, ['admin_logs'], true)) {
+            $this->out->writeln("  Data:    {$logicalName} (skipped: runtime data)");
+            return "        // Table `{$logicalName}` — skipped (runtime data)";
+        }
+
         $pdo = DB::getPDO();
         $quoted = $pdo->quoteTable($logicalName);
 
@@ -378,7 +395,7 @@ class UpdateBaseData extends Command
             $out[] = "                [" . implode(", ", $vals) . "],";
         }
 
-        $out[] = "            ]);";
+        $out[] = "            ], true);";
         $out[] = "        });";
 
         $this->out->writeln("  Data:    {$logicalName} (" . count($rows) . " rows)");

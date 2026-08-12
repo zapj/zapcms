@@ -231,8 +231,12 @@ class AlertTable
 
     /**
      * Batch insert multiple rows.
+     *
+     * @param array $rows   rows to insert (each row is an assoc array)
+     * @param bool  $ignore true = skip rows with duplicate primary keys
+     *                      (SQLite: INSERT OR IGNORE, MySQL: INSERT IGNORE)
      */
-    public function batchInsert(array $rows): void
+    public function batchInsert(array $rows, bool $ignore = false): void
     {
         if (empty($rows)) {
             return;
@@ -248,12 +252,16 @@ class AlertTable
                 if ($v === null) {
                     return 'NULL';
                 }
-                return is_string($v) ? "'" . addslashes($v) . "'" : $v;
+                return is_string($v) ? "'" . $this->quoteString($v) . "'" : $v;
             }, $row);
             $valueParts[] = '(' . implode(',', $values) . ')';
         }
 
-        $this->dataSql[] = "INSERT INTO {$this->tableName} ({$columns}) VALUES " . implode(',', $valueParts) . ';';
+        $keyword = '';
+        if ($ignore) {
+            $keyword = $this->driver === 'mysql' ? 'IGNORE' : 'OR IGNORE';
+        }
+        $this->dataSql[] = "INSERT {$keyword} INTO {$this->tableName} ({$columns}) VALUES " . implode(',', $valueParts) . ';';
     }
 
     /**
@@ -338,8 +346,23 @@ class AlertTable
     {
         $q       = $this->quoteChar();
         $columns = $q . implode("{$q},{$q}", array_keys($row)) . $q;
-        $values  = implode("','", array_map(fn($v) => addslashes((string)$v), $row));
+        $values  = implode("','", array_map(fn($v) => $this->quoteString((string)$v), $row));
         return "INSERT INTO {$this->tableName} ({$columns}) VALUES ('{$values}');";
+    }
+
+    /**
+     * Escape a string literal according to the current driver.
+     *
+     * - MySQL:  addslashes (backslash escapes \ ' " NUL)
+     * - SQLite/PGSQL: single quote must be doubled; backslash is literal
+     *   (addslashes would double backslashes and corrupt stored data).
+     */
+    private function quoteString(string $value): string
+    {
+        if ($this->driver === 'mysql') {
+            return addslashes($value);
+        }
+        return str_replace("'", "''", $value);
     }
 
     /**
