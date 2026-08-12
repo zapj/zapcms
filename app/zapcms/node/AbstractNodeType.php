@@ -40,6 +40,7 @@ class AbstractNodeType
         $this->catalogId = intval(Request::get('cid'));
         $this->isAjax = Request::isAjax();
         BreadCrumb::instance()->add('内容管理',url_action('Node'));
+        // View::share('body_class','layout-fixed sidebar-expand-lg sidebar-mini sidebar-collapse bg-body-tertiary app-loaded');
     }
 
     public function __init(){
@@ -116,7 +117,7 @@ class AbstractNodeType
         if(Request::isPost()){
             $node = Request::post('node');
             $catalogArray = Request::post('catalog',[]);
-        $node['node_type'] = $this->nodeType;
+            $node['node_type'] = $this->nodeType;
             $node['add_time'] = time();
             // slug：优先使用手动输入，否则从标题生成
             if (!empty($node['slug'])) {

@@ -16,6 +16,9 @@ $this->view->page_subtitle = $title ?? '';
 /**
  * @var \zapcms\models\Node $node
  * @var int $catalogId
+ * @var array $catalog
+ * @var string $_controller
+ * @var string $_action
  */
 ?>
 <form id="zapForm" method="post">
@@ -23,7 +26,7 @@ $this->view->page_subtitle = $title ?? '';
     <input type="hidden" name="node[pub_time]" value="<?php echo $node->getPubTimeToDate(); ?>" />
     <input name="node[status]" id="node_status" type="hidden" value="<?php echo $node->status ?: \zapcms\models\Node::STATUS_PUBLISH;?>" />
     <input type="hidden" id="node_author_id" name="node[author_id]" value="<?php echo \zapcms\services\Auth::user('id') ?>">
-
+    <input type="hidden" name="catalog[<?php echo $catalog['id'] ?>]" value="<?php echo $catalog['level'] ?>">
     <div class="row g-3">
         <div class="col-lg-9">
             <div class="card card-outline card-success">
