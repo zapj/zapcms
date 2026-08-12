@@ -35,6 +35,7 @@ class SearchController extends Controller
         view('search',[
             'data_list'=> $query->get(FETCH_ASSOC),
             'page' => $page,
+            'query' => $keyword,
         ]);
     }
 }

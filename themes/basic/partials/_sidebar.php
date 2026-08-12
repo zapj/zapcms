@@ -9,11 +9,12 @@ $catalogs = !empty($subCatalogList) ? $subCatalogList : ($state->subCatalogList 
 $currentId = $nodeId ?? $state->nodeId ?? 0;
 
 if (empty($catalogs)) return;
-// 获取 catlogPaths 第一个的title
-$firstCatalog = $state->catalogPaths[0];
+// 获取 catlogPaths 第一个的title（搜索页等未设置栏目路径时安全降级）
+$catalogPaths = $state->catalogPaths ?? [];
+$firstCatalog = $catalogPaths[0] ?? null;
 $firstCatalogTitle = $firstCatalog['title'] ?? '';
 
-$lastCatalog = end($state->catalogPaths);
+$lastCatalog = !empty($catalogPaths) ? end($catalogPaths) : null;
 $lastCatalogId = $lastCatalog['id'] ?? 0;
 
 ?>
