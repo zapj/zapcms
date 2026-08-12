@@ -16,14 +16,14 @@
                                     </span>
                                 </div>
                             </form>
-                            <?php if (empty($articles)): ?>
+                            <?php if (empty($data_list)): ?>
                             <p>未找到相关内容</p>
                             <?php else: ?>
-                            <p>共找到 <?php echo count($articles); ?> 条结果</p>
-                            <?php foreach ($articles as $article): ?>
+                            <p>共找到 <?php echo count($data_list); ?> 条结果</p>
+                            <?php foreach ($data_list as $node): ?>
                             <div class="search-item" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
-                                <h4><a href="<?php echo site_url('/' . $article['slug']); ?>"><?php echo htmlspecialchars($article['title']); ?></a></h4>
-                                <p><?php echo htmlspecialchars(mb_substr(strip_tags($article['content'] ?? ''), 0, 200)) . '...'; ?></p>
+                                <h4><a href="<?php echo site_url('/' . $node['slug']); ?>"><?php echo htmlspecialchars($node['title']); ?></a></h4>
+                                <p><?php echo e(mb_substr(strip_tags($node['content'] ?? ''), 0, 200)) . '...'; ?></p>
                             </div>
                             <?php endforeach; ?>
                             <?php echo $this->partial('partials/_pagination', ['page' => $page ?? null]); ?>
