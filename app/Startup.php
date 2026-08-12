@@ -45,7 +45,7 @@ class Startup
      *
      * @param Router $router 路由器实例
      */
-    public function handle(Router $router): void
+    public function handle(?Router $router): void
     {
         $this->router = $router;
 
@@ -59,6 +59,11 @@ class Startup
         });
         $this->router->get('/api/zquery/meta', function () {
             (new ZqueryController())->meta();
+        });
+
+        $router->setNotFound(function () {
+            $this->notFound = true;
+            (new \app\controllers\NotFoundController())->index();
         });
 
         // ──── 注册前台兜底路由（匹配所有未被后台匹配的请求）────
@@ -228,7 +233,6 @@ class Startup
             $node = Node::where('slug', $slug)
                 ->where('status', Node::STATUS_PUBLISH)
                 ->fetch(FETCH_ASSOC);
-
             $node or $this->router->trigger404();
 
             // catalog 类型的内容存在 catalog 表中，需要从 catalog 表补充 content 字段

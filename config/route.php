@@ -10,7 +10,9 @@
 |   1. 后台管理路由（优先匹配）
 |   2. 前台 CMS 路由（fallback，兜底所有未被后台匹配的请求）
 */
-
+/**
+ * @var \zap\http\Router $router
+ */
 // 定义后台前缀（可在插件中通过 hook 修改）
 if (!defined('Z_ADMIN_PREFIX')) {
     define('Z_ADMIN_PREFIX', get_option('admin_prefix', 'z-admin'));

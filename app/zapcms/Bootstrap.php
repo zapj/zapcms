@@ -28,7 +28,7 @@ class Bootstrap
      *
      * @param Router $router 路由器实例
      */
-    public function handle(Router $router = null)
+    public function handle(?Router $router = null)
     {
         if ($router) {
             $this->router = $router;

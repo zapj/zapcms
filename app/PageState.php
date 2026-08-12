@@ -74,6 +74,8 @@ defined('IN_ZAPCMS') or die('No permission to access');
  * @property string       $nodeStatus      当前节点的状态
  * @property string       $nodeViews       当前节点的浏览量
  * @property array        $catalog         当前节点所属的栏目数据
+ * @property array|string|bool $tags       当前节点的标签（数组或字符串）
+ * @property array|string|bool $tag        当前节点的单个标签（数组或字符串）
  *
  * @method static PageState instance() 获取单例
  */
