@@ -23,6 +23,13 @@ $imageUrl = \zapcms\helpers\ThumbHelper::thumb($article['image'] ?? '', 750, 480
                             </div>
                             <div class="col-sm-6">
                                 <h2 class="product-title"><?php echo htmlspecialchars($article['title'] ?? ''); ?></h2>
+                                <?php if (!empty($article['meta']['price'])): ?>
+                                <div class="product-price">
+                                    <span class="product-price-label">价格</span>
+                                    <span class="product-price-currency">¥</span>
+                                    <span class="product-price-value"><?php echo number_format(floatval($article['meta']['price']), 2); ?></span>
+                                </div>
+                                <?php endif; ?>
                                 <?php if (!empty($article['excerpt'])): ?>
                                 <p class="product-excerpt text-muted"><?php echo htmlspecialchars($article['excerpt']); ?></p>
                                 <?php endif; ?>

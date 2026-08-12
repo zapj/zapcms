@@ -97,6 +97,8 @@ class AbstractNodeType
                 NodeRelation::create(['node_id'=>$id,'catalog_id'=>$catalog_id,'level'=>$level]);
             }
             Node::updateAll($node,['id'=>$id]);
+            // 保存自定义字段（node_meta）
+            Node::findById($id)->saveMeta(Request::post('meta', []));
             Response::json(['code'=>0,'msg'=>$this->getTitle("%s修改成功"),'id'=>$id]);
         }
         $this->nodeId = $id;
@@ -135,6 +137,8 @@ class AbstractNodeType
             $node['pub_time']  = strtotime($node['pub_time']) ?: time();
             $node = apply_filters('node_add',$node);
             $nodeModel = Node::create($node);
+            // 保存自定义字段（node_meta）
+            $nodeModel->saveMeta(Request::post('meta', []));
             foreach ($catalogArray as $catalog_id=>$level){
                 NodeRelation::create(['node_id'=>$nodeModel->id,'catalog_id'=>$catalog_id,'level'=>$level]);
             }
@@ -152,6 +156,11 @@ class AbstractNodeType
     function remove(){
         $id = intval(Request::post('id'));
         if(Request::isPost() && $id){
+            // 删除自定义字段（node_meta）
+            $nodeModel = Node::findById($id);
+            if ($nodeModel) {
+                $nodeModel->deleteMeta();
+            }
             $affId = Node::delete($id);
             if($affId){
                 session()->flash('success', $this->title . '删除成功');

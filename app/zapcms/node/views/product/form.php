@@ -17,6 +17,7 @@ $this->view->page_subtitle = $title ?? '';
  * @var \zapcms\models\Node $node
  * @var array $catalogList
  * @var array $node_relations
+ * @var string $_controller
  */
 ?>
 
@@ -79,6 +80,15 @@ $this->view->page_subtitle = $title ?? '';
                                 <textarea class="form-control form-control-sm" name="node[excerpt]"
                                           id="node_excerpt" rows="3"
                                           placeholder="产品简介或卖点"><?php echo $node->excerpt; ?></textarea>
+                            </div>
+                            <div class="mb-2">
+                                <label for="node_price" class="form-label">产品价格 <span class="text-muted small">(元，自定义字段)</span></label>
+                                <div class="input-group input-group-sm" style="max-width:260px;">
+                                    <span class="input-group-text">¥</span>
+                                    <input type="number" step="0.01" min="0" class="form-control form-control-sm"
+                                           name="meta[price]" id="node_price"
+                                           placeholder="如 199.00" value="<?php echo $node->get_node_meta('price'); ?>">
+                                </div>
                             </div>
                             <div class="mb-2">
                                 <label for="node_content" class="form-label">详情</label>

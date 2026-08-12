@@ -2152,6 +2152,35 @@ p.text {
     line-height: 1.4;
 }
 
+.product-price {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, #fff5f0 0%, #fef2e7 100%);
+    border: 1px solid #f5d9c4;
+    border-radius: 8px;
+}
+
+.product-price-label {
+    font-size: 13px;
+    color: #a08060;
+}
+
+.product-price-currency {
+    font-size: 16px;
+    font-weight: 700;
+    color: #e74c3c;
+}
+
+.product-price-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: #e74c3c;
+    line-height: 1;
+}
+
 .product-excerpt {
     margin-bottom: 14px;
 }

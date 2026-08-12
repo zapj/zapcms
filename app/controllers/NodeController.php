@@ -7,6 +7,7 @@ namespace app\controllers;
 
 use zapcms\services\BreadCrumb;
 use zapcms\services\Catalog;
+use zapcms\models\Node;
 use zapcms\models\NodeRelation;
 use zap\http\Controller;
 
@@ -82,6 +83,9 @@ class NodeController extends Controller
         //侧边栏菜单
         $topCatalog = current(pageState()->catalogPaths);
         pageState()->subCatalogList = Catalog::instance()->getSubCatalogList($topCatalog['id']);
+        // 加载自定义字段（node_meta），如产品价格
+        $nodeModel = Node::findById($node['id'] ?? 0);
+        $node['meta'] = $nodeModel ? $nodeModel->loadMeta() : [];
         view('product', ['article' => $node]);
     }
 
