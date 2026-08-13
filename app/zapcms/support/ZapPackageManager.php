@@ -311,14 +311,21 @@ class ZapPackageManager
             return ['success' => false, 'message' => '插件下载失败，请检查网络连接'];
         }
 
-        // 3. 从ZIP读取插件信息
+        // 3. 从ZIP读取模块信息（统一 mod.json）
         $pluginInfo = $this->readPluginInfoFromZip($zipFile);
 
-        // 4. 生成插件名称
+        // 4. 生成模块名称
         $name = $pluginInfo['name'] ?? $packageName;
         $name = $this->sanitizePluginName($name);
 
-        // 5. 解压到mods目录
+        // 5. 校验依赖（zapcms 版本、依赖模块版本）
+        $depError = $this->checkDependencies($pluginInfo);
+        if ($depError !== null) {
+            @unlink($zipFile);
+            return ['success' => false, 'message' => $depError];
+        }
+
+        // 6. 解压到mods目录
         $pluginDir = $this->modsDir . '/' . $name;
 
         if (is_dir($pluginDir)) {
@@ -335,7 +342,7 @@ class ZapPackageManager
             return ['success' => false, 'message' => '解压插件失败'];
         }
 
-        // 6. 写入数据库
+        // 7. 写入数据库
         $now = time();
         DB::table('plugin')->insert([
             'name'         => $name,
@@ -351,7 +358,10 @@ class ZapPackageManager
             'updated_at'   => $now,
         ]);
 
-        // 7. 运行插件安装脚本
+        // 8. 写入 options 表（供后台启动加载 autoload 脚本）
+        $this->writeInstalledModOption($name, $pluginInfo, 1);
+
+        // 9. 运行模块安装脚本
         $this->runPluginInstallScript($name);
 
         return ['success' => true, 'message' => '插件安装成功'];
@@ -383,6 +393,9 @@ class ZapPackageManager
 
         // 3. 从数据库删除
         DB::table('plugin')->where('name', $name)->delete();
+
+        // 4. 删除 options 记录
+        $this->removeInstalledModOption($name);
 
         return ['success' => true, 'message' => '插件卸载成功'];
     }
@@ -441,12 +454,15 @@ class ZapPackageManager
             'updated_at' => time(),
         ]);
 
-        // 7. 清理备份
+        // 7. 刷新 options 记录（读取新版 mod.json）
+        $this->writeInstalledModOption($name, $this->readModInfoFromDir($name), (int)$plugin['status']);
+
+        // 8. 清理备份
         if (is_dir($backupPath)) {
             $this->deleteDirectory($backupPath);
         }
 
-        // 8. 记录更新历史
+        // 9. 记录更新历史
         DB::table('update_history')->insert([
             'target'       => 'plugin:' . $name,
             'from_version' => $plugin['version'] ?? '0.0.0',
@@ -470,12 +486,20 @@ class ZapPackageManager
 
         DB::table('plugin')->where('name', $name)->update(['status' => $status, 'updated_at' => time()]);
 
+        // 同步更新 options 记录状态
+        $installed = $this->getInstalledModOption($name);
+        if ($installed) {
+            $installed['status']    = (int)$status;
+            $installed['updated_at'] = time();
+            $this->saveInstalledModOption($name, $installed);
+        }
+
         $action = $status ? '启用' : '禁用';
         return ['success' => true, 'message' => "插件{$action}成功"];
     }
 
     /**
-     * 从ZIP包读取插件信息
+     * 从ZIP包读取模块信息（统一读取 mod.json，兼容旧格式 plugin.json）
      */
     protected function readPluginInfoFromZip(string $zipFile): array
     {
@@ -483,21 +507,8 @@ class ZapPackageManager
         if (class_exists('ZipArchive')) {
             $zip = new \ZipArchive();
             if ($zip->open($zipFile) === true) {
-                // 尝试读取plugin.json
-                $jsonStr = false;
-                // 先尝试根目录
-                $jsonStr = $zip->getFromName('plugin.json');
-                if ($jsonStr === false) {
-                    // 尝试第一级子目录
-                    for ($i = 0; $i < $zip->numFiles; $i++) {
-                        $name = $zip->getNameIndex($i);
-                        if (preg_match('#^[^/]+/plugin\.json$#', $name)) {
-                            $jsonStr = $zip->getFromName($name);
-                            break;
-                        }
-                    }
-                }
-
+                // 先尝试 mod.json，再回退 plugin.json（兼容旧包）
+                $jsonStr = $this->readJsonFromZip($zip, ['mod.json', 'plugin.json']);
                 if ($jsonStr !== false) {
                     $info = json_decode($jsonStr, true) ?: [];
                 }
@@ -505,6 +516,31 @@ class ZapPackageManager
             }
         }
         return $info;
+    }
+
+    /**
+     * 从ZIP中按候选文件名列表读取JSON内容（支持根目录或第一级子目录）
+     *
+     * @return string|false
+     */
+    protected function readJsonFromZip(\ZipArchive $zip, array $candidates)
+    {
+        foreach ($candidates as $candidate) {
+            $jsonStr = $zip->getFromName($candidate);
+            if ($jsonStr !== false) {
+                return $jsonStr;
+            }
+        }
+        // 尝试第一级子目录
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $name = $zip->getNameIndex($i);
+            foreach ($candidates as $candidate) {
+                if (preg_match('#^[^/]+/' . preg_quote($candidate, '#') . '$#', $name)) {
+                    return $zip->getFromName($name);
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -837,7 +873,7 @@ class ZapPackageManager
 
         $scan = scandir($this->modsDir);
         foreach ($scan as $item) {
-            if ($item === '.' || $item === '..') {
+            if ($item === '.' || $item === '..' || $item[0] === '.') {
                 continue;
             }
 
@@ -847,21 +883,19 @@ class ZapPackageManager
             }
 
             // 读取mod.json
-            $info = [];
-            $jsonFile = $modDir . '/mod.json';
-            if (file_exists($jsonFile)) {
-                $content = file_get_contents($jsonFile);
-                $info    = json_decode($content, true) ?: [];
-            }
+            $info = $this->readModInfoFromDir($item);
 
             $mods[] = [
-                'name'        => $item,
-                'title'       => $info['title'] ?? $item,
-                'version'     => $info['version'] ?? '1.0.0',
-                'author'      => $info['author'] ?? '',
-                'description' => $info['description'] ?? '',
-                'dir'         => $modDir,
-                'enabled'     => $this->isPluginEnabled($item),
+                'name'         => $item,
+                'title'        => $info['title'] ?? $item,
+                'version'      => $info['version'] ?? '1.0.0',
+                'type'         => $info['type'] ?? 'module',
+                'author'       => $info['author'] ?? '',
+                'description'  => $info['description'] ?? '',
+                'autoload'     => $info['autoload'] ?? '',
+                'dependencies' => $info['dependencies'] ?? [],
+                'dir'          => $modDir,
+                'enabled'      => $this->isPluginEnabled($item),
             ];
         }
 
@@ -886,5 +920,160 @@ class ZapPackageManager
             ->orderBy('created_at', 'DESC')
             ->limit($limit)
             ->get();
+    }
+
+    // ==================== 模块信息与 options 同步 ====================
+
+    /**
+     * 从 mods 目录读取 mod.json（兼容旧格式 plugin.json）
+     */
+    public function readModInfoFromDir(string $name): array
+    {
+        $info = [];
+        $modDir = $this->modsDir . '/' . $name;
+        foreach (['mod.json', 'plugin.json'] as $jsonFile) {
+            $path = $modDir . '/' . $jsonFile;
+            if (file_exists($path)) {
+                $content = file_get_contents($path);
+                $info    = json_decode($content, true) ?: [];
+                break;
+            }
+        }
+        return $info;
+    }
+
+    /**
+     * 校验依赖：zapcms 版本 + 依赖的其他模块版本
+     *
+     * @param array $info mod.json 信息
+     * @return string|null 错误信息，通过则返回 null
+     */
+    public function checkDependencies(array $info): ?string
+    {
+        $deps = $info['dependencies'] ?? [];
+        if (empty($deps) && empty($info['min_zapcms'])) {
+            return null;
+        }
+
+        // 1. zapcms 版本（兼容旧格式 min_zapcms）
+        if (isset($deps['zapcms'])) {
+            $constraint = trim($deps['zapcms']);
+        } elseif (!empty($info['min_zapcms'])) {
+            $constraint = '>=' . trim($info['min_zapcms']);
+        }
+        if (!empty($constraint)) {
+            if (!$this->versionSatisfies(ZAP_CMS_VERSION, $constraint)) {
+                return '当前 ZapCMS 版本 ' . ZAP_CMS_VERSION . ' 不满足依赖要求: zapcms ' . $constraint;
+            }
+        }
+
+        // 2. 依赖的其他模块版本
+        foreach ($deps as $mod => $constraint) {
+            if ($mod === 'zapcms') {
+                continue;
+            }
+            $installed = DB::table('plugin')->where('name', $mod)->first();
+            if (!$installed) {
+                return '缺少依赖模块: ' . $mod . ' (' . $constraint . ')';
+            }
+            if (!$this->versionSatisfies($installed['version'] ?? '', $constraint)) {
+                return '依赖模块 ' . $mod . ' 版本不满足要求: ' . $constraint . '，当前 ' . ($installed['version'] ?? '未知');
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * 判断版本号是否满足约束条件（支持 >=, >, <=, <, =, ==, !=）
+     */
+    protected function versionSatisfies(string $version, string $constraint): bool
+    {
+        $constraint = trim($constraint);
+        if (preg_match('/^(>=|<=|>|<|==|=|!=)?\s*(.+)$/', $constraint, $m)) {
+            $op        = $m[1] ?: '>=';
+            $target    = trim($m[2]);
+            return version_compare($version, $target, $op);
+        }
+        return version_compare($version, $constraint, '>=');
+    }
+
+    /**
+     * options 键名：mod.installed.{name}
+     */
+    protected function modOptionKey(string $name): string
+    {
+        return 'mod.installed.' . $name;
+    }
+
+    /**
+     * 读取已安装模块在 options 中的记录
+     */
+    public function getInstalledModOption(string $name): ?array
+    {
+        $json = Option::get($this->modOptionKey($name));
+        if (empty($json)) {
+            return null;
+        }
+        $info = json_decode($json, true);
+        return is_array($info) ? $info : null;
+    }
+
+    /**
+     * 写入/更新已安装模块的 options 记录（autoload=1，供后台启动加载）
+     */
+    public function saveInstalledModOption(string $name, array $info): bool
+    {
+        $info['updated_at'] = time();
+        Option::replace($this->modOptionKey($name), json_encode($info, JSON_UNESCAPED_UNICODE), 0, 1);
+        return true;
+    }
+
+    /**
+     * 安装后写入 options 记录（含 type/autoload/dependencies）
+     */
+    protected function writeInstalledModOption(string $name, array $info, int $status): bool
+    {
+        $record = [
+            'name'         => $name,
+            'type'         => $info['type'] ?? 'module',
+            'title'        => $info['title'] ?? $name,
+            'version'      => $info['version'] ?? '1.0.0',
+            'author'       => $info['author'] ?? '',
+            'description'  => $info['description'] ?? '',
+            'homepage'     => $info['homepage'] ?? '',
+            'autoload'     => $info['autoload'] ?? '',
+            'dependencies' => $info['dependencies'] ?? [],
+            'status'       => (int)$status,
+            'installed_at' => time(),
+            'updated_at'   => time(),
+        ];
+        Option::replace($this->modOptionKey($name), json_encode($record, JSON_UNESCAPED_UNICODE), 0, 1);
+        return true;
+    }
+
+    /**
+     * 删除已安装模块的 options 记录
+     */
+    protected function removeInstalledModOption(string $name): bool
+    {
+        Option::remove($this->modOptionKey($name));
+        return true;
+    }
+
+    /**
+     * 获取所有已安装（options 已登记）的模块列表
+     */
+    public function getInstalledMods(): array
+    {
+        $rows = Option::getArray('mod.installed.', 'REGEXP');
+        $mods = [];
+        foreach ($rows as $key => $json) {
+            $name = substr($key, strlen('mod.installed.'));
+            $info = json_decode($json, true) ?: [];
+            $info['name'] = $name;
+            $mods[] = $info;
+        }
+        return $mods;
     }
 }

@@ -13,6 +13,7 @@ namespace zapcms;
 use zap\http\Router;
 use zap\http\Request;
 use zap\view\View;
+use zapcms\services\Option;
 
 class Bootstrap
 {
@@ -61,6 +62,35 @@ class Bootstrap
         // 后端只加载 admin/functions.php，不加载前台的 functions.php
         if (is_file(themes_path("{$theme}/admin/functions.php"))) {
             include themes_path("{$theme}/admin/functions.php");
+        }
+
+        // 加载已安装模块的 autoload 脚本（options 表登记，status=1 且配置了 autoload）
+        $this->loadModAutoloads();
+    }
+
+    /**
+     * 后台启动时加载已安装模块的 autoload 脚本
+     *
+     * 从 options 表读取 mod.installed.* 记录，对启用的模块加载其 autoload 脚本，
+     * 脚本中可注册 hooks、菜单等。
+     */
+    protected function loadModAutoloads(): void
+    {
+        try {
+            $rows = Option::getArray('mod.installed.', 'REGEXP');
+        } catch (\Throwable $e) {
+            return; // options 表不可用时静默跳过
+        }
+        foreach ($rows as $key => $json) {
+            $name = substr($key, strlen('mod.installed.'));
+            $info = is_string($json) ? (json_decode($json, true) ?: []) : [];
+            if (empty($info['status']) || empty($info['autoload'])) {
+                continue;
+            }
+            $script = APP_ROOT . '/mods/' . $name . '/' . $info['autoload'];
+            if (is_file($script)) {
+                include_once $script;
+            }
         }
     }
 

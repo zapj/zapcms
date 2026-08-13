@@ -133,7 +133,51 @@ class PluginController extends AdminController
 
         $file = $_FILES['plugin_zip'] ?? null;
         if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
-            Response::json(['code' => 1, 'msg' => '请上传有效的ZIP文件']);
+            // 无文件上传时：注册已存在于 mods 目录的模块（register 模式）
+            $name = trim(req()->post('name', ''));
+            $name = preg_replace('/[^a-zA-Z0-9\-_]/', '', $name);
+            if (empty($name)) {
+                Response::json(['code' => 1, 'msg' => '请上传有效的ZIP文件']);
+            }
+            if ($this->pm->isPluginInstalled($name)) {
+                Response::json(['code' => 1, 'msg' => '模块已注册']);
+            }
+            $pluginInfo = $this->pm->readModInfoFromDir($name);
+            if (empty($pluginInfo)) {
+                Response::json(['code' => 1, 'msg' => '模块目录不存在或缺少 mod.json']);
+            }
+            $depError = $this->pm->checkDependencies($pluginInfo);
+            if ($depError !== null) {
+                Response::json(['code' => 1, 'msg' => $depError]);
+            }
+            $now = time();
+            DB::table('plugin')->insert([
+                'name'         => $name,
+                'title'        => $pluginInfo['title'] ?? $name,
+                'version'      => $pluginInfo['version'] ?? '1.0.0',
+                'author'       => $pluginInfo['author'] ?? '',
+                'description'  => $pluginInfo['description'] ?? '',
+                'homepage'     => $pluginInfo['homepage'] ?? '',
+                'package_name' => $pluginInfo['package_name'] ?? $name,
+                'status'       => 1,
+                'sort_order'   => 0,
+                'installed_at' => $now,
+                'updated_at'   => $now,
+            ]);
+            $this->pm->saveInstalledModOption($name, [
+                'name'         => $name,
+                'type'         => $pluginInfo['type'] ?? 'module',
+                'title'        => $pluginInfo['title'] ?? $name,
+                'version'      => $pluginInfo['version'] ?? '1.0.0',
+                'author'       => $pluginInfo['author'] ?? '',
+                'description'  => $pluginInfo['description'] ?? '',
+                'homepage'     => $pluginInfo['homepage'] ?? '',
+                'autoload'     => $pluginInfo['autoload'] ?? '',
+                'dependencies' => $pluginInfo['dependencies'] ?? [],
+                'status'       => 1,
+                'installed_at' => $now,
+            ]);
+            Response::json(['code' => 0, 'msg' => '模块注册成功']);
         }
 
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
@@ -155,6 +199,12 @@ class PluginController extends AdminController
         // 检查是否已安装
         if ($this->pm->isPluginInstalled($name)) {
             Response::json(['code' => 1, 'msg' => '插件已安装，如需更新请使用更新功能']);
+        }
+
+        // 校验依赖（zapcms 版本、依赖模块版本）
+        $depError = $this->pm->checkDependencies($pluginInfo);
+        if ($depError !== null) {
+            Response::json(['code' => 1, 'msg' => $depError]);
         }
 
         // 解压并安装
@@ -182,6 +232,21 @@ class PluginController extends AdminController
             'sort_order'   => 0,
             'installed_at' => $now,
             'updated_at'   => $now,
+        ]);
+
+        // 写入 options 表（供后台启动加载 autoload 脚本）
+        $this->pm->saveInstalledModOption($name, [
+            'name'         => $name,
+            'type'         => $pluginInfo['type'] ?? 'module',
+            'title'        => $pluginInfo['title'] ?? $name,
+            'version'      => $pluginInfo['version'] ?? '1.0.0',
+            'author'       => $pluginInfo['author'] ?? '',
+            'description'  => $pluginInfo['description'] ?? '',
+            'homepage'     => $pluginInfo['homepage'] ?? '',
+            'autoload'     => $pluginInfo['autoload'] ?? '',
+            'dependencies' => $pluginInfo['dependencies'] ?? [],
+            'status'       => 1,
+            'installed_at' => $now,
         ]);
 
         Response::json(['code' => 0, 'msg' => '插件安装成功']);
@@ -274,7 +339,7 @@ class PluginController extends AdminController
     }
 
     /**
-     * 从ZIP文件中读取plugin.json信息
+     * 从ZIP文件中读取模块信息（统一 mod.json，兼容旧格式 plugin.json）
      */
     protected function readPluginInfoFromZip(string $zipFile): array
     {
@@ -288,14 +353,23 @@ class PluginController extends AdminController
             return $info;
         }
 
-        $jsonStr = $zip->getFromName('plugin.json');
+        // 先尝试 mod.json，再回退 plugin.json（兼容旧包）
+        $jsonStr = false;
+        foreach (['mod.json', 'plugin.json'] as $candidate) {
+            $jsonStr = $zip->getFromName($candidate);
+            if ($jsonStr !== false) {
+                break;
+            }
+        }
         if ($jsonStr === false) {
             // 尝试第一级子目录
             for ($i = 0; $i < $zip->numFiles; $i++) {
                 $name = $zip->getNameIndex($i);
-                if (preg_match('#^[^/]+/plugin\.json$#', $name)) {
-                    $jsonStr = $zip->getFromName($name);
-                    break;
+                foreach (['mod.json', 'plugin.json'] as $candidate) {
+                    if (preg_match('#^[^/]+/' . preg_quote($candidate, '#') . '$#', $name)) {
+                        $jsonStr = $zip->getFromName($name);
+                        break 2;
+                    }
                 }
             }
         }
