@@ -38,11 +38,29 @@
         </div>
     </div>
     <div class="zap-message mb-2"></div>
-    <div id="zapFinderFileList" class="zapUploader">
-        <input type="file" id="zapUploadFinder" multiple>
+    <style>
+        /* 拖拽上传时的视觉反馈（ZAPUploader 通过 id 绑定 dropArea，与 .zapUploader 类解耦，
+           因此这里使用 id 选择器替代被移除的内置 .zapUploader.highlight） */
+        #zapFinderFileList.highlight {
+            outline: 2px dashed var(--zap-primary, dodgerblue);
+            outline-offset: -8px;
+            background: rgba(16, 185, 129, 0.05);
+        }
+        /* 拖拽提示条不允许成为 drop 目标，保证事件落到列表容器 */
+        #zapFinderDropHint { pointer-events: none; }
+        #zapFinderFileList.zap-upload-disabled.highlight {
+            outline-color: var(--bs-danger, #dc3545);
+            background: rgba(220, 53, 69, 0.05);
+        }
+    </style>
+    <div id="zapFinderFileList">
+        <input type="file" id="zapUploadFinder" multiple style="display: none;">
         <div class="progress zap-progress mb-2" style="height: 2px;position: absolute;top: 0;width: 100%;left: 0;">
             <div class="progress-bar zap-progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0"
                  aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <div id="zapFinderDropHint" class="text-center text-muted py-2 mb-3">
+            <i class="fa-solid fa-cloud-arrow-down"></i> 支持拖拽文件到此处上传
         </div>
         <?php } ?>
         <div id="finderContent">
@@ -94,14 +112,16 @@
     <script>
         Zap.EnableToolTip();
         const FinderUrl = '<?php echo url_action('finder@list') ?>?path=';
-        let TARGET_LIST = [
-            <?php  foreach ($target as $t) {
-            echo "'", $t, "',";
-        } ?>
-        ];
-        const IMG_SIZE =  '<?php echo $size;?>';
+        // 首次加载由服务端注入，作为兜底；弹窗复用后以 window.zapFinder.finderConfig 为准
+        let TARGET_LIST = <?php echo json_encode(array_values(array_filter((array)$target))); ?>;
+        const IMG_SIZE = <?php echo json_encode((string)$size); ?>;
         const zapFinderFileList = $('#finderContent');
-        const progressBar = $('.progress-bar');
+        const progressBar = $('#zapFinderFileList .progress-bar');
+
+        function getFinderConfig() {
+            const cfg = (window.zapFinder && window.zapFinder.finderConfig) ? window.zapFinder.finderConfig : null;
+            return cfg || {target: TARGET_LIST.join('|'), callback: '', size: IMG_SIZE};
+        }
         function reloadFileList() {
             zapFinderFileList.load(FinderUrl + $('#cur-path').val(), loadCallback);
         }
@@ -153,55 +173,106 @@
             });
         })
         $('#button-search').on('click',function (){
-            zapFinderFileList.load(FinderUrl + $('#cur-path').val() + '&search='+$('#input-search').val(), loadCallback);
+            zapFinderFileList.load(FinderUrl + $('#cur-path').val() + '&search=' + encodeURIComponent($('#input-search').val()), loadCallback);
         })
 
         zapFinderFileList.on('click', 'a.dirList', function (event) {
             event.preventDefault()
             event.stopPropagation()
-            if ($(this).data('type') === 'dir') {
-                zapFinderFileList.load($(this).attr('href'), loadCallback);
+            const $item = $(this);
+            if ($item.data('type') === 'dir') {
+                zapFinderFileList.load($item.attr('href'), loadCallback);
             }
-            if ($(this).data('type') === 'file') {
-                <?php if ($callback) {
-                echo $callback, '(event);';
-            } ?>
-                TARGET_LIST.forEach((value) => {
-                    $target = $(value);
+            if ($item.data('type') === 'file') {
+                const cfg = getFinderConfig();
+                // 仅允许安全的全局函数名作为回调，防止 URL 参数注入
+                const cbName = cfg.callback;
+                if (cbName && /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(cbName) && typeof window[cbName] === 'function') {
+                    window[cbName](event);
+                }
+                const targets = cfg.target ? cfg.target.split('|').map(s => s.trim()).filter(Boolean) : TARGET_LIST;
+                const imgSize = cfg.size || IMG_SIZE;
+                const original = $item.data('original');
+                targets.forEach((value) => {
+                    const $target = $(value);
                     if ($target[0] !== undefined && $target[0].nodeName === 'IMG') {
-                        if(IMG_SIZE === 'original'){
-                            $target.prop('src', $(this).data('original'))
-                        }else{
-                            $target.prop('src', $(this).find('img').attr('src'))
+                        if (imgSize === 'original') {
+                            $target.prop('src', original)
+                        } else {
+                            $target.prop('src', $item.find('img').attr('src'))
                         }
-                        $target.attr('data-original', $(this).data('original'))
+                        $target.attr('data-original', original)
                     } else if ($target[0] !== undefined && $target[0].nodeName === 'INPUT') {
-                        $target.val($(this).data('original'))
+                        $target.val(original)
                     }
-
                 })
-                window.zapFinder.hide();
+                if (window.zapFinder) {
+                    window.zapFinder.hide();
+                }
             }
         })
         zapFinderFileList.on('click', 'nav a', function (event) {
             event.preventDefault()
             event.stopPropagation()
-            zapFinderFileList.load($(this).attr('href'), loadCallback);
+            const href = $(this).attr('href');
+            if (href && href !== '#') {
+                zapFinderFileList.load(href, loadCallback);
+            }
         });
 
+        // 缩略图缓存目录（thumbs）禁止上传：隐藏上传按钮、切换拖拽提示、阻止拖拽 drop
+        function updateUploadState() {
+            const path = String($('#cur-path').val() || '').replace(/\\/g, '/');
+            const forbidden = path === 'thumbs' || path.indexOf('thumbs/') === 0;
+            $('#btn-upload').toggle(!forbidden);
+            $('#zapFinderFileList').toggleClass('zap-upload-disabled', forbidden);
+            const $hint = $('#zapFinderDropHint');
+            if (forbidden) {
+                $hint.removeClass('text-muted').addClass('text-warning')
+                    .html('<i class="fa-solid fa-ban"></i> 该目录为系统缩略图缓存，禁止上传文件');
+            } else {
+                $hint.removeClass('text-warning').addClass('text-muted')
+                    .html('<i class="fa-solid fa-cloud-arrow-down"></i> 支持拖拽文件到此处上传');
+            }
+        }
+        updateUploadState();
+
+        // capture 阶段拦截 thumbs 目录的拖拽放置，防止触发上传
+        $('#zapFinderFileList')[0].addEventListener('drop', function (event) {
+            if ($('#zapFinderFileList').hasClass('zap-upload-disabled')) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }, true);
+
         function loadCallback(response, status, xhr) {
+            updateUploadState();
             if (status === "error") {
                 ZapToast.alert(response, {bgColor: bgDanger})
             }
         }
-        function Finder_Show(event){
-            TARGET_LIST = [];
-            TARGET_LIST.push(...$(event.target).data('zap-target').split("|"))
-        }
 
         var upload = new ZAPUploader('#zapFinderFileList', {
-            allowedExtensions: '.jpg|.png|.jpeg',
+            // 支持拖拽上传整个目录（插件通过 webkitGetAsEntry 遍历子目录并保留结构）
+            directoryUpload: true,
+            // 老浏览器不支持 entry API 时，目录条目无 type，直接跳过而非报错
+            skipInvalidFile: true,
+            allowedExtensions: '.jpg|.jpeg|.png|.gif|.webp|.svg|.bmp|.ico|.zip|.rar|.7z|.tar|.gz|.pdf|.doc|.docx|.xls|.xlsx|.ppt|.pptx|.txt|.md|.csv|.mp3|.mp4|.avi|.mov|.wmv|.flv|.webm|.json|.xml',
             url: '<?php echo url_action('Upload@file') ?>',
+            messageContainer: '#zapFinderForm .zap-message',
+            error: function (id, msg) {
+                if (id === undefined || id === null) {
+                    $('#zapFinderForm .zap-message').empty();
+                    return;
+                }
+                // 带关闭按钮的错误提示，点击可手动关闭
+                const $alert = $('<div class="alert alert-danger alert-dismissible fade show py-2 mb-2" role="alert"></div>');
+                $('<button type="button" class="btn-close" aria-label="关闭"></button>')
+                    .on('click', function () { $alert.remove(); })
+                    .appendTo($alert);
+                $('<span></span>').text(msg).appendTo($alert);
+                $('#zapFinderForm .zap-message').append($alert);
+            },
             sending:function(file,xhr,formData){
                 formData.append('path',$('#cur-path').val());
             },

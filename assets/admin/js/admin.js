@@ -20,12 +20,12 @@ $(function(){
 
     $(document.body).on('click','button[data-zap-toggle=\"image\"]',function(e){
         e.preventDefault();
-        Zap.finder({target:$(this).data('zap-target'),callback:$(this).data('zap-callback'),size:$(this).data('zap-size')});
-        window.zapFinder.target = e.target
-        if(typeof Finder_Show !== "undefined"){
-            Finder_Show(e)
-        }
-
+        const $btn = $(this);
+        Zap.finder({
+            target:$btn.data('zap-target'),
+            callback:$btn.data('zap-callback'),
+            size:$btn.data('zap-size')
+        });
     });
 
 });
@@ -201,24 +201,40 @@ var Zap = {
         alert.show()
     },
     finder:function(options){
-        if(window.zapFinder){
-            window.zapFinder.show()
-            return window.zapFinder;
-        }
         options = options || {};
         options.title = options.title  || "文件管理器";
         options.path = options.path || '';
         options.target = options.target || '';
         options.size = options.size || '';
         options.callback = options.callback || '';
+
+        // 已有弹窗实例：复用并同步最新目标配置，避免重复加载文件列表
+        if(window.zapFinder){
+            window.zapFinder.finderConfig = {
+                target: options.target,
+                callback: options.callback,
+                size: options.size
+            };
+            // 同步外部上下文（如 summernote 编辑器实例），供回调使用
+            window.zapFinder.settings.context = options.context;
+            window.zapFinder.show();
+            return window.zapFinder;
+        }
+
         window.zapFinder = new ZapDialog({
             id:'zapFinder',
-            url:ZAP_BASE_URL + '/finder/list?initialize=true&path=' + options.path +'&target='+encodeURIComponent(options.target) +  '&callback='+options.callback + '&size='+options.size,
+            url:ZAP_BASE_URL + '/finder/list?initialize=true&path=' + encodeURIComponent(options.path) +'&target='+encodeURIComponent(options.target) +  '&callback='+encodeURIComponent(options.callback) + '&size='+encodeURIComponent(options.size),
             title:options.title,
             backdrop:false,
-            dialogClass:'modal-xl',
-            context:options.context
+            context:options.context,
+            dialogClass:'modal-xl'
         });
+        // 目标选择器/回调/尺寸统一由弹窗实例持有，finder/list.php 动态读取
+        window.zapFinder.finderConfig = {
+            target: options.target,
+            callback: options.callback,
+            size: options.size
+        };
         window.zapFinder.show()
         return window.zapFinder;
     }

@@ -24,6 +24,21 @@ $this->view->page_subtitle = $title ?? '';
 $metaGroups = \zapcms\services\NodeType::getFieldsGrouped((string)($node_type ?? $_controller ?? 'default'));
 $metaDefaultFields = $metaGroups[''] ?? [];
 unset($metaGroups['']);
+
+// 附加图片（node_meta 中的 gallery，JSON 数组）
+$galleryArr = [];
+$galleryRaw = $node->get_node_meta('gallery');
+if ($galleryRaw !== '' && $galleryRaw !== null) {
+    $decoded = json_decode((string)$galleryRaw, true);
+    if (is_array($decoded)) {
+        $galleryArr = array_values(array_filter($decoded, fn($v) => $v !== ''));
+    } elseif ((string)$galleryRaw !== '') {
+        $galleryArr = [(string)$galleryRaw];
+    }
+}
+if (empty($galleryArr)) {
+    $galleryArr = [''];
+}
 ?>
 
 <form id="zapForm" method="post">
@@ -40,6 +55,11 @@ unset($metaGroups['']);
                         <li class="nav-item">
                             <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab1" type="button">
                                 <i class="fa fa-file-alt me-1"></i>内容
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-image" type="button">
+                                <i class="fa fa-image me-1"></i>图片
                             </button>
                         </li>
                         <li class="nav-item">
@@ -118,6 +138,55 @@ unset($metaGroups['']);
                             include __DIR__ . '/../_meta_fields.php';
                             unset($node_fields, $meta_section_title, $meta_show_header);
                             ?>
+                        </div>
+                        <div class="tab-pane" id="tab-image">
+                            <div class="mb-3">
+                                <label class="form-label">产品主图</label>
+                                <div class="d-flex align-items-center gap-3">
+                                    <img src="<?php echo \zapcms\helpers\ThumbHelper::thumb($node['image'], 136, 136); ?>"
+                                         class="img-thumbnail rounded" id="node-image-thumb"
+                                         style="width:136px;height:136px;object-fit:cover;" alt=""/>
+                                    <div class="d-flex flex-column gap-1">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm"
+                                                data-zap-toggle="image" data-zap-target="#node-image|#node-image-thumb">
+                                            <i class="fa fa-upload me-1"></i>选择主图
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeImage()">
+                                            <i class="fa fa-trash"></i>移除
+                                        </button>
+                                        <div class="form-text">产品主图将显示在列表与详情页封面。</div>
+                                    </div>
+                                    <input type="hidden" name="node[image]" id="node-image" value="<?php echo $node['image']; ?>" />
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <label class="form-label mb-0">附加图片</label>
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addGalleryRow()">
+                                    <i class="fa fa-plus me-1"></i>添加图片
+                                </button>
+                            </div>
+                            <div class="form-text mb-2">可添加 1 张或多张附加图片，存储于 <code>node_meta</code>（meta_name 为 <code>gallery</code>）。</div>
+                            <div id="gallery-list">
+                                <?php foreach ($galleryArr as $gIdx => $gimg):
+                                    $gThumb = \zapcms\helpers\ThumbHelper::thumb($gimg, 64, 64);
+                                ?>
+                                <div class="gallery-item d-flex align-items-center gap-2 mb-2">
+                                    <img src="<?php echo $gThumb; ?>"
+                                         class="img-thumbnail rounded" id="gallery-thumb-<?php echo $gIdx; ?>"
+                                         style="width:64px;height:64px;object-fit:cover;" alt=""/>
+                                    <input type="hidden" class="gallery-input" id="gallery-input-<?php echo $gIdx; ?>"
+                                           name="meta[gallery][]" value="<?php echo e($gimg); ?>">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                                            data-zap-toggle="image" data-zap-target="#gallery-input-<?php echo $gIdx; ?>|#gallery-thumb-<?php echo $gIdx; ?>">
+                                        <i class="fa fa-upload me-1"></i>选择图片
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeGalleryRow(this)">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
                         </div>
                         <div class="tab-pane" id="tab2">
                             <div class="mb-2">
@@ -215,25 +284,6 @@ unset($metaGroups['']);
                 </div>
             </div>
 
-            <div class="card card-outline card-secondary">
-                <div class="card-header">
-                    <h3 class="card-title"><i class="fa fa-image me-2"></i>产品主图</h3>
-                </div>
-                <div class="card-body text-center p-2">
-                    <img src="<?php echo \zapcms\helpers\ThumbHelper::thumb($node['image'],136,136); ?>"
-                         class="img-thumbnail rounded" id="node-image-thumb" style="max-height:140px;" alt=""/>
-                    <input type="hidden" name="node[image]" id="node-image" value="<?php echo $node['image']; ?>" />
-                </div>
-                <div class="card-footer p-2 d-flex gap-1">
-                    <button type="button" class="btn btn-outline-secondary btn-sm flex-fill"
-                            data-zap-toggle="image" data-zap-target="#node-image|#node-image-thumb">
-                        <i class="fa fa-upload me-1"></i>选择
-                    </button>
-                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeImage()">
-                        <i class="fa fa-trash"></i>
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 </form>
@@ -266,6 +316,7 @@ function save() {
     const f = $('#zapForm');
     if (!f.valid()) { ZapToast.alert('请修改错误项，重新提交', {bgColor: bgDanger}); return; }
     const l = Zap.loading('正在保存，请稍后');
+    cleanGallery();
     $.ajax({
         url: '<?php echo Url::currentFull();?>',
         method: 'post', data: f.serialize(), dataType: 'json',
@@ -281,6 +332,34 @@ function save() {
 function removeImage() {
     $('#node-image').val('');
     $('#node-image-thumb').attr('src','').hide();
+}
+// ---- 附加图片（node_meta.gallery）----
+var galleryIndex = <?php echo count($galleryArr); ?>;
+var galleryPlaceholder = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+function addGalleryRow(src) {
+    var list = document.getElementById('gallery-list');
+    var i = galleryIndex++;
+    var imgSrc = src ? src : galleryPlaceholder;
+    var div = document.createElement('div');
+    div.className = 'gallery-item d-flex align-items-center gap-2 mb-2';
+    div.innerHTML =
+        '<img src="' + imgSrc + '" class="img-thumbnail rounded" id="gallery-thumb-' + i + '" style="width:64px;height:64px;object-fit:cover;" alt=""/>' +
+        '<input type="hidden" class="gallery-input" id="gallery-input-' + i + '" name="meta[gallery][]" value="' + (src || '') + '">' +
+        '<button type="button" class="btn btn-outline-secondary btn-sm" data-zap-toggle="image" data-zap-target="#gallery-input-' + i + '|#gallery-thumb-' + i + '">' +
+            '<i class="fa fa-upload me-1"></i>选择图片' +
+        '</button>' +
+        '<button type="button" class="btn btn-outline-danger btn-sm" onclick="removeGalleryRow(this)"><i class="fa fa-trash"></i></button>';
+    list.appendChild(div);
+}
+function removeGalleryRow(btn) {
+    var row = btn.closest('.gallery-item');
+    if (row) { row.remove(); }
+}
+function cleanGallery() {
+    document.querySelectorAll('#gallery-list .gallery-item').forEach(function (row) {
+        var inp = row.querySelector('.gallery-input');
+        if (!inp || !inp.value.trim()) { row.remove(); }
+    });
 }
 function generateSlug() {
     var title = $('#node_title').val().trim();

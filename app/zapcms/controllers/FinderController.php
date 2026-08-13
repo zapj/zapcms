@@ -14,29 +14,44 @@ use zap\view\View;
 class FinderController extends AdminController
 {
     function list(){
-        list($width,$height) = array_filter(explode('x',req()->get('size')),'intval');
-        if(!$width){$width = 136;}
-        if(!$height){$height = 136;}
+        // size 格式校验：仅允许 "宽x高" 或 original
+        $size = (string)req()->get('size','');
+        if(preg_match('/^(\d+)x(\d+)$/', $size, $m)){
+            $width = (int)$m[1];
+            $height = (int)$m[2];
+        }else{
+            $width = 136;
+            $height = 136;
+        }
         $path = trim(req()->get('path',''),'/');
         $path =  str_replace(['..'],'',$path);
         $realPath = realpath(app()->storagePath($path) );
         if(!is_dir($realPath)){
             \response("{$path} 不是目录无法访问")->setStatusCode(403)->send();
         }
-        $search = req()->get('search','');
+        $search = (string)req()->get('search','');
         $data = [];
 //        $fsIter = new FilesystemIterator($realPath,FilesystemIterator::KEY_AS_PATHNAME|FilesystemIterator::CURRENT_AS_FILEINFO|FilesystemIterator::SKIP_DOTS);
         $fsIter = new SortingFilesystemIterator($realPath);
         $fsIter->sortByType();
-        if(!empty($search)){
-            $fsIter->match("/$search/");
+        if($search !== ''){
+            $fsIter->match('/' . preg_quote($search, '/') . '/');
         }
 
         $total = $fsIter->count();
-        $pageHelper = new Pagination(req()->get('page',1),10,req()->get());
-        $pageHelper->url = url_action('Finder@list');
+
+        // 分页 URL：保留 path/search/target 等查询参数，剔除 page 与 initialize。
+        // initialize=true 会渲染整个 finder 框架（form+script），若被带入分页链接，
+        // 前端 .load() 会把整个框架嵌套进 #finderContent，导致表单嵌套、事件重复绑定。
+        $query = req()->get();
+        unset($query['page'], $query['initialize']);
+
+        $pageHelper = new Pagination((int)req()->get('page', 1), 10, $query);
+        $pageHelper->withPath(url_action('Finder@list') . ($query ? '?' . http_build_query($query) : ''));
         $pageHelper->setTotal($total);
-        $fsIter->limit($pageHelper->getOffset(),$pageHelper->getLimit());
+        // 裁剪超出范围的页码，保证 getOffset() 与 currentPage() 一致
+        $pageHelper->setCurrentPage($pageHelper->currentPage());
+        $fsIter->limit($pageHelper->getOffset(), $pageHelper->getLimit());
         while($fsIter->valid()){
             $isImage = $this->isImage($fsIter->current()->getExtension());
             $isFile = $fsIter->current()->getType() === 'file';
@@ -64,17 +79,32 @@ class FinderController extends AdminController
 
         $parent_path = dirname($path);
 
+        // 回调仅允许安全的全局函数名，防止 URL 参数注入到前端 JS
+        $callback = (string)req()->get('callback','');
+        if(!preg_match('/^[a-zA-Z_$][a-zA-Z0-9_$]*$/', $callback)){
+            $callback = '';
+        }
+        // target 仅允许 #id 或 .class 形式的选择器
+        $target = array_values(array_filter(
+            array_map('trim', explode('|',(string)req()->get('target',''))),
+            fn($t) => preg_match('/^[#.][a-zA-Z0-9_-]+$/', $t) === 1
+        ));
+
+        // 缩略图缓存目录（thumbs）禁止上传
+        $forbidUpload = $path === 'thumbs' || str_starts_with($path, 'thumbs/');
+
         View::render('finder.list',[
             'initialize'=>req()->get('initialize',false),
             'path'=>$path,
             'parent_path'=>$parent_path === '.' ? '':$parent_path,
             'type'=>'list',
             'data'=>$data,
-            'target'=> array_filter(explode('|',req()->get('target'))),
-            'callback'=>req()->get('callback'),
-            'size'=>req()->get('size'),
+            'target'=>$target,
+            'callback'=>$callback,
+            'size'=>$size,
             'total'=>$total,
-            'pagination' => $pageHelper->render()
+            'pagination' => $pageHelper->render(),
+            'forbid_upload' => $forbidUpload
         ]);
     }
 
@@ -144,17 +174,10 @@ class FinderController extends AdminController
     }
 
 
-    private function isImage($ext): string
+    private function isImage($ext)
     {
-        switch ($ext){
-            case 'png':
-            case 'jpg':
-            case 'gif':
-            case 'jpeg':
-                return  true;
-            default:
-                return false;
-        }
+        // 仅包含 Image 库（GD）支持的格式，避免缩略图生成异常
+        return in_array(strtolower((string)$ext), ['png','jpg','jpeg','gif','webp'], true);
     }
 
 
