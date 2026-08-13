@@ -84,12 +84,12 @@ $uploadMaxSize = max(1, (int)option('upload.max_size', 20));
                                data-is-image="<?php echo $file['is_image'] ? 'true' : 'false'; ?>"
                                data-type="<?php echo $file['type']; ?>"
                                data-ext="<?php echo $file['ext']; ?>"
-                               data-original="<?php echo base_url('/storage/' . $file['path']); ?>"
+                               data-original="<?php echo storage_url($file['path']); ?>"
                             >
                                 <?php if ($file['is_image']) { ?>
                                     <img src="<?php echo $file['thumb_url']; ?>" alt="<?php echo $file['filename']; ?>"
                                          title="<?php echo $file['filename']; ?>" class="img-thumbnail"
-                                         data-original="<?php echo base_url('/storage/' . $file['path']); ?>"
+                                         data-original="<?php echo storage_url($file['path']); ?>"
                                     >
                                 <?php } else { ?>
                                     <i class="<?php echo $file['icon']; ?> fa-9x"></i>

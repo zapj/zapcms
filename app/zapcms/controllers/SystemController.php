@@ -19,6 +19,15 @@ class SystemController extends AdminController
         $keyPrefix = ['website\.', 'upload\.'];
         if(Request::isPost()){
             $options = Request::post('options',[]);
+            // 网站网址必须为完整的 http(s):// 地址
+            $siteUrl = trim((string)($options['website.url'] ?? ''));
+            if ($siteUrl !== '') {
+                if (!preg_match('#^https?://#i', $siteUrl) || filter_var($siteUrl, FILTER_VALIDATE_URL) === false) {
+                    Response::json(['code' => 1, 'msg' => '网站网址必须是完整的 http:// 或 https:// 地址，例如 https://example.com']);
+                    return;
+                }
+                $options['website.url'] = rtrim($siteUrl, '/');
+            }
             $optionKeys = Option::getKeys($keyPrefix,'REGEXP');
             foreach ($options as $key=>$value){
                 if(in_array($key,$optionKeys)){
@@ -33,6 +42,8 @@ class SystemController extends AdminController
             // 清除相关配置缓存，使新设置立即生效
             \zap\facades\Cache::delete('_opts_server');
             \zap\facades\Cache::delete('_opts_cache');
+            \zap\facades\Cache::delete('_opts_website');
+            \zap\facades\Cache::delete('_opts_upload');
             Response::json(['code'=>0,'msg'=>'保存成功']);
         }
         $data = [
@@ -348,7 +359,7 @@ class SystemController extends AdminController
      */
     public function sitemap()
     {
-        $siteUrl = rtrim(config('config.site_url', base_url()), '/');
+        $siteUrl = get_site_base_url();
         $types = ['catalog', 'page', 'article', 'product', 'faq'];
 
         $sitemaps = [];

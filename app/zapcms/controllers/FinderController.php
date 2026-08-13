@@ -60,7 +60,7 @@ class FinderController extends AdminController
             if($isFile && $isImage  && !Str::startsWith($path,'thumbs')){
                 $thumbUrl = ThumbHelper::thumb("{$path}/{$fsIter->current()->getFilename()}",$width,$height);
             }else if($isFile && $isImage){
-                $thumbUrl = base_url("/storage/{$path}/{$fsIter->current()->getFilename()}");
+                $thumbUrl = storage_url("{$path}/{$fsIter->current()->getFilename()}");
             }
             $data[] = [
                 'filename'=>$fsIter->current()->getFilename(),

@@ -96,7 +96,7 @@ class UploadController extends AdminController
         }
 
         $urlPath = $relPath === '' ? $filename : $relPath . '/' . $filename;
-        Response::json(['code' => 0, 'url' => base_url('/storage/' . $urlPath)]);
+        Response::json(['code' => 0, 'url' => storage_url($urlPath)]);
     }
 
     /**

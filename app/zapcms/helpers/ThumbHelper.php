@@ -25,7 +25,7 @@ class ThumbHelper
         $path_parts['dirname'] = $path_parts['dirname'] == '.' ? '' : "{$path_parts['dirname']}/";
         $thumb_file = "{$path_parts['dirname']}{$path_parts['filename']}-{$width}x{$height}.{$path_parts['extension']}";
         if(is_file(storage_path("thumbs/".$thumb_file))){
-            return base_url("/storage/thumbs/".$thumb_file);
+            return storage_url("thumbs/".$thumb_file);
         }
         $file = storage_path($file);
         if(!is_file($file)){
@@ -38,14 +38,14 @@ class ThumbHelper
                     $img = Image::from($placeholder);
                     $img->thumb($width,$height)->saveFile(storage_path("thumbs/".$thumb_file));
                 }
-                return base_url("/storage/thumbs/".$thumb_file);
+                return storage_url("thumbs/".$thumb_file);
             }
             return base_url("/assets/images/placeholder.jpg");
         }
         $img = Image::from($file);
 //        $originalPath = dirname($file);
         $img->thumb($width,$height)->saveFile(storage_path("thumbs/".$thumb_file));
-        return base_url("/storage/thumbs/".$thumb_file);
+        return storage_url("thumbs/".$thumb_file);
     }
 
 

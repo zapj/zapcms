@@ -96,6 +96,12 @@ $this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置 & �
                                 <input type="text" class="form-control form-control-sm" id="website.slogan" name="options[website.slogan]"
                                        placeholder="网站副标题" value="<?php echo $options['website.slogan'];?>" />
                             </div>
+                            <div class="col-md-6">
+                                <label for="website.url" class="form-label small">网站网址</label>
+                                <input type="url" class="form-control form-control-sm" id="website.url" name="options[website.url]"
+                                       placeholder="https://example.com" value="<?php echo htmlspecialchars($options['website.url'] ?? '', ENT_QUOTES);?>" />
+                                <div class="form-text">必须是完整的 <code>http://</code> 或 <code>https://</code> 地址，如 <code>https://example.com</code>；用于站点 URL、固定链接、附件绝对地址等，留空则自动使用当前访问地址。</div>
+                            </div>
                             <div class="col-12">
                                 <label for="website.keywords" class="form-label small">网站关键词</label>
                                 <input type="text" class="form-control form-control-sm" id="website.keywords"
@@ -262,6 +268,15 @@ $this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置 & �
                                     <option value="date" <?php if(($options['upload.name_rule'] ?? '') === 'date') echo 'selected';?>>日期 + 随机后缀</option>
                                 </select>
                                 <div class="form-text">「保留原文件名」模式下，同名文件会自动追加数字后缀，不会覆盖已有文件。</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="upload.url_mode" class="form-label small">附件 URL 模式</label>
+                                <select class="form-select form-select-sm" id="upload.url_mode"
+                                        name="options[upload.url_mode]">
+                                    <option value="relative" <?php if(($options['upload.url_mode'] ?? 'relative') === 'relative') echo 'selected';?>>相对路径（默认）</option>
+                                    <option value="absolute" <?php if(($options['upload.url_mode'] ?? '') === 'absolute') echo 'selected';?>>网站网址 + 路径</option>
+                                </select>
+                                <div class="form-text">「相对路径」返回 <code>/storage/xxx</code> 形式；「网站网址 + 路径」返回 <code>https://example.com/storage/xxx</code>，「网站网址」留空时自动使用当前访问域名。</div>
                             </div>
                         </div>
                     </div>

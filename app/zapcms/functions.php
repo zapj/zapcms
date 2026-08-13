@@ -158,12 +158,40 @@ function url_slug(...$args): string
 }
 
 /**
- * 站点 URL（优先使用自定义 site_url 配置）
+ * 获取站点基础地址
+ *
+ * 优先级：后台「网站网址」(website.url) → config('config.site_url') → 当前请求根路径
+ *
+ * @return string 不带尾部斜杠，如 https://example.com 或 /zapcms
+ */
+function get_site_base_url(): string
+{
+    $site = trim((string)option('website.url', ''));
+    if ($site !== '') {
+        return rtrim($site, '/');
+    }
+    $cfg = trim((string)config('config.site_url', ''));
+    if ($cfg !== '') {
+        return rtrim($cfg, '/');
+    }
+    // Web 环境下从当前请求自动推导完整域名（协议 + 域名 + 子目录）
+    if (PHP_SAPI !== 'cli' && !empty($_SERVER['HTTP_HOST'])) {
+        $https  = (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off')
+            || (($_SERVER['SERVER_PORT'] ?? 0) == 443)
+            || (($_SERVER['REQUEST_SCHEME'] ?? '') === 'https');
+        $scheme = $https ? 'https' : 'http';
+        $dir    = rtrim((string)base_url(), '/');
+        return $scheme . '://' . $_SERVER['HTTP_HOST'] . $dir;
+    }
+    return rtrim((string)base_url(), '/');
+}
+
+/**
+ * 站点 URL（优先使用后台「网站网址」配置）
  */
 function site_url(string $path = ''): string
 {
-    $siteUrl = rtrim(config('config.site_url', base_url()), '/');
-    return $siteUrl . '/' . ltrim($path, '/');
+    return get_site_base_url() . '/' . ltrim($path, '/');
 }
 
 /**
@@ -171,7 +199,26 @@ function site_url(string $path = ''): string
  */
 function home_url(): string
 {
-    return rtrim(config('config.site_url', base_url()), '/') ?: '/';
+    return get_site_base_url() ?: '/';
+}
+
+/**
+ * 附件/存储文件 URL
+ *
+ * 按后台「文件上传 → 附件 URL 模式」(upload.url_mode) 返回：
+ *   - relative（默认）：相对路径，如 /zapcms/storage/xxx.jpg
+ *   - absolute：网站网址 + 路径，如 https://example.com/storage/xxx.jpg
+ *
+ * @param string $path 相对 storage 目录的路径（可含子目录）
+ * @return string
+ */
+function storage_url(string $path = ''): string
+{
+    $path = '/' . ltrim($path, '/');
+    if ((string)option('upload.url_mode', 'relative') === 'absolute') {
+        return get_site_base_url() . '/storage' . $path;
+    }
+    return base_url('/storage' . $path);
 }
 
 /**

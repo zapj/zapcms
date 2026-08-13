@@ -398,7 +398,7 @@ use zapcms\services\NodeType;
     }
 
     // ===================== 初始化：还原已选内容预览 =====================
-    var siteUrlBase = '<?php echo rtrim(config('config.site_url', base_url()), '/'); ?>';
+    var siteUrlBase = '<?php echo get_site_base_url(); ?>';
 
     (function initLinkObjectPreview() {
         var hiddenObj  = parseInt($('#link_object_value').val(), 10) || 0;
