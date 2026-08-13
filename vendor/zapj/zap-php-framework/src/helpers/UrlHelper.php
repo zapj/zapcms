@@ -102,7 +102,7 @@ class UrlHelper
      */
     public function current(): string
     {
-        return parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+        return $this->requestPath();
     }
 
     /**
@@ -127,7 +127,7 @@ class UrlHelper
         } catch (\Throwable $e) {}
 
         // Derive from current URL
-        $path = trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/', '/');
+        $path = trim($this->requestPath(), '/');
         // 当前路径以 admin prefix 开头时剥离前缀（后台上下文）
         $prefix = $this->adminPrefix();
         if (str_starts_with($path, $prefix . '/')) {
@@ -153,7 +153,7 @@ class UrlHelper
             }
         } catch (\Throwable $e) {}
 
-        $path = trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/', '/');
+        $path = trim($this->requestPath(), '/');
         // 当前路径以 admin prefix 开头时剥离前缀（后台上下文）
         $prefix = $this->adminPrefix();
         if (str_starts_with($path, $prefix . '/')) {
@@ -475,13 +475,43 @@ class UrlHelper
     }
 
     /**
+     * 获取脚本所在目录前缀（子目录部署时为 /zapcms，根目录部署时为空）。
+     */
+    protected function scriptDir(): string
+    {
+        $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+        if ($scriptName === '') {
+            return '';
+        }
+        $dir = rtrim(str_replace('\\', '/', dirname($scriptName)), '/');
+        return $dir === '/' ? '' : $dir;
+    }
+
+    /**
+     * 获取站内请求路径（剥离脚本目录前缀与查询串）。
+     *
+     * 使 http://host/zapcms/xxx 与 http://zapcms.local/xxx 归一为 /xxx。
+     */
+    protected function requestPath(): string
+    {
+        $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+        $dir  = $this->scriptDir();
+        if ($dir !== '' && str_starts_with($path, $dir . '/')) {
+            $path = substr($path, strlen($dir));
+        } elseif ($dir !== '' && ($path === $dir || $path === $dir . '/')) {
+            $path = '/';
+        }
+        return $path;
+    }
+
+    /**
      * 判断当前请求是否处于后台上下文（URL 以 admin prefix 开头）。
      *
      * @return bool
      */
     protected function isAdminContext(): bool
     {
-        $path   = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+        $path   = $this->requestPath();
         $prefix = $this->adminPrefix();
         return $prefix !== ''
             && (rtrim($path, '/') === '/' . $prefix || str_starts_with($path, '/' . $prefix . '/'));

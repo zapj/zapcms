@@ -210,7 +210,7 @@ class App implements \ArrayAccess
      */
     protected function dispatchRoutes(Router $router): void
     {
-        $routeFile = $this->rootPath . '/config/route.php';
+        $routeFile = $this->basePath . 'config/route.php';
         if (file_exists($routeFile)) {
             // 路由文件可以通过 $router 变量访问路由器
             require $routeFile;

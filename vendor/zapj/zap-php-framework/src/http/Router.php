@@ -226,6 +226,36 @@ class Router
     }
 
     /**
+     * 剥离脚本目录前缀，兼容子目录部署
+     *
+     * 同一份代码既可通过 http://host/zapcms/xxx 访问，也可通过
+     * http://zapcms.local/xxx（DocumentRoot 指向 zapcms 目录）访问。
+     * 自动从 SCRIPT_NAME 探测脚本所在目录（如 /zapcms）并剥离，
+     * 使后续路由匹配与部署方式无关。
+     *
+     * @param string $uri
+     * @return string
+     */
+    protected static function stripBasePrefix(string $uri): string
+    {
+        $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+        if ($scriptName === '') {
+            return $uri;
+        }
+        $dir = rtrim(str_replace('\\', '/', dirname($scriptName)), '/');
+        if ($dir === '' || $dir === '/') {
+            return $uri;
+        }
+        if (str_starts_with($uri, $dir . '/')) {
+            return substr($uri, strlen($dir));
+        }
+        if ($uri === $dir || $uri === $dir . '/') {
+            return '/';
+        }
+        return $uri;
+    }
+
+    /**
      * 根据配置自动去除请求 URL 的后缀（如 .html）
      *
      * 与 appendSuffix() 配对使用：一个在输出时追加，一个在输入时去除。
@@ -332,6 +362,9 @@ class Router
      */
     public function dispatch(string $requestUrl, string $requestMethod = 'GET'): bool
     {
+        // 子目录部署兼容：将 /zapcms/xxx 与 /xxx 统一归一为 /xxx（自动探测脚本目录前缀）
+        $requestUrl = static::stripBasePrefix($requestUrl);
+
         // 去除 URL 后缀（如 .html），与生成 URL 时的 appendSuffix() 配对
         $requestUrl = static::stripSuffix($requestUrl);
 
