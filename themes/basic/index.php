@@ -2,6 +2,7 @@
 defined('IN_ZAPCMS') or die('No permission to access');
 $this->extend('layout/default');
 $banners = option_get_json('basic_home.slide','[]',true);
+$latestNews = pageState()->getLatestNews();
 
 ?>
 <main class="site-main">

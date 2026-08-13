@@ -2,6 +2,7 @@
 namespace app;
 
 use ArrayObject;
+use zapcms\models\Node;
 use zapcms\services\Catalog;
 use zap\facades\Cache;
 
@@ -143,6 +144,25 @@ class PageState extends ArrayObject
     public function hasLatestNews(): bool
     {
         return !empty($this['latestNews']);
+    }
+
+    /**
+     * 获取最新动态列表（带缓存）
+     *
+     * @param int $limit 条数
+     * @return array|null
+     */
+    public function getLatestNews(int $limit = 4): ?array
+    {
+        if (empty($this['latestNews'])) {
+            $this['latestNews'] = Cache::get('home_latest_news', function () use ($limit) {
+                return Node::where('status', Node::STATUS_PUBLISH)
+                    ->where('node_type', 'article')
+                    ->limit($limit)
+                    ->get(FETCH_ASSOC);
+            }, 300);
+        }
+        return $this['latestNews'];
     }
 
     /**
