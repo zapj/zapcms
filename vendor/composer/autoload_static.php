@@ -10,7 +10,7 @@ class ComposerStaticInit501184272d4d7ed612cf428f1bb86753
         '2cffec82183ee1cea088009cef9a6fc3' => __DIR__ . '/..' . '/ezyang/htmlpurifier/library/HTMLPurifier.composer.php',
         '2a9d6d763e243d8f9e496986c262a927' => __DIR__ . '/..' . '/zapj/zap-php-framework/src/compat.php',
         'ed7610ef029ae6b6d5177039e3fb3277' => __DIR__ . '/..' . '/zapj/zap-php-framework/src/functions.php',
-        'b9c812931a806f2f841e821f526e3b18' => __DIR__ . '/../..' . '/app/zapcms/functions.php',
+        'a71b1f879fe07566898e0083485932c3' => __DIR__ . '/../..' . '/app/zapcms/functions.php',
     );
 
     public static $prefixLengthsPsr4 = array (

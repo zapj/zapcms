@@ -19,8 +19,8 @@
     "ext-gd": "*",
     "monolog/monolog": "^2.9",
     "ext-json": "*",
-    "ezyang/htmlpurifier": "dev-master",
-    "phpmailer/phpmailer": "dev-master",
+    "ezyang/htmlpurifier": "^4.0",
+    "phpmailer/phpmailer": "^7.0",
     "overtrue/pinyin": "^3.0"
   },
   "autoload": {

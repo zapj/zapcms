@@ -2,8 +2,8 @@
     "packages": [
         {
             "name": "ezyang/htmlpurifier",
-            "version": "dev-master",
-            "version_normalized": "dev-master",
+            "version": "v4.19.0",
+            "version_normalized": "4.19.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ezyang/htmlpurifier.git",
@@ -29,7 +29,6 @@
                 "ext-tidy": "Used for pretty-printing HTML"
             },
             "time": "2025-10-17T16:34:55+00:00",
-            "default-branch": true,
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -224,17 +223,17 @@
         },
         {
             "name": "phpmailer/phpmailer",
-            "version": "dev-master",
-            "version_normalized": "dev-master",
+            "version": "v7.1.1",
+            "version_normalized": "7.1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHPMailer/PHPMailer.git",
-                "reference": "d76c2f897a0ebc37ed4ce94a062fd2d6674373a6"
+                "reference": "1bc1716a507a65e039d4ac9d9adebbbd0d346e15"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/d76c2f897a0ebc37ed4ce94a062fd2d6674373a6",
-                "reference": "d76c2f897a0ebc37ed4ce94a062fd2d6674373a6",
+                "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/1bc1716a507a65e039d4ac9d9adebbbd0d346e15",
+                "reference": "1bc1716a507a65e039d4ac9d9adebbbd0d346e15",
                 "shasum": ""
             },
             "require": {
@@ -265,8 +264,7 @@
                 "symfony/polyfill-mbstring": "To support UTF-8 if the Mbstring PHP extension is not enabled (^1.2)",
                 "thenetworg/oauth2-azure": "Needed for Microsoft XOAUTH2 authentication"
             },
-            "time": "2026-08-06T06:44:34+00:00",
-            "default-branch": true,
+            "time": "2026-05-18T08:06:14+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -298,7 +296,7 @@
             "description": "PHPMailer is a full-featured email creation and transfer class for PHP",
             "support": {
                 "issues": "https://github.com/PHPMailer/PHPMailer/issues",
-                "source": "https://github.com/PHPMailer/PHPMailer/tree/master"
+                "source": "https://github.com/PHPMailer/PHPMailer/tree/v7.1.1"
             },
             "funding": [
                 {
@@ -368,12 +366,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/zapj/zap-php-framework.git",
-                "reference": "476c69f8337c3ac8d18bb5166b2f2941c72e6c12"
+                "reference": "ca537c58c994cfbb3a22ba71f1545821f030661f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/476c69f8337c3ac8d18bb5166b2f2941c72e6c12",
-                "reference": "476c69f8337c3ac8d18bb5166b2f2941c72e6c12",
+                "url": "https://api.github.com/repos/zapj/zap-php-framework/zipball/ca537c58c994cfbb3a22ba71f1545821f030661f",
+                "reference": "ca537c58c994cfbb3a22ba71f1545821f030661f",
                 "shasum": ""
             },
             "require": {
@@ -392,7 +390,7 @@
             "suggest": {
                 "monolog/monolog": "Allows more advanced logging with multiple handlers"
             },
-            "time": "2026-08-12T01:54:06+00:00",
+            "time": "2026-08-13T09:40:09+00:00",
             "default-branch": true,
             "type": "library",
             "installation-source": "dist",
@@ -416,7 +414,7 @@
             ],
             "description": "zap php framework",
             "support": {
-                "source": "https://github.com/zapj/zap-php-framework/tree/v1.0.5",
+                "source": "https://github.com/zapj/zap-php-framework/tree/main",
                 "issues": "https://github.com/zapj/zap-php-framework/issues"
             },
             "install-path": "../zapj/zap-php-framework"

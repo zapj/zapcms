@@ -1,33 +1,22 @@
 <?php return array(
     'root' => array(
-        'name' => '__root__',
+        'name' => 'zapj/zapcms',
         'pretty_version' => '1.0.0+no-version-set',
         'version' => '1.0.0.0',
         'reference' => null,
-        'type' => 'library',
+        'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
         'dev' => true,
     ),
     'versions' => array(
-        '__root__' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => null,
-            'type' => 'library',
-            'install_path' => __DIR__ . '/../../',
-            'aliases' => array(),
-            'dev_requirement' => false,
-        ),
         'ezyang/htmlpurifier' => array(
-            'pretty_version' => 'dev-master',
-            'version' => 'dev-master',
+            'pretty_version' => 'v4.19.0',
+            'version' => '4.19.0.0',
             'reference' => 'b287d2a16aceffbf6e0295559b39662612b77fcf',
             'type' => 'library',
             'install_path' => __DIR__ . '/../ezyang/htmlpurifier',
-            'aliases' => array(
-                0 => '9999999-dev',
-            ),
+            'aliases' => array(),
             'dev_requirement' => false,
         ),
         'monolog/monolog' => array(
@@ -49,14 +38,12 @@
             'dev_requirement' => false,
         ),
         'phpmailer/phpmailer' => array(
-            'pretty_version' => 'dev-master',
-            'version' => 'dev-master',
-            'reference' => 'd76c2f897a0ebc37ed4ce94a062fd2d6674373a6',
+            'pretty_version' => 'v7.1.1',
+            'version' => '7.1.1.0',
+            'reference' => '1bc1716a507a65e039d4ac9d9adebbbd0d346e15',
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpmailer/phpmailer',
-            'aliases' => array(
-                0 => '9999999-dev',
-            ),
+            'aliases' => array(),
             'dev_requirement' => false,
         ),
         'psr/log' => array(
@@ -77,12 +64,21 @@
         'zapj/zap-php-framework' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '476c69f8337c3ac8d18bb5166b2f2941c72e6c12',
+            'reference' => 'ca537c58c994cfbb3a22ba71f1545821f030661f',
             'type' => 'library',
             'install_path' => __DIR__ . '/../zapj/zap-php-framework',
             'aliases' => array(
                 0 => '9999999-dev',
             ),
+            'dev_requirement' => false,
+        ),
+        'zapj/zapcms' => array(
+            'pretty_version' => '1.0.0+no-version-set',
+            'version' => '1.0.0.0',
+            'reference' => null,
+            'type' => 'project',
+            'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
             'dev_requirement' => false,
         ),
     ),
