@@ -17,7 +17,7 @@ $this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置 & �
 
 <form id="zapForm">
 
-    <div class="row g-3 mb-3">
+    <!-- <div class="row g-3 mb-3">
         <div class="col-12">
             <div class="alert alert-info d-flex align-items-center mb-0 py-2 px-3 small" role="alert">
                 <i class="fa fa-link me-2"></i>
@@ -27,11 +27,11 @@ $this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置 & �
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <div class="row g-3">
         <div class="col-12">
-            <div class="card card-outline card-success">
+            <div class="card card-outline">
                 <div class="card-header d-flex align-items-center ps-3 pt-0 pb-0 pe-0">
                     <ul class="nav nav-underline me-auto" role="tablist">
                         <li class="nav-item">
@@ -77,10 +77,8 @@ $this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置 & �
                             </button>
                         </li>
                     </ul>
-                    <div class="card-tools">
-                        <button type="button" class="btn btn-tool btn-sm" onclick="save()" title="保存">
-                            <i class="fa fa-save text-success"></i>
-                        </button>
+                    <div class="card-tools me-2">
+                        
                     </div>
                 </div>
 
@@ -403,7 +401,7 @@ $this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置 & �
                 </div>
 
                 <div class="card-footer text-center">
-                    <button type="button" class="btn btn-success" onclick="save()">
+                    <button type="button" class="btn btn-success btn-sm" onclick="save()">
                         <i class="fa fa-save me-1"></i>保存设置
                     </button>
                 </div>
