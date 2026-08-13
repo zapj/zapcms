@@ -6,7 +6,7 @@ use zap\facades\Url;
 <?php $this->layout('layouts/common'); ?>
 <div class="card">
     <div class="card-header d-flex flex-wrap gap-2 align-items-center justify-content-between">
-        <form class="row g-2" method="get" action="<?= Url::action('Node/types')?>">
+        <form class="row g-2" method="get" action="<?= Url::action('Node@types')?>">
             <div class="col-auto">
                 <input type="text" name="search" class="form-control form-control-sm"
                        placeholder="搜索标识 / 标题" value="<?=e($search ?? '')?>">
@@ -30,7 +30,7 @@ use zap\facades\Url;
             </div>
         </form>
         <a href="<?= Url::action('Node/typesForm')?>" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg"></i> 添加模型
+            <i class="fa fa-plus"></i> 添加模型
         </a>
     </div>
 

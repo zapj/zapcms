@@ -44,7 +44,7 @@ class CatalogController extends Controller
         pageState()->subCatalogList = Catalog::instance()->getSubCatalogList(pageState()->catalog['pid'] == 0 ? pageState()->catalog['id'] : pageState()->catalog['pid']);
         try{
             if(pageState()->nodeMimeType==='page') {
-                view('page', ['article' => pageState()->node]);
+                view('page', ['node' => pageState()->node]);
                 return;
             }else{
                 $page = new Pagination(intval(req()->get('page',1)),12,req()->get());
@@ -53,11 +53,11 @@ class CatalogController extends Controller
                     ->where('nr.catalog_id',pageState()->nodeId)
                     ->where('n.node_type', pageState()->nodeMimeType);
                 $view->page = $page->setTotal($query->count('n.id'));
-                $query->limit($page->getLimit(),$page->getOffset());
-                $view->articles = $query->get(FETCH_ASSOC);
+                $query->limit($page->getLimit())->offset($page->getOffset());
+                $view->nodes = $query->get(FETCH_ASSOC);
                 $view->page = $page;
                 //// 模板页面没有相关联的栏目菜单时，读取左侧导航栏目菜单作为兜底（侧边栏位于页面左侧）
-                if (empty(pageState()->subCatalogList) && !empty($view->articles)) {
+                if (empty(pageState()->subCatalogList) && !empty($view->nodes)) {
                     pageState()->subCatalogList = \zapcms\services\Catalog::instance()->getPositionMenu(\zapcms\services\Catalog::POSITION_LEFT);
                 }
             }

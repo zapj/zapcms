@@ -3,7 +3,7 @@ defined('IN_ZAPCMS') or die('No permission to access');
 $this->extend('layout/default');
 $this->beginBlock('content');
 /**
- * @var array $article
+ * @var array $node
  */
 ?>
     <?php echo $this->partial('partials/_breadcrumb'); ?>
@@ -16,10 +16,10 @@ $this->beginBlock('content');
                         <div class="col-sm-12">
                             <article class="single-post">
                                 <div class="entry-header">
-                                    <h1 class="entry-title"><?php echo htmlspecialchars($article['title']); ?></h1>
+                                    <h1 class="entry-title"><?php echo htmlspecialchars($node['title']); ?></h1>
                                 </div>
                                 <div class="post-content">
-                                    <?php echo $article['content']; ?>
+                                    <?php echo $node['content']; ?>
                                 </div>
                             </article>
                         </div>

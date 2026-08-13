@@ -96,7 +96,6 @@ function option_get_json(string $name, $default = null, ?bool $associative = nul
     }
     $value = json_decode((string) $raw, $associative);
     if (json_last_error() !== JSON_ERROR_NONE) {
-        // 兼容历史脏数据：双重转义 JSON（如 \"img_path\":...），去掉一层反斜杠后重试
         $value = json_decode(stripslashes((string) $raw), $associative);
         if (json_last_error() !== JSON_ERROR_NONE) {
             return $default;

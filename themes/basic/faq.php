@@ -3,7 +3,7 @@ defined('IN_ZAPCMS') or die('No permission to access');
 $this->extend('layout/default');
 $this->beginBlock('content');
 /**
- * @var array $articles
+ * @var array $nodes
  */
 ?>
     <?php echo $this->partial('partials/_breadcrumb'); ?>
@@ -34,9 +34,9 @@ $this->beginBlock('content');
                     <div class="faq-list" id="faqList">
                         <?php
                         $lastCategory = null;
-                        foreach ($articles as $index => $article):
-                            $catTitle = $article['category_title'] ?? '';
-                            $artId = md5($article['title']);
+                        foreach ($nodes as $index => $node):
+                            $catTitle = $node['category_title'] ?? '';
+                            $artId = md5($node['title']);
                         ?>
                             <?php if ($catTitle && $catTitle !== $lastCategory): ?>
                                 <?php if ($lastCategory !== null): ?>
@@ -51,17 +51,17 @@ $this->beginBlock('content');
                             <?php $lastCategory = $catTitle; ?>
                             <?php endif; ?>
 
-                            <div class="faq-item" data-keywords="<?php echo htmlspecialchars($article['title'] . ' ' . strip_tags($article['content'] ?? '')); ?>">
+                            <div class="faq-item" data-keywords="<?php echo htmlspecialchars($node['title'] . ' ' . strip_tags($node['content'] ?? '')); ?>">
                                 <div class="faq-question" role="button" tabindex="0" id="faq-<?php echo $artId; ?>">
                                     <span class="faq-q-icon">Q</span>
-                                    <span class="faq-q-text"><?php echo htmlspecialchars($article['title']); ?></span>
+                                    <span class="faq-q-text"><?php echo htmlspecialchars($node['title']); ?></span>
                                     <i class="fa fa-chevron-down faq-chevron"></i>
                                 </div>
                                 <div class="faq-answer" id="faq-answer-<?php echo $artId; ?>">
                                     <div class="faq-answer-inner">
                                         <span class="faq-a-icon">A</span>
                                         <div class="faq-a-content">
-                                            <?php echo $article['content']; ?>
+                                            <?php echo $node['content']; ?>
                                         </div>
                                     </div>
                                 </div>

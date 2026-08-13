@@ -47,7 +47,7 @@ class NodeController extends Controller
         $node = pageState()->node;
         $slug = $node['slug'];
         BreadCrumb::instance()->add($node['title'],site_url("/{$slug}"),true);
-        view('page', ['article' => $node]);
+        view('page', ['node' => $node]);
     }
 
     function article(){
@@ -65,7 +65,7 @@ class NodeController extends Controller
         //侧边栏菜单
         $topCatalog = current(pageState()->catalogPaths);
         pageState()->subCatalogList = Catalog::instance()->getSubCatalogList($topCatalog['id']);
-        view('article', ['article' => $node]);
+        view('article', ['node' => $node]);
     }
 
     function product(){
@@ -86,7 +86,7 @@ class NodeController extends Controller
         // 加载自定义字段（node_meta），如产品价格
         $nodeModel = Node::findById($node['id'] ?? 0);
         $node['meta'] = $nodeModel ? $nodeModel->loadMeta() : [];
-        view('product', ['article' => $node]);
+        view('product', ['node' => $node]);
     }
 
     private function getCatalogPathByNodeId(int $node_id){
