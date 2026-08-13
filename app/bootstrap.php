@@ -55,12 +55,53 @@ if (!is_file('config/database.php') || !is_file('var/install.lock')) {
 require "vendor/autoload.php";
 $app = new \zap\App(dirname(__DIR__));
 
-// Maintenance Mode 开关（对应 config/config.php 的 maintenance 键）：
-// 开启时仅放行后台（z-admin）请求，前台访问返回 503 维护页面
-if (config('config.maintenance', false)) {
+// ──────────────────── 运行参数（server.* / cache.*）从 options 表读取 ────────────────────
+// 维护模式、调试、日志、后台前缀等不再写入 config/config.php，统一保存在数据库 options 表，
+// 后台“基础设置 > 服务器 / 缓存”中修改后立即生效。
+// 读取优先走缓存（get_options），缓存驱动异常（如 Redis 不可用）时退化为直连数据库，保证站点可用。
+try {
+    $serverOptions = get_options('server', 'REGEXP');
+    $cacheOptions  = get_options('cache', 'REGEXP');
+} catch (\PDOException $e) {
+    check_database_error($e);
+    throw $e;
+} catch (\Throwable $e) {
+    $serverOptions = \zapcms\services\Option::getArray('server', 'REGEXP');
+    $cacheOptions  = \zapcms\services\Option::getArray('cache', 'REGEXP');
+}
+
+$maintenance = (bool)($serverOptions['server.maintenance'] ?? false);
+$adminPrefix = '/' . trim((string)($serverOptions['server.admin_prefix'] ?? 'z-admin'), '/');
+
+// 同步调试 / 日志开关到运行时配置，使其立即生效
+config_set('config.debug', (bool)($serverOptions['server.debug'] ?? false));
+config_set('config.log', (bool)($serverOptions['server.log'] ?? true));
+if (config('config.debug', false)) {
+    error_reporting(E_ALL ^ E_NOTICE);
+} else {
+    error_reporting(0);
+}
+
+// 缓存设置（cache.*）覆盖 config/cache.php 默认值
+foreach ($cacheOptions as $name => $value) {
+    config_set('cache.' . substr($name, 6), $value);
+}
+config_set('cache.redis', [
+    'client'   => 'redis',
+    'params'   => [
+        config('cache.redis_host', '127.0.0.1'),
+        (int)config('cache.redis_port', 6379),
+        5.0,
+    ],
+    'password' => (string)config('cache.redis_password', ''),
+    'database' => (int)config('cache.redis_database', 0),
+]);
+
+// Maintenance Mode 开关（server.maintenance，保存在 options 表）：
+// 开启时仅放行后台请求，前台访问返回 503 维护页面
+if ($maintenance) {
     $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
-    $adminPrefix = trim((string)(defined('Z_ADMIN_PREFIX') ? Z_ADMIN_PREFIX : '/z-admin'), '/');
-    $isAdminUri = $adminPrefix !== '' && stripos($requestUri, '/' . $adminPrefix) !== false;
+    $isAdminUri = $adminPrefix !== '/' && stripos($requestUri, $adminPrefix) !== false;
     if (!$isAdminUri) {
         http_response_code(503);
         header('Content-Type: text/html; charset=utf-8');

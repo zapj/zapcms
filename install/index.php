@@ -253,6 +253,11 @@ function importBaseDataAction()
         }
         file_put_contents(var_path('install.lock'), date('Y-m-d H:i:s'));
 
+        // 后台前缀取自 options 表（server.admin_prefix），默认 z-admin
+        if (!defined('Z_ADMIN_PREFIX')) {
+            define('Z_ADMIN_PREFIX', '/' . ltrim((string)\zapcms\services\Option::get('server.admin_prefix', 'z-admin'), '/'));
+        }
+
         $scheme  = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
         $baseUrl = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
         session()->set('install_done', true);

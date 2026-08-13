@@ -196,7 +196,8 @@ class UrlHelper
 
         // Admin context: prepend admin prefix
         if (defined('IN_ZAPCMS_ADMIN') && IN_ZAPCMS_ADMIN) {
-            $uri = Z_ADMIN_PREFIX.'/'. ltrim($uri, '/');
+            $prefix = defined('Z_ADMIN_PREFIX') ? trim(Z_ADMIN_PREFIX, '/') : 'z-admin';
+            $uri = '/' . $prefix . '/' . ltrim($uri, '/');
         }else{
              $uri = '/' . ltrim($uri, '/');
         }

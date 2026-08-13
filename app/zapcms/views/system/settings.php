@@ -7,10 +7,11 @@ Asset::library('jqueryvalidation');
 $this->layout('layouts/common');
 
 $this->view->page_title = '系统设置';
-$this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置 & 文件上传 & 服务器';
+$this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置 & 文件上传 & 服务器 & 缓存';
 /**
  * @var array $options
  * @var array $server
+ * @var array $cache
  */
 ?>
 
@@ -66,6 +67,13 @@ $this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置 & �
                                     data-bs-target="#server-tab-pane" type="button" role="tab"
                                     aria-controls="server-tab-pane" aria-selected="false">
                                 <i class="fa fa-server me-1"></i>服务器
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" id="cache-tab" data-bs-toggle="tab"
+                                    data-bs-target="#cache-tab-pane" type="button" role="tab"
+                                    aria-controls="cache-tab-pane" aria-selected="false">
+                                <i class="fa fa-database me-1"></i>缓存
                             </button>
                         </li>
                     </ul>
@@ -262,9 +270,9 @@ $this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置 & �
 
                     <div class="tab-pane fade" id="server-tab-pane" role="tabpanel" aria-labelledby="server-tab"
                          tabindex="0">
-                        <div class="alert alert-warning d-flex align-items-center mb-3 py-2 px-3 small" role="alert">
-                            <i class="fa fa-exclamation-triangle me-2"></i>
-                            <div>这些选项直接写入 <code>config/config.php</code>，保存后立即生效。</div>
+                        <div class="alert alert-info d-flex align-items-center mb-3 py-2 px-3 small" role="alert">
+                            <i class="fa fa-info-circle me-2"></i>
+                            <div>这些选项保存在数据库（<code>options</code> 表）中，保存后立即生效，无需修改任何配置文件。</div>
                         </div>
                         <div class="row g-2">
                             <div class="col-md-6">
@@ -279,22 +287,21 @@ $this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置 & �
                                         </label>
                                     </div>
                                     <div class="form-text mb-0">开启后前台访问显示「系统维护中」（HTTP 503），后台
-                                        <code>z-admin</code> 仍可正常访问以关闭维护。</div>
+                                        <code>/<?php echo htmlspecialchars($server['admin_prefix'], ENT_QUOTES); ?></code> 仍可正常访问以关闭维护。</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="border rounded p-3 h-100">
-                                    <div class="form-check form-switch">
-                                        <input type="hidden" name="server[error_handling]" value="0">
-                                        <input class="form-check-input" type="checkbox" role="switch"
-                                               id="server.error_handling" name="server[error_handling]" value="1"
-                                            <?php echo $server['error_handling'] ? 'checked' : '';?>>
-                                        <label class="form-check-label" for="server.error_handling">
-                                            错误处理 <span class="text-muted small">Error Handling</span>
-                                        </label>
+                                    <label for="server.admin_prefix" class="form-label small">
+                                        后台路径前缀 <span class="text-muted small">Admin Prefix</span>
+                                    </label>
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text">/</span>
+                                        <input type="text" class="form-control form-control-sm" id="server.admin_prefix"
+                                               name="server[admin_prefix]" placeholder="z-admin"
+                                               value="<?php echo htmlspecialchars($server['admin_prefix'], ENT_QUOTES);?>" />
                                     </div>
-                                    <div class="form-text mb-0">开启时由框架统一捕获并渲染错误页；关闭后使用 PHP
-                                        原生错误处理。</div>
+                                    <div class="form-text mb-0">后台访问地址前缀，例如 <code>/z-admin</code>。修改后请使用新地址访问后台。</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -327,6 +334,72 @@ $this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置 & �
                             </div>
                         </div>
                     </div>
+
+                    <div class="tab-pane fade" id="cache-tab-pane" role="tabpanel" aria-labelledby="cache-tab"
+                         tabindex="0">
+                        <div class="alert alert-info d-flex align-items-center mb-3 py-2 px-3 small" role="alert">
+                            <i class="fa fa-info-circle me-2"></i>
+                            <div>缓存配置保存在数据库（<code>options</code> 表）中，默认使用文件缓存；启用缓存可提升站点性能。</div>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label for="cache.status" class="form-label small">缓存状态</label>
+                                <select class="form-select form-select-sm" id="cache.status" name="cache[status]">
+                                    <option value="disabled" <?php echo $cache['status'] === 'disabled' ? 'selected' : '';?>>禁用</option>
+                                    <option value="enabled" <?php echo $cache['status'] === 'enabled' ? 'selected' : '';?>>启用</option>
+                                </select>
+                                <div class="form-text mb-0">启用后 options 等数据将缓存到文件或 Redis，减少数据库查询。</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="cache.default" class="form-label small">缓存驱动</label>
+                                <select class="form-select form-select-sm" id="cache.default" name="cache[default]">
+                                    <option value="file" <?php echo $cache['default'] === 'file' ? 'selected' : '';?>>文件缓存 (File)</option>
+                                    <option value="redis" <?php echo $cache['default'] === 'redis' ? 'selected' : '';?>>Redis 缓存</option>
+                                </select>
+                                <div class="form-text mb-0">选择 Redis 时需填写下方连接信息。</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="cache.ttl" class="form-label small">缓存过期时间（秒）</label>
+                                <input type="number" min="0" class="form-control form-control-sm" id="cache.ttl"
+                                       name="cache[ttl]" placeholder="0" value="<?php echo (int)$cache['ttl'];?>" />
+                                <div class="form-text mb-0">0 表示使用默认值（10000 秒）。</div>
+                            </div>
+                        </div>
+                        <hr class="my-2">
+                        <h6 class="text-muted small mb-2"><i class="fa fa-server me-1"></i>Redis 连接信息</h6>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label for="cache.redis_host" class="form-label small">Redis 主机</label>
+                                <input type="text" class="form-control form-control-sm" id="cache.redis_host"
+                                       name="cache[redis_host]" placeholder="127.0.0.1"
+                                       value="<?php echo htmlspecialchars($cache['redis_host'], ENT_QUOTES);?>" />
+                            </div>
+                            <div class="col-md-3">
+                                <label for="cache.redis_port" class="form-label small">端口</label>
+                                <input type="number" min="1" max="65535" class="form-control form-control-sm"
+                                       id="cache.redis_port" name="cache[redis_port]" placeholder="6379"
+                                       value="<?php echo (int)$cache['redis_port'];?>" />
+                            </div>
+                            <div class="col-md-3">
+                                <label for="cache.redis_database" class="form-label small">数据库</label>
+                                <input type="number" min="0" class="form-control form-control-sm"
+                                       id="cache.redis_database" name="cache[redis_database]" placeholder="0"
+                                       value="<?php echo (int)$cache['redis_database'];?>" />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="cache.redis_password" class="form-label small">密码</label>
+                                <input type="password" class="form-control form-control-sm" id="cache.redis_password"
+                                       name="cache[redis_password]" placeholder="留空表示无需密码"
+                                       value="<?php echo htmlspecialchars($cache['redis_password'], ENT_QUOTES);?>" />
+                            </div>
+                            <div class="col-12">
+                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="clearCache()">
+                                    <i class="fa fa-trash-o me-1"></i>清空缓存
+                                </button>
+                                <span class="form-text ms-2">清除当前缓存驱动中的所有缓存数据（options、路由等）。</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="card-footer text-center">
@@ -342,10 +415,29 @@ $this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置 & �
 
 <script>
     var mailTestUrl = '<?php echo Url::action('System@mailTest');?>';
+    var cacheClearUrl = '<?php echo Url::action('System@cacheClear');?>';
 
     $(function(){
         $('#zapForm').validate({ignore:''});
     })
+
+    function clearCache(){
+        const load = Zap.loading('正在清空缓存，请稍后');
+        $.ajax({
+            url: cacheClearUrl,
+            method: 'post',
+            dataType: 'json',
+            success: function (data) {
+                if (data.code === 0) {
+                    ZapToast.alert(data.msg, {bgColor: bgSuccess, position: Toast_Pos_Center});
+                } else {
+                    ZapToast.alert(data.msg, {bgColor: bgDanger, position: Toast_Pos_Center});
+                }
+            }
+        }).always(function () {
+            load.dispose()
+        });
+    }
 
     function save(){
         const zapForm = $('#zapForm');

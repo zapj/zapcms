@@ -24,6 +24,14 @@ class RedisCache implements CacheInterface
             $this->redis = new $redisClass();
             call_user_func_array([$this->redis,'connect'],$options['params']);
         }
+
+        // 可选：密码认证与库选择
+        if(!empty($options['password'])){
+            $this->redis->auth($options['password']);
+        }
+        if(isset($options['database']) && (int)$options['database'] > 0){
+            $this->redis->select((int)$options['database']);
+        }
     }
 
     public function get($key, $default = null, $ttl = null)

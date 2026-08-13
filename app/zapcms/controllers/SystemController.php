@@ -27,70 +27,127 @@ class SystemController extends AdminController
                     Option::add($key,$value,0,1);
                 }
             }
-            // 服务器开关（server.*）写入 config/config.php 文件
-            $configMsg = $this->saveServerConfig((array)Request::post('server', []));
-            Response::json(['code'=>0,'msg'=>'保存成功' . $configMsg]);
+            // 服务器设置（server.*）与缓存设置（cache.*）保存到 options 表
+            $this->saveServerOptions((array)Request::post('server', []));
+            $this->saveCacheOptions((array)Request::post('cache', []));
+            // 清除相关配置缓存，使新设置立即生效
+            \zap\facades\Cache::delete('_opts_server');
+            \zap\facades\Cache::delete('_opts_cache');
+            Response::json(['code'=>0,'msg'=>'保存成功']);
         }
         $data = [
             'options'=> Option::getArray($keyPrefix,'REGEXP'),
-            // 服务器开关当前值（来自 config/config.php）
+            // 服务器设置当前值（保存在 options 表 server.*）
             'server' => [
-                'log' => (bool)config('config.log', true),
-                'debug' => (bool)config('config.debug', false),
-                'maintenance' => (bool)config('config.maintenance', false),
-                'error_handling' => (bool)config('config.error_handling', true),
+                'log' => (bool)option('server.log', true),
+                'debug' => (bool)option('server.debug', false),
+                'maintenance' => (bool)option('server.maintenance', false),
+                'admin_prefix' => option('server.admin_prefix', 'z-admin'),
+            ],
+            // 缓存设置当前值（保存在 options 表 cache.*，未设置时取 config/cache.php 默认值）
+            'cache' => [
+                'status' => option('cache.status', config('cache.status', 'disabled')),
+                'default' => option('cache.default', config('cache.default', 'file')),
+                'ttl' => option('cache.ttl', config('cache.ttl', 0)),
+                'redis_host' => option('cache.redis_host', config('cache.redis.host', '127.0.0.1')),
+                'redis_port' => option('cache.redis_port', config('cache.redis.port', 6379)),
+                'redis_password' => option('cache.redis_password', config('cache.redis.password', '')),
+                'redis_database' => option('cache.redis_database', config('cache.redis.database', 0)),
             ],
         ];
         View::render("system.settings",$data);
     }
 
     /**
-     * 将服务器开关（log / debug / maintenance / error_handling）写入 config/config.php
-     * 以行级正则替换对应键的值；键不存在时自动追加到 return 数组开头。
-     * @return string 附加提示信息（空表示全部写入成功）
+     * 将服务器开关（maintenance / log / debug / admin_prefix）保存到 options 表（server.*）
      */
-    private function saveServerConfig(array $server): string
+    private function saveServerOptions(array $server): void
     {
-        $configFile = config_path('config.php');
-        if (!is_file($configFile)) {
-            return '，但 config/config.php 不存在，服务器开关未保存';
-        }
-        if (!is_writable($configFile)) {
-            return '，但 config/config.php 不可写，服务器开关未保存';
-        }
-        $content = file_get_contents($configFile);
-        if ($content === false) {
-            return '，但无法读取 config/config.php，服务器开关未保存';
-        }
-        $updated = $content;
-        foreach (['log', 'debug', 'maintenance', 'error_handling'] as $cfgKey) {
-            if (!array_key_exists($cfgKey, $server)) {
+        $map = [
+            'maintenance'  => 'bool',
+            'log'          => 'bool',
+            'debug'        => 'bool',
+            'admin_prefix' => 'prefix',
+        ];
+        foreach ($map as $key => $type) {
+            if (!array_key_exists($key, $server)) {
                 continue;
             }
-            $boolVal = !empty($server[$cfgKey]) ? 'true' : 'false';
-            // 匹配 "key" => 值, / 'key' => 值, （兼容有无空格）
-            $pattern = '/^(\s*(?:"|\')\s*' . preg_quote($cfgKey, '/') . '\s*(?:"|\')\s*=>\s*)[^,\r\n]+([,\r\n])/m';
-            $updated = preg_replace($pattern, '$1' . $boolVal . '$2', $updated, 1, $count);
-            if ($count === 0) {
-                // 键不存在，追加到 return [ 之后
-                $updated = preg_replace(
-                    '/return\s*\[\s*\n/',
-                    "return [\n\n    \"" . $cfgKey . '" => ' . $boolVal . ",\n",
-                    $updated,
-                    1,
-                    $count
-                );
-                if ($count === 0) {
-                    return '，但无法定位 config/config.php 中的 ' . $cfgKey . ' 键';
-                }
+            $optionName = 'server.' . $key;
+            $value = (string)$server[$key];
+            if ($type === 'bool') {
+                $value = !empty($value) ? '1' : '0';
+            } else {
+                $value = trim(preg_replace('/[^a-zA-Z0-9_-]/', '', $value) ?: 'z-admin', '-_');
+                $value = $value !== '' ? $value : 'z-admin';
             }
-        }
-        if ($updated !== $content) {
-            if (file_put_contents($configFile, $updated) === false) {
-                return '，但服务器开关写入 config/config.php 失败';
+            $existing = Option::get($optionName);
+            if ($existing !== null) {
+                Option::update($optionName, $value, 0, 1);
+            } else {
+                Option::add($optionName, $value, 0, 1);
             }
+            // 清除单个 option 缓存
+            \zap\facades\Cache::delete($optionName);
         }
-        return '';
+    }
+
+    /**
+     * 将缓存设置（status / default / ttl / redis_*）保存到 options 表（cache.*）
+     */
+    private function saveCacheOptions(array $cache): void
+    {
+        $map = [
+            'status'         => ['enum', ['disabled', 'enabled']],
+            'default'        => ['enum', ['file', 'redis']],
+            'ttl'            => ['int'],
+            'redis_host'     => ['string'],
+            'redis_port'     => ['int'],
+            'redis_password' => ['string'],
+            'redis_database' => ['int'],
+        ];
+        foreach ($map as $key => $rule) {
+            if (!array_key_exists($key, $cache)) {
+                continue;
+            }
+            $optionName = 'cache.' . $key;
+            $value = (string)$cache[$key];
+            switch ($rule[0]) {
+                case 'enum':
+                    $value = in_array($value, $rule[1], true) ? $value : $rule[1][0];
+                    break;
+                case 'int':
+                    $value = (string)max(0, (int)$value);
+                    break;
+                default:
+                    $value = trim($value);
+            }
+            $existing = Option::get($optionName);
+            if ($existing !== null) {
+                Option::update($optionName, $value, 0, 1);
+            } else {
+                Option::add($optionName, $value, 0, 1);
+            }
+            // 清除单个 option 缓存
+            \zap\facades\Cache::delete($optionName);
+        }
+    }
+
+    /**
+     * 清空当前缓存驱动中的所有缓存数据
+     */
+    public function cacheClear()
+    {
+        if (!Request::isPost()) {
+            Response::json(['code' => 1, 'msg' => '非法请求']);
+            return;
+        }
+        try {
+            \zap\facades\Cache::clear();
+            Response::json(['code' => 0, 'msg' => '缓存已清空']);
+        } catch (\Exception $e) {
+            Response::json(['code' => 1, 'msg' => '清空缓存失败: ' . $e->getMessage()]);
+        }
     }
 
     /**

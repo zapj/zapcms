@@ -31,11 +31,17 @@ function get_option(string $option_name, $default = null, ?int $ttl = null)
  *
  * @param string|string[] $option_name 配置名或数组
  * @param string          $type        匹配类型 (REGEXP / LIKE / =)
- * @param int             $ttl         缓存秒数，默认 10000
+ * @param int|null        $ttl         缓存秒数，默认取配置 cache.ttl（<=0 或未配置时为 10000）
  * @return array
  */
-function get_options($option_name, string $type = '=', int $ttl = 10000): array
+function get_options($option_name, string $type = '=', ?int $ttl = null): array
 {
+    if ($ttl === null) {
+        $ttl = (int)config('cache.ttl', 0);
+        if ($ttl <= 0) {
+            $ttl = 10000;
+        }
+    }
     if (is_array($option_name)) {
         $cacheKey = '_opts_' . md5(serialize($option_name));
         return \zap\facades\Cache::get($cacheKey, function () use ($option_name, $type) {

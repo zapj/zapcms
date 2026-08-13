@@ -13,9 +13,9 @@
 /**
  * @var \zap\http\Router $router
  */
-// 定义后台前缀（可在插件中通过 hook 修改）
+// 定义后台前缀（保存在 options 表 server.admin_prefix，可在后台“基础设置 > 服务器”修改）
 if (!defined('Z_ADMIN_PREFIX')) {
-    define('Z_ADMIN_PREFIX', get_option('admin_prefix', 'z-admin'));
+    define('Z_ADMIN_PREFIX', get_option('server.admin_prefix', 'z-admin'));
 }
 
 // ──────────────────── 后台路由 ────────────────────
