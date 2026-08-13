@@ -4,15 +4,21 @@
  * 依赖变量：
  *   - $node_fields : 字段配置数组（NodeType::getFields 返回）
  *   - $node        : \zapcms\models\Node 实例
+ *   - $meta_section_title : 区块标题（默认「自定义字段」）
+ *   - $meta_show_header   : 是否输出标题分隔（默认 true；分组 Tab 内传 false）
  *
  * 支持类型：text / textarea / number / date / datetime / select / radio / checkbox / switch / image
  */
 if (empty($node_fields)) {
     return;
 }
+$meta_section_title = $meta_section_title ?? '自定义字段';
+$meta_show_header   = $meta_show_header ?? true;
 ?>
+<?php if ($meta_show_header): ?>
 <hr>
-<h6 class="text-muted small mb-2"><i class="fa fa-list-alt me-1"></i>自定义字段</h6>
+<h6 class="text-muted small mb-2"><i class="fa fa-list-alt me-1"></i><?= e($meta_section_title) ?></h6>
+<?php endif; ?>
 <?php foreach ($node_fields as $nf): ?>
     <?php
     $nfType  = $nf['type'] ?? 'text';

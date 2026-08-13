@@ -91,4 +91,110 @@ class NodeType
         return array_map(function ($f) { return $f['field_name']; }, $fields);
     }
 
+    /**
+     * 分组配置在 options 表中的键前缀（按内容模型区分）
+     */
+    private const GROUP_OPTION_PREFIX = 'node_field_group.';
+
+    /**
+     * 获取内容模型的字段分组列表（按 sort_order 排序）
+     *
+     * 返回结构：[ ['name' => '规格参数', 'sort_order' => 0], ... ]
+     */
+    public static function getFieldGroups(string $type_name): array
+    {
+        $row = DB::table('options')->where('option_name', static::GROUP_OPTION_PREFIX . $type_name)->first();
+        $groups = [];
+        if (!empty($row['option_value'])) {
+            $decoded = json_decode((string)$row['option_value'], true);
+            if (is_array($decoded)) {
+                foreach ($decoded as $g) {
+                    if (is_string($g)) {
+                        $groups[] = ['name' => trim($g), 'sort_order' => 0];
+                    } elseif (is_array($g) && !empty($g['name'])) {
+                        $groups[] = [
+                            'name'       => trim((string)$g['name']),
+                            'sort_order' => (int)($g['sort_order'] ?? 0),
+                        ];
+                    }
+                }
+            }
+        }
+        usort($groups, fn($a, $b) => $a['sort_order'] <=> $b['sort_order']);
+        return $groups;
+    }
+
+    /**
+     * 保存内容模型的字段分组列表（全量替换，存 options 表）
+     *
+     * @param string $type_name 内容模型标识（如 product）
+     * @param array  $names     分组名称列表
+     */
+    public static function saveFieldGroups(string $type_name, array $names): void
+    {
+        $groups = [];
+        $seq = 0;
+        foreach ($names as $name) {
+            $name = trim((string)$name);
+            if ($name === '') {
+                continue;
+            }
+            $groups[] = ['name' => $name, 'sort_order' => $seq++];
+        }
+
+        $optionName = static::GROUP_OPTION_PREFIX . $type_name;
+        $json = $groups ? json_encode($groups, JSON_UNESCAPED_UNICODE) : '';
+
+        if (DB::table('options')->where('option_name', $optionName)->exists()) {
+            DB::table('options')->where('option_name', $optionName)->update(['option_value' => $json]);
+        } else {
+            DB::table('options')->insert([
+                'option_name'  => $optionName,
+                'option_value' => $json,
+                'sort_order'   => 0,
+                'autoload'     => 0,
+            ]);
+        }
+    }
+
+    /**
+     * 删除内容模型的字段分组配置
+     */
+    public static function removeFieldGroups(string $type_name): void
+    {
+        DB::table('options')->where('option_name', static::GROUP_OPTION_PREFIX . $type_name)->delete();
+    }
+
+    /**
+     * 按分组返回字段：['分组名' => [字段...]]，'' 表示默认分组（未分组字段）
+     *
+     * 顺序：默认分组 → 已配置分组（按 sort_order）→ 字段中未配置但存在的分组（兜底）
+     */
+    public static function getFieldsGrouped(string $type_name): array
+    {
+        $fields = static::getFields($type_name);
+        $byGroup = [];
+        foreach ($fields as $f) {
+            $g = trim((string)($f['group_name'] ?? ''));
+            $byGroup[$g][] = $f;
+        }
+
+        $result = [];
+        if (!empty($byGroup[''])) {
+            $result[''] = $byGroup[''];
+            unset($byGroup['']);
+        }
+        foreach (static::getFieldGroups($type_name) as $g) {
+            $name = $g['name'];
+            if (isset($byGroup[$name])) {
+                $result[$name] = $byGroup[$name];
+                unset($byGroup[$name]);
+            }
+        }
+        foreach ($byGroup as $name => $fs) {
+            $result[$name] = $fs;
+        }
+        return $result;
+    }
+
 }

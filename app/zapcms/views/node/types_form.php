@@ -23,6 +23,8 @@ $fieldTypes = [
     'image'    => ['label' => '图片',     'icon' => 'fa fa-image'],
 ];
 $optionsTypes = ['select','radio','checkbox']; // 这些类型使用「选项列表」textarea
+$groups       = $groups ?? [];
+$fieldGroups  = array_column($groups, 'name');
 ?>
 
 <div class="row justify-content-center">
@@ -92,6 +94,33 @@ $optionsTypes = ['select','radio','checkbox']; // 这些类型使用「选项列
                     </div>
 
                     <hr id="fields">
+
+                    <!-- 字段分组管理 -->
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h6 class="mb-0"><i class="fa fa-object-group"></i> 字段分组</h6>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="addGroupRow()">
+                            <i class="fa fa-plus-lg"></i> 添加分组
+                        </button>
+                    </div>
+                    <p class="text-muted small">
+                        分组用于将自定义字段在节点编辑页拆分为多个 <code>Tab</code>，Tab 标题即为分组名称。
+                        未分组的字段显示在默认 Tab 中。
+                    </p>
+                    <div id="groupList" class="mb-2">
+                        <?php if (!empty($groups)): ?>
+                            <?php foreach ($groups as $g): ?>
+                                <div class="input-group input-group-sm mb-2">
+                                    <input type="text" name="field_group[]" class="form-control"
+                                           placeholder="分组名称，如 规格参数" value="<?=e($g['name'])?>">
+                                    <button type="button" class="btn btn-outline-danger" onclick="removeGroupRow(this)">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+
+                    <hr>
 
                     <!-- 自定义字段管理 -->
                     <div class="d-flex align-items-center justify-content-between mb-2">
@@ -183,9 +212,16 @@ $optionsTypes = ['select','radio','checkbox']; // 这些类型使用「选项列
                 </div>
             </div>
             <div class="row g-2 mb-2">
-                <div class="col-md-12">
+                <div class="col-md-6">
                     <label class="form-label small mb-1">占位提示</label>
                     <input type="text" class="form-control form-control-sm" data-name="placeholder" placeholder="如 199.00 / 请输入...">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small mb-1">所属分组</label>
+                    <select class="form-select form-select-sm" data-name="group_name">
+                        <option value="">（无分组，显示在默认 Tab）</option>
+                    </select>
+                    <div class="form-text">同一分组的字段在节点编辑页放入一个 Tab。</div>
                 </div>
             </div>
             <div class="row g-2 mb-2 field-value-row">
@@ -209,6 +245,7 @@ $optionsTypes = ['select','radio','checkbox']; // 这些类型使用「选项列
 (function () {
     var fieldTypes = <?= json_encode($fieldTypes, JSON_UNESCAPED_UNICODE) ?>;
     var optionsTypes = <?= json_encode($optionsTypes) ?>;
+    var fieldGroups = <?= json_encode($fieldGroups, JSON_UNESCAPED_UNICODE) ?>;
     var fieldIndex = <?= count($fields) ?>;
 
     function fieldName(i, key) { return 'field[' + i + '][' + key + ']'; }
@@ -221,6 +258,10 @@ $optionsTypes = ['select','radio','checkbox']; // 这些类型使用「选项列
                 el.textContent = val;
             } else {
                 el.value = val;
+            }
+            // 分组下拉的选项可能尚未渲染，暂存值待 syncGroupOptions 恢复
+            if (key === 'group_name' && val && el.tagName === 'SELECT' && el.value !== val) {
+                el.dataset.pendingGroup = val;
             }
             // 重新打上 name 标记
             el.setAttribute('name', fieldName(i, key));
@@ -260,6 +301,50 @@ $optionsTypes = ['select','radio','checkbox']; // 这些类型使用「选项列
         var row = tpl.content.firstElementChild.cloneNode(true);
         list.appendChild(row);
         applyFieldRowData(row, i, data || {});
+        syncGroupOptions();
+    }
+
+    // ---- 字段分组管理 ----
+    function collectGroups() {
+        fieldGroups = [];
+        document.querySelectorAll('#groupList input[name="field_group[]"]').forEach(function (inp) {
+            var v = inp.value.trim();
+            if (v && fieldGroups.indexOf(v) === -1) { fieldGroups.push(v); }
+        });
+        syncGroupOptions();
+    }
+
+    function syncGroupOptions() {
+        var opts = '<option value="">（无分组，显示在默认 Tab）</option>';
+        fieldGroups.forEach(function (g) {
+            opts += '<option value="' + g + '">' + g + '</option>';
+        });
+        document.querySelectorAll('#fieldList [data-name="group_name"]').forEach(function (sel) {
+            var old = sel.dataset.pendingGroup !== undefined ? sel.dataset.pendingGroup : sel.value;
+            sel.innerHTML = opts;
+            if (old && fieldGroups.indexOf(old) !== -1) { sel.value = old; }
+            delete sel.dataset.pendingGroup;
+        });
+    }
+
+    function addGroupRow(name) {
+        var list = document.getElementById('groupList');
+        var div = document.createElement('div');
+        div.className = 'input-group input-group-sm mb-2';
+        div.innerHTML =
+            '<input type="text" name="field_group[]" class="form-control" placeholder="分组名称，如 规格参数">' +
+            '<button type="button" class="btn btn-outline-danger" onclick="removeGroupRow(this)"><i class="fa fa-trash"></i></button>';
+        list.appendChild(div);
+        var input = div.querySelector('input');
+        if (name) { input.value = name; }
+        input.focus();
+        collectGroups();
+    }
+
+    function removeGroupRow(btn) {
+        var row = btn.closest('.input-group');
+        if (row) { row.remove(); }
+        collectGroups();
     }
 
     function removeFieldRow(btn) {
@@ -295,6 +380,11 @@ $optionsTypes = ['select','radio','checkbox']; // 这些类型使用「选项列
         });
     };
 
+    // 分组输入变化时同步字段行下拉
+    document.getElementById('groupList').addEventListener('input', function (e) {
+        if (e.target && e.target.name === 'field_group[]') { collectGroups(); }
+    });
+
     // 事件代理
     document.getElementById('fieldList').addEventListener('click', function (e) {
         var t = e.target.closest('button');
@@ -321,6 +411,8 @@ $optionsTypes = ['select','radio','checkbox']; // 这些类型使用「选项列
     window.addFieldRow = addFieldRow;
     window.removeFieldRow = removeFieldRow;
     window.toggleFieldRow = toggleFieldRow;
+    window.addGroupRow = addGroupRow;
+    window.removeGroupRow = removeGroupRow;
 
     // 初始化现有行的 name 与提示
     (function init() {
@@ -332,6 +424,7 @@ $optionsTypes = ['select','radio','checkbox']; // 这些类型使用「选项列
             });
             updateFieldRowHint(row);
         });
+        syncGroupOptions();
     })();
 
     // 提交

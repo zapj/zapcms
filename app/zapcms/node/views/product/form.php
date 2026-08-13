@@ -19,6 +19,11 @@ $this->view->page_subtitle = $title ?? '';
  * @var array $node_relations
  * @var string $_controller
  */
+
+// 按字段分组拆分为多个 Tab（'' 为默认分组）
+$metaGroups = \zapcms\services\NodeType::getFieldsGrouped((string)($node_type ?? $_controller ?? 'default'));
+$metaDefaultFields = $metaGroups[''] ?? [];
+unset($metaGroups['']);
 ?>
 
 <form id="zapForm" method="post">
@@ -42,6 +47,13 @@ $this->view->page_subtitle = $title ?? '';
                                 <i class="fa fa-search me-1"></i>SEO
                             </button>
                         </li>
+                        <?php foreach ($metaGroups as $gname => $gfields): ?>
+                            <li class="nav-item">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#meta_tab_<?= crc32($gname) ?>" type="button">
+                                    <i class="fa fa-tags me-1"></i><?= e($gname) ?>
+                                </button>
+                            </li>
+                        <?php endforeach; ?>
                     </ul>
                     <div class="card-tools">
                         <a class="btn btn-tool btn-sm" href="<?php echo url_action("Node@{$_controller}", $_GET); ?>">
@@ -99,7 +111,13 @@ $this->view->page_subtitle = $title ?? '';
                                 </div>
                             </div>
 
-                            <?php include __DIR__ . '/../_meta_fields.php'; ?>
+                            <?php
+                            $node_fields = $metaDefaultFields;
+                            $meta_section_title = '自定义字段';
+                            $meta_show_header = true;
+                            include __DIR__ . '/../_meta_fields.php';
+                            unset($node_fields, $meta_section_title, $meta_show_header);
+                            ?>
                         </div>
                         <div class="tab-pane" id="tab2">
                             <div class="mb-2">
@@ -114,6 +132,16 @@ $this->view->page_subtitle = $title ?? '';
                                           placeholder="建议控制在150字以内，用于搜索引擎摘要"><?php echo $node->description; ?></textarea>
                             </div>
                         </div>
+                        <?php foreach ($metaGroups as $gname => $gfields): ?>
+                            <div class="tab-pane" id="meta_tab_<?= crc32($gname) ?>">
+                                <?php
+                                $node_fields = $gfields;
+                                $meta_show_header = false;
+                                include __DIR__ . '/../_meta_fields.php';
+                                unset($node_fields, $meta_show_header);
+                                ?>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
                 </div>
                 <div class="card-footer">

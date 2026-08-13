@@ -99,6 +99,7 @@ class NodeController extends AdminController
         $id  = req()->get('id', 0);
         $row = [];
         $fields = [];
+        $groups = [];
         if ($id > 0) {
             $row = DB::table('node_types')->where('type_id', (int)$id)->first();
             if (!$row) {
@@ -106,12 +107,14 @@ class NodeController extends AdminController
             }
             $fields = DB::table('node_type_field')->where('node_type_id', (int)$id)
                 ->orderBy('sort_order', 'ASC')->orderBy('field_id', 'ASC')->fetchAll();
+            $groups = NodeType::getFieldGroups((string)$row['type_name']);
         }
         BreadCrumb::instance()->add('内容管理', url_action('Node'));
         BreadCrumb::instance()->add($id > 0 ? '编辑模型' : '添加模型');
         View::render("node.types_form", [
             'row'         => $row,
             'fields'      => $fields,
+            'groups'      => $groups,
             'id'          => (int)$id,
             'page_title'  => $id > 0 ? '编辑模型' : '添加模型',
             'breadcrumbs' => BreadCrumb::instance()->toArray(),
@@ -159,6 +162,10 @@ class NodeController extends AdminController
         // 保存自定义字段（全量替换）
         $this->saveTypeFields($typeId);
 
+        // 保存字段分组（存 options 表，键 node_field_group.{type_name}）
+        $groups = req()->post('field_group', []);
+        NodeType::saveFieldGroups($data['type_name'], is_array($groups) ? $groups : []);
+
         Response::json(['code' => 0, 'msg' => '保存成功']);
     }
 
@@ -205,6 +212,7 @@ class NodeController extends AdminController
                 'placeholder'  => (string)($field['placeholder'] ?? ''),
                 'required'     => !empty($field['required']) ? 1 : 0,
                 'help'         => (string)($field['help'] ?? ''),
+                'group_name'   => trim((string)($field['group_name'] ?? '')),
             ]);
             $sort = max($sort, $sortOrder + 1);
         }
@@ -233,8 +241,12 @@ class NodeController extends AdminController
             Response::json(['code' => 1, 'msg' => '参数错误']);
             return;
         }
-        // 同步清理该模型的字段配置
+        $row = DB::table('node_types')->where('type_id', (int)$id)->first();
+        // 同步清理该模型的字段配置与分组配置
         DB::table('node_type_field')->where('node_type_id', (int)$id)->delete();
+        if ($row) {
+            NodeType::removeFieldGroups((string)$row['type_name']);
+        }
         DB::table('node_types')->where('type_id', (int)$id)->delete();
         Response::json(['code' => 0, 'msg' => '删除成功']);
     }
