@@ -55,6 +55,26 @@ if (!is_file('config/database.php') || !is_file('var/install.lock')) {
 require "vendor/autoload.php";
 $app = new \zap\App(dirname(__DIR__));
 
+// Maintenance Mode 开关（对应 config/config.php 的 maintenance 键）：
+// 开启时仅放行后台（z-admin）请求，前台访问返回 503 维护页面
+if (config('config.maintenance', false)) {
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+    $adminPrefix = trim((string)(defined('Z_ADMIN_PREFIX') ? Z_ADMIN_PREFIX : '/z-admin'), '/');
+    $isAdminUri = $adminPrefix !== '' && stripos($requestUri, '/' . $adminPrefix) !== false;
+    if (!$isAdminUri) {
+        http_response_code(503);
+        header('Content-Type: text/html; charset=utf-8');
+        echo '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">'
+            . '<meta name="viewport" content="width=device-width, initial-scale=1">'
+            . '<title>系统维护中</title></head><body style="margin:0;display:flex;align-items:center;justify-content:center;'
+            . 'min-height:100vh;background:#f5f6fa;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;">'
+            . '<div style="text-align:center;padding:24px;"><div style="font-size:64px;">🛠️</div>'
+            . '<h1 style="margin:16px 0 8px;color:#333;font-size:24px;">系统维护中</h1>'
+            . '<p style="color:#888;margin:0;font-size:14px;">网站正在进行维护，请稍后再访问。</p></div></body></html>';
+        exit();
+    }
+}
+
 try {
     $app->run();
 } catch (\PDOException $e) {

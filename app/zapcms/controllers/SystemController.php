@@ -27,12 +27,70 @@ class SystemController extends AdminController
                     Option::add($key,$value,0,1);
                 }
             }
-            Response::json(['code'=>0,'msg'=>'保存成功']);
+            // 服务器开关（server.*）写入 config/config.php 文件
+            $configMsg = $this->saveServerConfig((array)Request::post('server', []));
+            Response::json(['code'=>0,'msg'=>'保存成功' . $configMsg]);
         }
         $data = [
-            'options'=> Option::getArray($keyPrefix,'REGEXP')
+            'options'=> Option::getArray($keyPrefix,'REGEXP'),
+            // 服务器开关当前值（来自 config/config.php）
+            'server' => [
+                'log' => (bool)config('config.log', true),
+                'debug' => (bool)config('config.debug', false),
+                'maintenance' => (bool)config('config.maintenance', false),
+                'error_handling' => (bool)config('config.error_handling', true),
+            ],
         ];
         View::render("system.settings",$data);
+    }
+
+    /**
+     * 将服务器开关（log / debug / maintenance / error_handling）写入 config/config.php
+     * 以行级正则替换对应键的值；键不存在时自动追加到 return 数组开头。
+     * @return string 附加提示信息（空表示全部写入成功）
+     */
+    private function saveServerConfig(array $server): string
+    {
+        $configFile = config_path('config.php');
+        if (!is_file($configFile)) {
+            return '，但 config/config.php 不存在，服务器开关未保存';
+        }
+        if (!is_writable($configFile)) {
+            return '，但 config/config.php 不可写，服务器开关未保存';
+        }
+        $content = file_get_contents($configFile);
+        if ($content === false) {
+            return '，但无法读取 config/config.php，服务器开关未保存';
+        }
+        $updated = $content;
+        foreach (['log', 'debug', 'maintenance', 'error_handling'] as $cfgKey) {
+            if (!array_key_exists($cfgKey, $server)) {
+                continue;
+            }
+            $boolVal = !empty($server[$cfgKey]) ? 'true' : 'false';
+            // 匹配 "key" => 值, / 'key' => 值, （兼容有无空格）
+            $pattern = '/^(\s*(?:"|\')\s*' . preg_quote($cfgKey, '/') . '\s*(?:"|\')\s*=>\s*)[^,\r\n]+([,\r\n])/m';
+            $updated = preg_replace($pattern, '$1' . $boolVal . '$2', $updated, 1, $count);
+            if ($count === 0) {
+                // 键不存在，追加到 return [ 之后
+                $updated = preg_replace(
+                    '/return\s*\[\s*\n/',
+                    "return [\n\n    \"" . $cfgKey . '" => ' . $boolVal . ",\n",
+                    $updated,
+                    1,
+                    $count
+                );
+                if ($count === 0) {
+                    return '，但无法定位 config/config.php 中的 ' . $cfgKey . ' 键';
+                }
+            }
+        }
+        if ($updated !== $content) {
+            if (file_put_contents($configFile, $updated) === false) {
+                return '，但服务器开关写入 config/config.php 失败';
+            }
+        }
+        return '';
     }
 
     /**

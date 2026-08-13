@@ -7,9 +7,10 @@ Asset::library('jqueryvalidation');
 $this->layout('layouts/common');
 
 $this->view->page_title = '系统设置';
-$this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置 & 文件上传';
+$this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置 & 文件上传 & 服务器';
 /**
  * @var array $options
+ * @var array $server
  */
 ?>
 
@@ -58,6 +59,13 @@ $this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置 & �
                                     data-bs-target="#upload-tab-pane" type="button" role="tab"
                                     aria-controls="upload-tab-pane" aria-selected="false">
                                 <i class="fa fa-cloud-upload me-1"></i>文件上传
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" id="server-tab" data-bs-toggle="tab"
+                                    data-bs-target="#server-tab-pane" type="button" role="tab"
+                                    aria-controls="server-tab-pane" aria-selected="false">
+                                <i class="fa fa-server me-1"></i>服务器
                             </button>
                         </li>
                     </ul>
@@ -248,6 +256,74 @@ $this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置 & �
                                     <option value="date" <?php if(($options['upload.name_rule'] ?? '') === 'date') echo 'selected';?>>日期 + 随机后缀</option>
                                 </select>
                                 <div class="form-text">「保留原文件名」模式下，同名文件会自动追加数字后缀，不会覆盖已有文件。</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="server-tab-pane" role="tabpanel" aria-labelledby="server-tab"
+                         tabindex="0">
+                        <div class="alert alert-warning d-flex align-items-center mb-3 py-2 px-3 small" role="alert">
+                            <i class="fa fa-exclamation-triangle me-2"></i>
+                            <div>这些选项直接写入 <code>config/config.php</code>，保存后立即生效。</div>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <div class="border rounded p-3 h-100">
+                                    <div class="form-check form-switch">
+                                        <input type="hidden" name="server[maintenance]" value="0">
+                                        <input class="form-check-input" type="checkbox" role="switch"
+                                               id="server.maintenance" name="server[maintenance]" value="1"
+                                            <?php echo $server['maintenance'] ? 'checked' : '';?>>
+                                        <label class="form-check-label" for="server.maintenance">
+                                            维护模式 <span class="text-muted small">Maintenance Mode</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-text mb-0">开启后前台访问显示「系统维护中」（HTTP 503），后台
+                                        <code>z-admin</code> 仍可正常访问以关闭维护。</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="border rounded p-3 h-100">
+                                    <div class="form-check form-switch">
+                                        <input type="hidden" name="server[error_handling]" value="0">
+                                        <input class="form-check-input" type="checkbox" role="switch"
+                                               id="server.error_handling" name="server[error_handling]" value="1"
+                                            <?php echo $server['error_handling'] ? 'checked' : '';?>>
+                                        <label class="form-check-label" for="server.error_handling">
+                                            错误处理 <span class="text-muted small">Error Handling</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-text mb-0">开启时由框架统一捕获并渲染错误页；关闭后使用 PHP
+                                        原生错误处理。</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="border rounded p-3 h-100">
+                                    <div class="form-check form-switch">
+                                        <input type="hidden" name="server[log]" value="0">
+                                        <input class="form-check-input" type="checkbox" role="switch"
+                                               id="server.log" name="server[log]" value="1"
+                                            <?php echo $server['log'] ? 'checked' : '';?>>
+                                        <label class="form-check-label" for="server.log">
+                                            日志 <span class="text-muted small">Log</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-text mb-0">开启后记录应用运行日志；关闭后不再写入日志文件。</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="border rounded p-3 h-100">
+                                    <div class="form-check form-switch">
+                                        <input type="hidden" name="server[debug]" value="0">
+                                        <input class="form-check-input" type="checkbox" role="switch"
+                                               id="server.debug" name="server[debug]" value="1"
+                                            <?php echo $server['debug'] ? 'checked' : '';?>>
+                                        <label class="form-check-label" for="server.debug">
+                                            调试模式 <span class="text-muted small">Debug</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-text mb-0">开启后显示详细错误信息（生产环境请关闭）。</div>
+                                </div>
                             </div>
                         </div>
                     </div>

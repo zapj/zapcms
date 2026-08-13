@@ -5,6 +5,9 @@ return [
 
     "log"=>true,
 
+    // Maintenance mode
+    "maintenance" => false,
+
     // Theme
     "theme" => "basic",
 
