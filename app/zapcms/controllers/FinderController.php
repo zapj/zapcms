@@ -49,6 +49,7 @@ class FinderController extends AdminController
         $pageHelper = new Pagination((int)req()->get('page', 1), 10, $query);
         $pageHelper->withPath(url_action('Finder@list') . ($query ? '?' . http_build_query($query) : ''));
         $pageHelper->setTotal($total);
+        $pageHelper->setClasses(['nav'=>'pagination pagination-sm justify-content-center mb-0']);
         // 裁剪超出范围的页码，保证 getOffset() 与 currentPage() 一致
         $pageHelper->setCurrentPage($pageHelper->currentPage());
         $fsIter->limit($pageHelper->getOffset(), $pageHelper->getLimit());
@@ -111,41 +112,75 @@ class FinderController extends AdminController
     public function createDir()
     {
         if(req()->isPost()){
-            $dirName = trim(req()->post('dir_name'),' \\/.');
-            $path = trim(req()->post('path'),' \\/.');
+            $dirName = trim((string)req()->post('dir_name'));
+            $path = trim((string)req()->post('path'),' \\/');
             $dirName =  str_replace(['..'],'',$dirName);
             $path =  str_replace(['..'],'',$path);
 
+            if($dirName === ''){
+                \response(['code'=>1,'msg'=>'目录名称不能为空'])->withJson();
+                return;
+            }
+            // 非法字符校验（Windows 文件系统不允许）
+            if(preg_match('/[\/\\\\:*?"<>|]/', $dirName)){
+                \response(['code'=>1,'msg'=>'目录名包含非法字符 \\ / : * ? " < > |'])->withJson();
+                return;
+            }
+            // Windows 保留设备名（含 con.txt 这类变体）
+            if(preg_match('/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$/i', $dirName)){
+                \response(['code'=>1,'msg'=>'该目录名称不可用'])->withJson();
+                return;
+            }
 
-            $path = storage_path($path .'/'. $dirName);
-            if(mkdir($path,0777,true) === true){
-                \response()->withJson(['code'=>0,'msg'=>'目录创建成功']);
+            $target = storage_path(($path !== '' ? $path . '/' : '') . $dirName);
+            if(is_dir($target)){
+                \response(['code'=>1,'msg'=>'创建失败，目录已存在'])->withJson();
+                return;
             }
-            if(is_dir($path)){
-                \response()->withJson(['code'=>1,'msg'=>'创建失败,目录已存在']);
+            if(mkdir($target,0777,true) === true){
+                \response(['code'=>0,'msg'=>'目录创建成功'])->withJson();
+                return;
             }
-            \response()->withJson(['code'=>1,'msg'=>'创建失败']);
+            \response(['code'=>1,'msg'=>'创建失败，请检查目录写入权限'])->withJson();
         }
     }
 
     public function delete()
     {
         if(req()->isPost()){
-            $finder_item = req()->post('finder_item');
-            $path = trim(req()->post('path'),' \\/.');
+            $finderItem = req()->post('finder_item');
+            // 未选择时直接提示，避免空提交
+            if(empty($finderItem) || !is_array($finderItem)){
+                \response(['code'=>1,'msg'=>'请先选择要删除的文件或目录'])->withJson();
+                return;
+            }
+            $path = trim((string)req()->post('path'),' \\/');
             $path =  str_replace(['..'],'',$path);
 
-            foreach ($finder_item as $item){
-                $item_path = storage_path($path .'/'. $item);
-                if(is_file($item_path)){
-                    FileUtils::delete($item_path);
-                }else if(is_dir($item_path)){
-                    FileUtils::deleteDir($item_path);
+            $success = 0;
+            foreach ($finderItem as $item){
+                // 仅保留纯文件名，防止路径穿越删除 storage 之外的文件
+                $name = basename(str_replace('\\','/',trim((string)$item,' /')));
+                if($name === '' || $name === '.' || $name === '..'){
+                    continue;
                 }
-
+                $itemPath = storage_path(($path !== '' ? $path . '/' : '') . $name);
+                if(is_file($itemPath)){
+                    if(FileUtils::delete($itemPath)){
+                        $success++;
+                    }
+                }else if(is_dir($itemPath)){
+                    if(FileUtils::deleteDir($itemPath)){
+                        $success++;
+                    }
+                }
             }
 
-            \response()->withJson(['code'=>0,'msg'=>'删除成功']);
+            if($success > 0){
+                \response(['code'=>0,'msg'=>"成功删除 {$success} 项"])->withJson();
+                return;
+            }
+            \response(['code'=>1,'msg'=>'没有可删除的文件'])->withJson();
         }
     }
 

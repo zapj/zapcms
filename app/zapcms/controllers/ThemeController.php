@@ -75,7 +75,7 @@ class ThemeController extends AdminController
             }
 
         }
-        \response()->withJson(['code'=>0,'msg'=>'保存成功']);
+        \response(['code'=>0,'msg'=>'保存成功'])->withJson();
     }
 
 

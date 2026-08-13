@@ -25,16 +25,12 @@
             </div>
         </div>
     </div>
-    <div class="row mb-3 finderMkdir " style="display: none">
-        <div class="col-sm-12">
-            <div class="input-group">
-                <div class="input-group">
-                    <input type="text" name="create-folder" value="" placeholder="文件夹名称" id="input-folder"
-                           class="form-control">
-                    <button type="button" title="创建文件夹" id="button-create" class="btn btn-primary"><i
-                                class="fa-solid fa-plus-circle"></i></button>
-                </div>
-            </div>
+    <div class="finderMkdir mb-3" style="display: none; max-width: 380px;">
+        <div class="input-group">
+            <input type="text" name="create-folder" value="" placeholder="文件夹名称" id="input-folder"
+                   class="form-control">
+            <button type="button" title="创建文件夹" id="button-create" class="btn btn-primary"><i
+                        class="fa-solid fa-plus-circle"></i></button>
         </div>
     </div>
     <div class="zap-message mb-2"></div>
@@ -136,7 +132,13 @@
         })
 
         $('#btn-folder').on('click', function (event) {
-            $('.finderMkdir').slideToggle("slow");
+            event.preventDefault()
+            $('#input-folder').val('');
+            $('.finderMkdir').slideToggle(200, function () {
+                if ($('.finderMkdir').is(':visible')) {
+                    $('#input-folder').trigger('focus');
+                }
+            });
         });
         $('#input-folder').on('keydown', function (e) {
             if (e.which === 13) {
@@ -145,32 +147,112 @@
         })
 
         $('#button-create').on('click', function (e) {
+            const $btn = $(this);
+            const dirName = $.trim($('#input-folder').val());
+            // 前端快速校验，减少无效请求
+            if (dirName === '') {
+                ZapToast.alert('请输入目录名称', {delay: 2500, bgColor: bgWarning});
+                $('#input-folder').trigger('focus');
+                return;
+            }
+            if (/[\/\\:*?"<>|]/.test(dirName)) {
+                ZapToast.alert('目录名不能包含 \\ / : * ? " < > | 等字符', {delay: 2500, bgColor: bgWarning});
+                $('#input-folder').trigger('focus').select();
+                return;
+            }
+            // 按钮进入 loading 状态，避免重复提交并给出操作反馈
+            const originalHtml = $btn.html();
+            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>创建中...');
             $.ajax({
                 url: '<?php echo url_action('Finder@createDir'); ?>',
                 method: 'post',
-                data: {dir_name: $('#input-folder').val(), path: $('#cur-path').val()},
+                data: {dir_name: dirName, path: $('#cur-path').val()},
+                dataType: 'json',
                 success: function (data) {
-                    ZapToast.alert(data.msg, {bgColor: bgSuccess});
-                    if (data.code === 0) {
+                    const isOk = data && data.code === 0;
+                    try {
+                        ZapToast.alert(data && data.msg ? data.msg : (isOk ? '创建成功' : '创建失败'), {
+                            delay: 2500,
+                            bgColor: isOk ? bgSuccess : bgDanger
+                        });
+                    } catch (err) { /* 提示失败不影响刷新流程 */ }
+                    if (isOk) {
+                        $('#input-folder').val('');
+                        $('.finderMkdir').slideUp(200);
                         reloadFileList();
+                    } else {
+                        $('#input-folder').trigger('focus').select();
                     }
+                },
+                complete: function () {
+                    $btn.prop('disabled', false).html(originalHtml);
                 }
             });
         })
 
         $('#btn-delete').on('click', function (e) {
-            $.ajax({
-                url: '<?php echo url_action('Finder@delete'); ?>',
-                method: 'post',
-                data: $('#zapFinderForm').serialize(),
-                dataType: 'json',
-                success: function (data) {
-                    ZapToast.alert(data.msg, {bgColor: bgSuccess});
-                    if (data.code === 0) {
-                        zapFinderFileList.load(FinderUrl + $('#cur-path').val(), loadCallback);
-                    }
+            const $checked = $('#zapFinderForm input[name="finder_item[]"]:checked');
+            const count = $checked.length;
+            if (count === 0) {
+                ZapToast.alert('请先勾选要删除的文件或目录', {bgColor: bgWarning});
+                return;
+            }
+            // 统计文件/目录数量，让确认提示更明确
+            const dirCount = $checked.closest('.col').has('a[data-type="dir"]').length;
+            const fileCount = count - dirCount;
+            const parts = [];
+            if (fileCount > 0) parts.push(fileCount + ' 个文件');
+            if (dirCount > 0) parts.push(dirCount + ' 个目录');
+
+            // replaced=true：每次重建弹窗，确保按钮回调绑定最新内容
+            ZapModal.create({
+                id: 'zapFinderDeleteModal',
+                title: '确认删除',
+                dialog_class: 'modal-dialog-centered modal-sm',
+                header_class: 'bg-danger text-white',
+                content: `<div class="text-center">
+                    <p class="mb-2">确定删除选中的 <b>${count}</b> 项（${parts.join('、')}）？</p>
+                    <span class="text-danger">此操作不可恢复！</span>
+                </div>`,
+                buttons: [
+                    {title: '取消', class: 'btn-secondary', close: true},
+                    {title: '删除', class: 'btn-danger'}
+                ],
+                btn2: function (event) {
+                    const $modalBtn = $(event.target).closest('button');
+                    const $outerBtn = $('#btn-delete');
+                    // 弹窗内删除按钮与顶部删除按钮都进入 loading 状态，防止重复提交
+                    const originalHtml = $modalBtn.html();
+                    $modalBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>删除中...');
+                    $outerBtn.prop('disabled', true);
+                    $.ajax({
+                        url: '<?php echo url_action('Finder@delete'); ?>',
+                        method: 'post',
+                        data: $('#zapFinderForm').serialize(),
+                        dataType: 'json',
+                        success: function (data) {
+                            const isOk = data && data.code === 0;
+                            try {
+                                ZapToast.alert(data && data.msg ? data.msg : (isOk ? '删除成功' : '删除失败'), {
+                                    delay: 2500,
+                                    bgColor: isOk ? bgSuccess : bgDanger
+                                });
+                            } catch (err) { /* 提示失败不影响刷新流程 */ }
+                            if (isOk) {
+                                reloadFileList();
+                                const modalEl = document.getElementById('zapFinderDeleteModal');
+                                if (modalEl && bootstrap.Modal.getInstance(modalEl)) {
+                                    bootstrap.Modal.getInstance(modalEl).hide();
+                                }
+                            }
+                        },
+                        complete: function () {
+                            $modalBtn.prop('disabled', false).html(originalHtml);
+                            $outerBtn.prop('disabled', false);
+                        }
+                    });
                 }
-            });
+            }, true).show();
         })
         $('#button-search').on('click',function (){
             zapFinderFileList.load(FinderUrl + $('#cur-path').val() + '&search=' + encodeURIComponent($('#input-search').val()), loadCallback);
