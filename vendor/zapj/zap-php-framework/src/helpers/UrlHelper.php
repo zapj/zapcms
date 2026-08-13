@@ -29,10 +29,11 @@ class UrlHelper
         if ($this->baseUrl) {
             return $this->baseUrl;
         }
-        // Auto-detect from request
+        // Auto-detect from request (含脚本目录，兼容子目录部署)
         $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
         $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $this->baseUrl = $scheme . '://' . $host;
+        $dir    = $this->scriptDir();
+        $this->baseUrl = $scheme . '://' . $host . $dir;
         return $this->baseUrl;
     }
 
@@ -94,6 +95,9 @@ class UrlHelper
         $uri = '/' . ltrim($uri, '/');
         $uri = $this->appendSuffix($uri);
 
+        if (!$absolute) {
+            $uri = $this->withScriptDir($uri);
+        }
         return $absolute ? rtrim($this->base(), '/') . $uri : $uri;
     }
 
@@ -197,7 +201,10 @@ class UrlHelper
         }else{
              $uri = '/' . ltrim($uri, '/');
         }
-   
+
+        // 子目录部署时前置脚本目录，避免跳转/链接丢失子目录前缀
+        $uri = $this->withScriptDir($uri);
+
         // Replace path params in the action string
         foreach ($pathParams as $key => $value) {
             $uri = str_replace('{' . $key . '}', urlencode($value), $uri);
@@ -240,6 +247,7 @@ class UrlHelper
             }
         }
 
+        $uri = $this->withScriptDir($uri);
         return $this->appendSuffix($uri);
     }
 
@@ -414,6 +422,9 @@ class UrlHelper
             $uri .= (str_contains($uri, '?') ? '&' : '?') . http_build_query($params);
         }
 
+        if (!$absolute) {
+            $uri = $this->withScriptDir($uri);
+        }
         return $absolute ? rtrim($this->base(), '/') . $uri : $uri;
     }
 
@@ -485,6 +496,26 @@ class UrlHelper
         }
         $dir = rtrim(str_replace('\\', '/', dirname($scriptName)), '/');
         return $dir === '/' ? '' : $dir;
+    }
+
+    /**
+     * 为相对路径前置脚本目录前缀（子目录部署时为 /zapcms，根目录部署时为空）。
+     *
+     * 仅处理以 "/" 开头的站内相对路径，且避免重复前缀。
+     */
+    protected function withScriptDir(string $path): string
+    {
+        $dir = $this->scriptDir();
+        if ($dir === '') {
+            return $path;
+        }
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://') || str_starts_with($path, '//')) {
+            return $path;
+        }
+        if ($path === $dir || str_starts_with($path, $dir . '/')) {
+            return $path;
+        }
+        return $dir . '/' . ltrim($path, '/');
     }
 
     /**
