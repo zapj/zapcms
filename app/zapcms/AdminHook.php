@@ -5,10 +5,10 @@
  *
  * 用法:
  *   // 在主题 admin/functions.php 中注册
- *   \zap\AdminHook::on('admin_head', function() { echo '<link ...>'; });
+ *   \zapcms\AdminHook::on('admin_head', function() { echo '<link ...>'; });
  *
  *   // 在布局中触发出力
- *   \zap\AdminHook::fire('admin_head');
+ *   \zapcms\AdminHook::fire('admin_head');
  */
 
 namespace zapcms;
