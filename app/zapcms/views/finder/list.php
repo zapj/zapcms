@@ -21,6 +21,8 @@ $uploadMaxSize = max(1, (int)option('upload.max_size', 20));
                 <i class="fa-solid fa-upload"></i></button>
             <button type="button" data-bs-toggle="tooltip" title="创建目录" id="btn-folder" class="btn btn-light"><i
                         class="fa-solid fa-folder"></i></button>
+            <button type="button" data-bs-toggle="tooltip" title="重命名" id="btn-rename" class="btn btn-light"><i
+                        class="fa-solid fa-pen"></i></button>
             <button type="button" data-bs-toggle="tooltip" title="删除" id="btn-delete" class="btn btn-danger"><i
                         class="fa-regular fa-trash-can"></i></button>
 
@@ -263,6 +265,84 @@ $uploadMaxSize = max(1, (int)option('upload.max_size', 20));
                 }
             }, true).show();
         })
+        $('#btn-rename').on('click', function (e) {
+            const $checked = $('#zapFinderForm input[name="finder_item[]"]:checked');
+            if ($checked.length === 0) {
+                ZapToast.alert('请先勾选要重命名的文件或目录', {delay: 2500, bgColor: bgWarning});
+                return;
+            }
+            if ($checked.length > 1) {
+                ZapToast.alert('每次只能重命名一个文件或目录', {delay: 2500, bgColor: bgWarning});
+                return;
+            }
+            const oldName = $checked.val();
+            ZapModal.create({
+                id: 'zapFinderRenameModal',
+                title: '重命名',
+                dialog_class: 'modal-dialog-centered modal-sm',
+                header_class: 'bg-primary text-white',
+                content: `
+                    <input type="text" class="form-control" id="input-rename" value="${oldName.replace(/"/g, '&quot;')}" placeholder="输入新名称">
+                    <div class="form-text mt-2">原名称：<code>${oldName.replace(/"/g, '&quot;')}</code></div>
+                `,
+                buttons: [
+                    {title: '取消', class: 'btn-secondary', close: true},
+                    {title: '保存', class: 'btn-primary'}
+                ],
+                btn2: function (event) {
+                    const $modalBtn = $(event.target).closest('button');
+                    const newName = $.trim($('#input-rename').val());
+                    if (newName === '') {
+                        ZapToast.alert('请输入新名称', {delay: 2500, bgColor: bgWarning});
+                        $('#input-rename').trigger('focus');
+                        return;
+                    }
+                    if (/[\/\\:*?"<>|]/.test(newName)) {
+                        ZapToast.alert('名称不能包含 \\ / : * ? " < > | 等字符', {delay: 2500, bgColor: bgWarning});
+                        $('#input-rename').trigger('focus').select();
+                        return;
+                    }
+                    const originalHtml = $modalBtn.html();
+                    $modalBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>保存中...');
+                    $.ajax({
+                        url: '<?php echo url_action('Finder@rename'); ?>',
+                        method: 'post',
+                        data: {old_name: oldName, new_name: newName, path: $('#cur-path').val()},
+                        dataType: 'json',
+                        success: function (data) {
+                            const isOk = data && data.code === 0;
+                            try {
+                                ZapToast.alert(data && data.msg ? data.msg : (isOk ? '重命名成功' : '重命名失败'), {
+                                    delay: 2500,
+                                    bgColor: isOk ? bgSuccess : bgDanger
+                                });
+                            } catch (err) { /* 提示失败不影响刷新流程 */ }
+                            if (isOk) {
+                                reloadFileList();
+                                const modalEl = document.getElementById('zapFinderRenameModal');
+                                if (modalEl && bootstrap.Modal.getInstance(modalEl)) {
+                                    bootstrap.Modal.getInstance(modalEl).hide();
+                                }
+                            }
+                        },
+                        complete: function () {
+                            $modalBtn.prop('disabled', false).html(originalHtml);
+                        }
+                    });
+                }
+            }, true).show();
+            // 弹窗显示后聚焦并选中输入框（去掉扩展名部分，方便直接改名）
+            setTimeout(function () {
+                const $input = $('#input-rename');
+                if ($input.length) {
+                    $input.trigger('focus');
+                    const dot = $input.val().lastIndexOf('.');
+                    if (dot > 0) {
+                        $input.get(0).setSelectionRange(0, dot);
+                    }
+                }
+            }, 200);
+        });
         function doSearch() {
             zapFinderFileList.load(FinderUrl + $('#cur-path').val() + '&search=' + encodeURIComponent($('#input-search').val()), loadCallback);
         }

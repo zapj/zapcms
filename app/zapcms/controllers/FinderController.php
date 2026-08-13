@@ -184,6 +184,62 @@ class FinderController extends AdminController
         }
     }
 
+    /**
+     * 重命名文件或目录
+     */
+    public function rename()
+    {
+        if(!req()->isPost()){
+            return;
+        }
+        $oldName = basename(str_replace('\\','/',trim((string)req()->post('old_name'),' /')));
+        $newName = trim((string)req()->post('new_name'));
+        $path = trim((string)req()->post('path'),' \\/');
+        $newName =  str_replace(['..'],'',$newName);
+        $path =  str_replace(['..'],'',$path);
+
+        if($oldName === '' || $oldName === '.' || $oldName === '..'){
+            \response(['code'=>1,'msg'=>'请选择要重命名的文件'])->withJson();
+            return;
+        }
+        if($newName === ''){
+            \response(['code'=>1,'msg'=>'新名称不能为空'])->withJson();
+            return;
+        }
+        // 非法字符校验（Windows 文件系统不允许）
+        if(preg_match('/[\/\\\\:*?"<>|]/', $newName)){
+            \response(['code'=>1,'msg'=>'名称包含非法字符 \\ / : * ? " < > |'])->withJson();
+            return;
+        }
+        // Windows 保留设备名（含 con.txt 这类变体）
+        if(preg_match('/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$/i', $newName)){
+            \response(['code'=>1,'msg'=>'该名称不可用'])->withJson();
+            return;
+        }
+        if(strtolower($oldName) === strtolower($newName)){
+            \response(['code'=>1,'msg'=>'新名称与原名相同'])->withJson();
+            return;
+        }
+
+        $baseDir = $path !== '' ? storage_path($path) : storage_path();
+        $oldPath = $baseDir . '/' . $oldName;
+        $newPath = $baseDir . '/' . $newName;
+
+        if(!file_exists($oldPath)){
+            \response(['code'=>1,'msg'=>'原文件不存在或已被移动'])->withJson();
+            return;
+        }
+        if(file_exists($newPath)){
+            \response(['code'=>1,'msg'=>'重命名失败，已存在同名文件或目录'])->withJson();
+            return;
+        }
+        if(@rename($oldPath, $newPath)){
+            \response(['code'=>0,'msg'=>'重命名成功'])->withJson();
+            return;
+        }
+        \response(['code'=>1,'msg'=>'重命名失败，请检查目录写入权限'])->withJson();
+    }
+
 
 
     function faIcons(){
