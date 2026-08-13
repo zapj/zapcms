@@ -30,9 +30,6 @@ class CatalogController extends Controller
     }
 
     function index(){
-        $firstSegment = current($this->params);
-//        echo pageState()->nodeType;
-//        echo pageState()->nodeMimeType;
         pageState()->getCatalog();
 
         pageState()->catalogPaths = Catalog::instance()->getCatalogPathById(pageState()->nodeId);
