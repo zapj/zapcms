@@ -17,7 +17,7 @@
 (function (window, document) {
     'use strict';
 
-    var VERSION = '2.0.0';
+    var VERSION = '2.0.1';
 
     /* ================================================================
      * 内置样式：首次实例化时自动注入 <style>，无需再引入 zapuploader.css
@@ -603,6 +603,10 @@
             formData.append('file', file);
             if (typeof fullPath !== 'undefined') {
                 formData.append('fullPath', fullPath);
+            }
+            // 调用 sending 回调，允许在发送前追加自定义表单字段（如当前目录 path）
+            if (typeof this.options.sending === 'function') {
+                this.options.sending(file, xhr, formData);
             }
             for (var name in this.options.customFormData) {
                 if (Object.prototype.hasOwnProperty.call(this.options.customFormData, name)) {

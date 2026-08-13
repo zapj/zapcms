@@ -1,4 +1,13 @@
 <?php if ($initialize) { ?>
+<?php
+// 读取后台「文件上传」配置，供前端 ZAPUploader 校验使用
+$uploadExts = trim((string)option('upload.extensions', ''));
+if ($uploadExts === '') {
+    $uploadExts = 'jpg,jpeg,png,gif,webp,svg,bmp,ico,zip,rar,7z,tar,gz,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,md,csv,mp3,mp4,avi,mov,wmv,flv,webm,json,xml';
+}
+$uploadExtList = '.' . preg_replace('/[\s,]+/', '|.', $uploadExts);
+$uploadMaxSize = max(1, (int)option('upload.max_size', 20));
+?>
 <form id="zapFinderForm">
     <div class="row mb-3">
         <div class="col-sm-5">
@@ -254,9 +263,23 @@
                 }
             }, true).show();
         })
-        $('#button-search').on('click',function (){
+        function doSearch() {
             zapFinderFileList.load(FinderUrl + $('#cur-path').val() + '&search=' + encodeURIComponent($('#input-search').val()), loadCallback);
-        })
+        }
+        $('#button-search').on('click', function () {
+            doSearch();
+        });
+        // 搜索框回车执行搜索，避免触发表单默认提交跳到 storage 根目录
+        $('#input-search').on('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                doSearch();
+            }
+        });
+        // 兜底：表单内任何回车都不允许默认 GET 提交
+        $('#zapFinderForm').on('submit', function (e) {
+            e.preventDefault();
+        });
 
         zapFinderFileList.on('click', 'a.dirList', function (event) {
             event.preventDefault()
@@ -339,7 +362,8 @@
             directoryUpload: true,
             // 老浏览器不支持 entry API 时，目录条目无 type，直接跳过而非报错
             skipInvalidFile: true,
-            allowedExtensions: '.jpg|.jpeg|.png|.gif|.webp|.svg|.bmp|.ico|.zip|.rar|.7z|.tar|.gz|.pdf|.doc|.docx|.xls|.xlsx|.ppt|.pptx|.txt|.md|.csv|.mp3|.mp4|.avi|.mov|.wmv|.flv|.webm|.json|.xml',
+            allowedExtensions: '<?php echo $uploadExtList ?>',
+            maxFileSize: <?php echo $uploadMaxSize ?>,
             url: '<?php echo url_action('Upload@file') ?>',
             messageContainer: '#zapFinderForm .zap-message',
             error: function (id, msg) {

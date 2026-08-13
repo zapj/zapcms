@@ -35,7 +35,7 @@ class UploadController extends AdminController
     }
 
     /**
-     * 统一处理文件上传：校验扩展名白名单、防路径穿越、生成唯一文件名
+     * 统一处理文件上传：校验扩展名白名单、大小限制、防路径穿越、按规则生成文件名
      * @param string $subDir 子目录（如 images），为空时使用 path 参数
      * @param string $path   文件管理器指定目录
      * @param string $fullPath 目录上传时的相对完整路径（仅用于提取子目录结构）
@@ -50,8 +50,15 @@ class UploadController extends AdminController
 
         // 扩展名白名单校验（取原文件名最后一个点之后的部分）
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        if (!in_array($ext, self::ALLOWED_EXTENSIONS, true)) {
+        if (!in_array($ext, $this->allowedExtensions(), true)) {
             Response::json(['code' => 1, 'msg' => '不支持的文件类型: .' . $ext]);
+            return;
+        }
+
+        // 单文件大小限制（后台「文件上传」配置，单位 MB）
+        $maxSizeMb = $this->maxFileSizeMb();
+        if ($file['size'] > $maxSizeMb * 1024 * 1024) {
+            Response::json(['code' => 1, 'msg' => '文件大小超过限制，单个文件最大 ' . $maxSizeMb . ' MB']);
             return;
         }
 
@@ -75,11 +82,13 @@ class UploadController extends AdminController
             return;
         }
 
-        $filename = uniqid() . '.' . $ext;
         $targetDir = $relPath === '' ? storage_path() : storage_path($relPath);
         if (!is_dir($targetDir)) {
             mkdir($targetDir, 0777, true);
         }
+
+        // 按后台配置的命名规则生成文件名（original 规则下会自动规避重名）
+        $filename = $this->buildFilename($file['name'], $ext, $targetDir);
 
         if (!move_uploaded_file($file['tmp_name'], $targetDir . '/' . $filename)) {
             Response::json(['code' => 1, 'msg' => '文件保存失败']);
@@ -88,6 +97,66 @@ class UploadController extends AdminController
 
         $urlPath = $relPath === '' ? $filename : $relPath . '/' . $filename;
         Response::json(['code' => 0, 'url' => base_url('/storage/' . $urlPath)]);
+    }
+
+    /**
+     * 允许上传的扩展名白名单（小写），来自后台「文件上传」配置 upload.extensions
+     * 配置为空时回退到系统默认白名单
+     */
+    private function allowedExtensions(): array
+    {
+        $raw = trim((string)option('upload.extensions', ''));
+        if ($raw !== '') {
+            $exts = array_values(array_filter(
+                array_map('strtolower', array_map('trim', explode(',', $raw))),
+                static fn($v) => $v !== ''
+            ));
+            if (!empty($exts)) {
+                return $exts;
+            }
+        }
+        return self::ALLOWED_EXTENSIONS;
+    }
+
+    /**
+     * 单文件大小上限（MB），来自后台「文件上传」配置 upload.max_size，最小 1 MB
+     */
+    private function maxFileSizeMb(): int
+    {
+        return max(1, (int)option('upload.max_size', 20));
+    }
+
+    /**
+     * 按后台「文件上传」配置 upload.name_rule 生成文件名
+     * @param string $originalName 原始文件名
+     * @param string $ext          扩展名（小写，不含点）
+     * @param string $targetDir    目标目录（original 规则用于判断重名）
+     */
+    private function buildFilename(string $originalName, string $ext, string $targetDir): string
+    {
+        $rule = (string)option('upload.name_rule', 'random');
+        switch ($rule) {
+            case 'original':
+                // 保留原文件名（清理非法字符），同名时自动追加 _1/_2 后缀避免覆盖
+                $base = preg_replace('/\.[^.]+$/', '', $originalName);
+                $base = (string)preg_replace('/[\/\\\\:*?"<>|\r\n\t]+/u', '-', (string)$base);
+                $base = trim($base, ' .');
+                $base = $base === '' ? 'file' : $base;
+                $base = mb_substr($base, 0, 80);
+                $candidate = $base . '.' . $ext;
+                $i = 1;
+                while (file_exists($targetDir . '/' . $candidate)) {
+                    $candidate = $base . '_' . $i . '.' . $ext;
+                    $i++;
+                }
+                return $candidate;
+            case 'date':
+                // 日期 + 随机后缀，便于按时间归类排序
+                return date('YmdHis') . '_' . substr(uniqid(), -5) . '.' . $ext;
+            case 'random':
+            default:
+                return uniqid() . '.' . $ext;
+        }
     }
 
     private function errorMessage($code): string

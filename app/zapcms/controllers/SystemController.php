@@ -15,7 +15,8 @@ use zap\facades\Url;
 class SystemController extends AdminController
 {
     function settings(){
-        $keyPrefix = '^website\.';
+        // 基础设置同时管理：站点信息（website.*）、文件上传（upload.*）
+        $keyPrefix = ['website\.', 'upload\.'];
         if(Request::isPost()){
             $options = Request::post('options',[]);
             $optionKeys = Option::getKeys($keyPrefix,'REGEXP');

@@ -7,7 +7,7 @@ Asset::library('jqueryvalidation');
 $this->layout('layouts/common');
 
 $this->view->page_title = '系统设置';
-$this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置';
+$this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置 & 文件上传';
 /**
  * @var array $options
  */
@@ -51,6 +51,13 @@ $this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置';
                                     data-bs-target="#smtp-tab-pane" type="button" role="tab"
                                     aria-controls="smtp-tab-pane" aria-selected="false">
                                 <i class="fa fa-envelope me-1"></i>邮件设置
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" id="upload-tab" data-bs-toggle="tab"
+                                    data-bs-target="#upload-tab-pane" type="button" role="tab"
+                                    aria-controls="upload-tab-pane" aria-selected="false">
+                                <i class="fa fa-cloud-upload me-1"></i>文件上传
                             </button>
                         </li>
                     </ul>
@@ -211,6 +218,36 @@ $this->view->page_subtitle = '站点信息 & 第三方代码 & 邮件配置';
                                     </div>
                                 </div>
                                 <div class="form-text">请先保存 SMTP 配置，再发送测试邮件验证配置是否正确。</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="upload-tab-pane" role="tabpanel" aria-labelledby="upload-tab"
+                         tabindex="0">
+                        <div class="row g-2">
+                            <div class="col-12">
+                                <label for="upload.extensions" class="form-label small">允许上传的文件扩展名</label>
+                                <textarea rows="4" class="form-control form-control-sm" id="upload.extensions"
+                                          name="options[upload.extensions]"
+                                          placeholder="jpg,jpeg,png,zip,pdf..."><?php echo $options['upload.extensions'] ?? 'jpg,jpeg,png,gif,webp,svg,bmp,ico,zip,rar,7z,tar,gz,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,md,csv,mp3,mp4,avi,mov,wmv,flv,webm,json,xml';?></textarea>
+                                <div class="form-text">多个扩展名用英文逗号分隔，不需要带点；留空则使用系统默认白名单。</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="upload.max_size" class="form-label small">单个文件大小上限（MB）</label>
+                                <input type="number" min="1" class="form-control form-control-sm" id="upload.max_size"
+                                       name="options[upload.max_size]"
+                                       placeholder="20" value="<?php echo $options['upload.max_size'] ?? '20';?>" />
+                                <div class="form-text">仅限制单个文件大小，实际受服务器 PHP upload_max_filesize 限制。</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="upload.name_rule" class="form-label small">文件名生成规则</label>
+                                <select class="form-select form-select-sm" id="upload.name_rule"
+                                        name="options[upload.name_rule]">
+                                    <option value="random" <?php if(($options['upload.name_rule'] ?? 'random') === 'random') echo 'selected';?>>随机字符串（默认）</option>
+                                    <option value="original" <?php if(($options['upload.name_rule'] ?? '') === 'original') echo 'selected';?>>保留原文件名</option>
+                                    <option value="date" <?php if(($options['upload.name_rule'] ?? '') === 'date') echo 'selected';?>>日期 + 随机后缀</option>
+                                </select>
+                                <div class="form-text">「保留原文件名」模式下，同名文件会自动追加数字后缀，不会覆盖已有文件。</div>
                             </div>
                         </div>
                     </div>
