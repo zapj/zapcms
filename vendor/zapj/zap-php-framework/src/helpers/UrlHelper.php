@@ -43,9 +43,8 @@ class UrlHelper
     {
         $base = $this->base();
         // When in admin panel, return admin dashboard URL
-        if (defined('IN_ZAPCMS_ADMIN') && IN_ZAPCMS_ADMIN) {
-            $prefix = defined('Z_ADMIN_PREFIX') ? trim(Z_ADMIN_PREFIX, '/') : 'z-admin';
-            return $base . '/' . $prefix;
+        if ($this->isAdminContext()) {
+            return $base . '/' . $this->adminPrefix();
         }
         return $base;
     }
@@ -116,7 +115,7 @@ class UrlHelper
 
     /**
      * Get the current controller name.
-     * Priority: router property → URL parsing (for admin with Z_ADMIN_PREFIX)
+     * Priority: router property → URL parsing (for admin with config('admin.prefix'))
      */
     public function controller(): string
     {
@@ -129,13 +128,12 @@ class UrlHelper
 
         // Derive from current URL
         $path = trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/', '/');
-        if (defined('IN_ZAPCMS_ADMIN') && IN_ZAPCMS_ADMIN) {
-            $prefix = defined('Z_ADMIN_PREFIX') ? trim(Z_ADMIN_PREFIX, '/') : 'z-admin';
-            if (str_starts_with($path, $prefix . '/')) {
-                $path = substr($path, strlen($prefix) + 1);
-            } elseif ($path === $prefix) {
-                $path = '';
-            }
+        // 当前路径以 admin prefix 开头时剥离前缀（后台上下文）
+        $prefix = $this->adminPrefix();
+        if (str_starts_with($path, $prefix . '/')) {
+            $path = substr($path, strlen($prefix) + 1);
+        } elseif ($path === $prefix) {
+            $path = '';
         }
         // Strip configured URL suffix (e.g. .html) so controller name is correct
         $path = $this->stripSuffix($path);
@@ -145,7 +143,7 @@ class UrlHelper
 
     /**
      * Get the current method/action name.
-     * Priority: router property → URL parsing (for admin with Z_ADMIN_PREFIX)
+     * Priority: router property → URL parsing (for admin with config('admin.prefix'))
      */
     public function method(): string
     {
@@ -156,13 +154,12 @@ class UrlHelper
         } catch (\Throwable $e) {}
 
         $path = trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/', '/');
-        if (defined('IN_ZAPCMS_ADMIN') && IN_ZAPCMS_ADMIN) {
-            $prefix = defined('Z_ADMIN_PREFIX') ? trim(Z_ADMIN_PREFIX, '/') : 'z-admin';
-            if (str_starts_with($path, $prefix . '/')) {
-                $path = substr($path, strlen($prefix) + 1);
-            } elseif ($path === $prefix) {
-                $path = '';
-            }
+        // 当前路径以 admin prefix 开头时剥离前缀（后台上下文）
+        $prefix = $this->adminPrefix();
+        if (str_starts_with($path, $prefix . '/')) {
+            $path = substr($path, strlen($prefix) + 1);
+        } elseif ($path === $prefix) {
+            $path = '';
         }
         // Strip configured URL suffix (e.g. .html) so method name is correct
         $path = $this->stripSuffix($path);
@@ -195,9 +192,8 @@ class UrlHelper
         }
 
         // Admin context: prepend admin prefix
-        if (defined('IN_ZAPCMS_ADMIN') && IN_ZAPCMS_ADMIN) {
-            $prefix = defined('Z_ADMIN_PREFIX') ? trim(Z_ADMIN_PREFIX, '/') : 'z-admin';
-            $uri = '/' . $prefix . '/' . ltrim($uri, '/');
+        if ($this->isAdminContext()) {
+            $uri = '/' . $this->adminPrefix() . '/' . ltrim($uri, '/');
         }else{
              $uri = '/' . ltrim($uri, '/');
         }
@@ -462,6 +458,33 @@ class UrlHelper
     protected function quoteSlash(string $str): string
     {
         return str_replace('/', '\/', $str);
+    }
+
+    /**
+     * 获取后台管理路径前缀（后端生成 URL 的依赖来源）。
+     *
+     * 前缀由应用启动阶段写入 config('admin.prefix')（如 CMS 在路由阶段读取
+     * options 表 server.admin_prefix 后写入），框架本身不依赖任何常量。
+     *
+     * @return string 不带首尾斜杠的前缀
+     */
+    protected function adminPrefix(): string
+    {
+        $prefix = trim((string)config('admin.prefix', ''), '/');
+        return $prefix !== '' ? $prefix : 'z-admin';
+    }
+
+    /**
+     * 判断当前请求是否处于后台上下文（URL 以 admin prefix 开头）。
+     *
+     * @return bool
+     */
+    protected function isAdminContext(): bool
+    {
+        $path   = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+        $prefix = $this->adminPrefix();
+        return $prefix !== ''
+            && (rtrim($path, '/') === '/' . $prefix || str_starts_with($path, '/' . $prefix . '/'));
     }
 
     /**

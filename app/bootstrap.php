@@ -72,6 +72,8 @@ try {
 
 $maintenance = (bool)($serverOptions['server.maintenance'] ?? false);
 $adminPrefix = '/' . trim((string)($serverOptions['server.admin_prefix'] ?? 'z-admin'), '/');
+define('Z_ADMIN_PREFIX', $adminPrefix);
+config_set('admin.prefix', Z_ADMIN_PREFIX);
 
 // 同步调试 / 日志开关到运行时配置，使其立即生效
 config_set('config.debug', (bool)($serverOptions['server.debug'] ?? false));

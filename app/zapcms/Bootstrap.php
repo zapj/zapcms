@@ -33,9 +33,10 @@ class Bootstrap
         if ($router) {
             $this->router = $router;
         }
-
         // ──── 注册后台自动路由 ────
         $prefix = trim(Z_ADMIN_PREFIX, '/');
+        // 将后台前缀写入框架配置：UrlHelper 生成后台 URL 时以 config('admin.prefix') 为唯一依赖
+        config_set('admin.prefix', $prefix);
         // 根路径: /z-admin 或 /z-admin/
         $this->router->any("/{$prefix}", function () {
             $this->dispatchAdmin('');

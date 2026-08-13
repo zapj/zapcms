@@ -13,10 +13,9 @@
 /**
  * @var \zap\http\Router $router
  */
-// 定义后台前缀（保存在 options 表 server.admin_prefix，可在后台“基础设置 > 服务器”修改）
-if (!defined('Z_ADMIN_PREFIX')) {
-    define('Z_ADMIN_PREFIX', get_option('server.admin_prefix', 'z-admin'));
-}
+// 后台前缀保存在 options 表 server.admin_prefix（后台“基础设置 > 服务器”可修改）
+// 定义常量兼容旧代码直接引用；同时写入 config('admin.prefix')，框架 UrlHelper 在常量缺失时兜底读取
+
 
 // ──────────────────── 后台路由 ────────────────────
 $adminBootstrap = new \zapcms\Bootstrap();
