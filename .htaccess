@@ -1,6 +1,13 @@
 Options +FollowSymLinks -Indexes
 RewriteEngine On
 
+# 禁止访问敏感目录
+RewriteRule ^(app|config|vendor|var|install|mods|\.git|\.idea)/ - [R=403,L]
+
+# 禁止下载敏感文件
+RewriteRule ^(composer\.(json|lock)|Dockerfile|console|README\.md|LICENSE|CHANGELOG\.md|\.env|\.env\..*)$ - [R=403,L]
+
+
 RewriteCond %{HTTP:Authorization} .
 RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 

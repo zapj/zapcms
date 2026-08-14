@@ -18,9 +18,6 @@ IS_AJAX !== true && $this->layout('layouts/common');
                 <button type="button" class="btn btn-outline-success btn-sm" onclick="save()">
                     <i class="fa fa-save me-1"></i>保存
                 </button>
-                <button type="button" class="btn btn-outline-danger btn-sm" onclick="remove()">
-                    <i class="fa fa-trash me-1"></i>删除
-                </button>
                 <button type="button" class="btn btn-success btn-sm" onclick="addOrEdit(0)">
                     <i class="fa fa-plus me-1"></i>添加
                 </button>
@@ -59,7 +56,7 @@ IS_AJAX !== true && $this->layout('layouts/common');
                     <?php else: ?>
                     <?php
                     $menu->forEachAll(function ($admin_menu) {
-                        $level = $admin_menu['level'];
+                        $level = $admin_menu['level'] -1;
                         $paddingLeft = $level * 1.5;
                         ?>
                         <tr class="catalog-row" data-level="<?php echo $level > 0 ? $level : ''; ?>">
@@ -75,7 +72,7 @@ IS_AJAX !== true && $this->layout('layouts/common');
                                        data-bs-toggle="tooltip" data-bs-placement="right"
                                        data-bs-title="数值越小越靠前" />
                             </td>
-                            <td class="align-middle">
+                            <td class="align-middle title-cell">
                                 <div class="catalog-title" style="padding-left:<?php echo $paddingLeft; ?>rem;">
                                     <i class="<?php echo $admin_menu['icon']; ?> menu-icon"></i>
                                     <input name="catalog[<?php echo $admin_menu['id']; ?>][title]"
@@ -106,6 +103,12 @@ IS_AJAX !== true && $this->layout('layouts/common');
                     </tbody>
                 </table>
             </div>
+            <div class="card-footer p-2 bg-white border-top d-flex align-items-center">
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="remove()">
+                    <i class="fa fa-trash me-1"></i>删除所选栏目
+                </button>
+                <small class="text-muted ms-2">勾选表格中的栏目后，点击此处删除</small>
+            </div>
         </form>
     </div>
 </div>
@@ -125,11 +128,14 @@ IS_AJAX !== true && $this->layout('layouts/common');
     padding: 0.625rem 0.5rem;
     vertical-align: middle;
 }
+.table tbody td.title-cell {
+    padding-left: 0;
+}
 .catalog-title {
     display: flex;
     align-items: center;
     flex-wrap: nowrap;
-    gap: 0.5rem;
+    gap: 0rem;
 }
 .catalog-title .title-input {
     max-width: 140px;

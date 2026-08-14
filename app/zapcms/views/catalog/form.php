@@ -18,7 +18,7 @@ use zapcms\services\NodeType;
                     <option value="<?php echo $row['id']; ?>"
                         <?php echo $catalog['pid'] == $row['id'] ? 'selected' : ''; ?>
                         <?php echo !empty($catalog['path']) && \zap\util\Str::startsWith($row['path'], $catalog['path']) ? 'disabled' : null; ?>>
-                        <?php echo str_repeat('— ', $row['level']); ?><?php echo $row['title']; ?>
+                        <?php echo str_repeat('— ', max(0, intval($row['level']) - 1)); ?><?php echo $row['title']; ?>
                     </option>
                 <?php
                 });
