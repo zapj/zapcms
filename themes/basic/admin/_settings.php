@@ -46,7 +46,7 @@ if (req()->isPost()) {
     }
     Cache::delete('_opts_basic_home');
     echo '<div class="alert alert-success alert-dismissible fade show m-3" role="alert">
-            <i class="fa-solid fa-circle-check me-1"></i> 首页轮播设置已保存
+            <i class="fa-solid fa-circle-check me-1"></i> 设置已保存
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
           </div>';
 }
