@@ -274,10 +274,19 @@ function build_permalink(array $node): string
         // 自定义结构时也用 slug 替换 %postname%
     }
 
-    // 提取时间信息
-    $pubTime = !empty($node['pub_time']) ? strtotime($node['pub_time']) : 0;
-    $addTime = !empty($node['add_time']) ? strtotime($node['add_time']) : 0;
-    $time    = max($pubTime, $addTime) ?: time();
+    // 提取时间信息（pub_time/add_time 兼容 Unix 时间戳与日期字符串两种格式）
+    $pubTime = 0;
+    if (!empty($node['pub_time'])) {
+        $pubTime = is_numeric($node['pub_time']) ? (int)$node['pub_time'] : (int)strtotime($node['pub_time']);
+    }
+    $addTime = 0;
+    if (!empty($node['add_time'])) {
+        $addTime = is_numeric($node['add_time']) ? (int)$node['add_time'] : (int)strtotime($node['add_time']);
+    }
+    $time = max($pubTime, $addTime);
+    if ($time <= 0) {
+        $time = time();
+    }
 
     // 替换标签
     $replacements = [
