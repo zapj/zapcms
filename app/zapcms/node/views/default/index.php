@@ -47,9 +47,9 @@ if (!empty($catalogPaths)) {
                   <a href="<?php echo Url::action("Node@types");?>" class="list-group-item list-group-item-action"  aria-selected="false" tabindex="-1">
                     <i class="fa fa-cog me-2" aria-hidden="true"></i>内容模型
                   </a>
-                  <a href="<?php echo Url::action("Node@customForms");?>" class="list-group-item list-group-item-action"  aria-selected="false" tabindex="-1">
+                  <!-- <a href="<?php echo Url::action("Node@customForms");?>" class="list-group-item list-group-item-action"  aria-selected="false" tabindex="-1">
                     <i class="fa fa-edit me-2" aria-hidden="true"></i>自定义表单
-                  </a>
+                  </a> -->
                  
                 
                 </div>

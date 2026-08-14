@@ -17,14 +17,20 @@ $this->beginBlock('content');
                         <div class="col-sm-12">
                             <p>暂无内容</p>
                         </div>
-                        <?php else: foreach ($nodes as $node): ?>
+                        <?php else: foreach ($nodes as $node):  ?>
                         <div class="col-sm-4">
                             <div class="post-content">
                                 <a href="<?php echo node_url($node['id'],$node['node_type']); ?>">
                                     <img class="img-responsive product-thumb" src="<?php echo \zapcms\helpers\ThumbHelper::thumb($node['image'], 270, 210); ?>" alt="<?php echo htmlspecialchars($node['title']); ?>" />
                                 </a>
                                 <div class="content-wrap">
-                                    <h4><a href="<?php echo node_url($node['id'],$node['node_type']); ?>"><?php echo htmlspecialchars($node['title']); ?></a></h4>
+                                    <h5><a href="<?php echo node_url($node['id'],$node['node_type']); ?>"><?php echo htmlspecialchars($node['title']); ?></a></h5>
+                                    <?php if (!empty($node['meta']['price'])): ?>
+                                    <div class="product-price">
+                                        <span class="product-price-currency">¥</span>
+                                        <span class="product-price-value"><?php echo number_format(floatval($node['meta']['price']), 2); ?></span>
+                                    </div>
+                                    <?php endif; ?>
                                     <ul class="list-inline post-meta">
                                         <li><i class="fa fa-calendar"></i> <?php echo date('Y-m-d', intval($node['pub_time'] ?: 0)); ?></li>
                                     </ul>
