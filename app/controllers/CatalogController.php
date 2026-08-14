@@ -70,9 +70,9 @@ class CatalogController extends Controller
                 $view->page = $page->setTotal($query->count('n.id'));
                 $query->limit($page->getLimit())->offset($page->getOffset());
                 $nodes = $query->get(FETCH_ASSOC);
-
+                $node_list_columns = \zapcms\services\NodeType::getConfig(pageState()->nodeMimeType,'list_columns',[]);
                 // 批量加载 node_meta（如产品价格 price）附加到列表节点，避免 N+1 查询
-                $view->nodes = NodeMeta::attachList($nodes, ['price']);
+                $view->nodes = NodeMeta::attachList($nodes, $node_list_columns);
                 $view->page = $page;
                 //// 模板页面没有相关联的栏目菜单时，读取左侧导航栏目菜单作为兜底（侧边栏位于页面左侧）
                 if (empty(pageState()->subCatalogList) && !empty($view->nodes)) {

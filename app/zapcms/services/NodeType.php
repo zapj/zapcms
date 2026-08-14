@@ -12,6 +12,7 @@ namespace zapcms\services;
 
 
 use zap\DB;
+use zap\facades\Cache;
 use zapcms\node\AbstractNodeType;
 
 /**
@@ -192,14 +193,22 @@ class NodeType
      */
     public static function getConfig(string $type_name, ?string $key = null, $default = null)
     {
-        $row = DB::table('options')->where('option_name', static::CONFIG_OPTION_PREFIX . $type_name)->first();
-        $config = static::CONFIG_DEFAULTS;
-        if (!empty($row['option_value'])) {
-            $decoded = json_decode((string)$row['option_value'], true);
-            if (is_array($decoded)) {
-                $config = array_merge($config, $decoded);
-            }
+        $cacheKey = static::CONFIG_OPTION_PREFIX . $type_name;
+        $ttl = (int)config('cache.ttl', 0);
+        if ($ttl <= 0) {
+            $ttl = 10000;
         }
+        $config = Cache::get($cacheKey, function () use ($cacheKey) {
+            $row = DB::table('options')->where('option_name', $cacheKey)->first();
+            $config = static::CONFIG_DEFAULTS;
+            if (!empty($row['option_value'])) {
+                $decoded = json_decode((string)$row['option_value'], true);
+                if (is_array($decoded)) {
+                    $config = array_merge($config, $decoded);
+                }
+            }
+            return $config;
+        }, $ttl);
         return is_null($key) ? $config : ($config[$key] ?? $default);
     }
 
@@ -225,6 +234,9 @@ class NodeType
                 'autoload'     => 0,
             ]);
         }
+
+        // 使配置缓存失效，下次 getConfig 重新读取
+        Cache::delete($optionName);
     }
 
     /**
@@ -232,7 +244,11 @@ class NodeType
      */
     public static function removeConfig(string $type_name): void
     {
-        DB::table('options')->where('option_name', static::CONFIG_OPTION_PREFIX . $type_name)->delete();
+        $optionName = static::CONFIG_OPTION_PREFIX . $type_name;
+        DB::table('options')->where('option_name', $optionName)->delete();
+
+        // 使配置缓存失效
+        Cache::delete($optionName);
     }
 
     /**
