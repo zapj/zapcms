@@ -98,7 +98,7 @@ $latestNews = pageState()->getLatestNews();
                                     </div>
                                 </div>
                                 <div class="news-content">
-                                    <span class="news-date"><i class="fa fa-calendar"></i> <?php echo date('Y-m-d', strtotime($news['created_at'])); ?></span>
+                                    <span class="news-date"><i class="fa fa-calendar"></i> <?php echo date('Y-m-d', $news['pub_time']); ?></span>
                                     <h3 class="news-title"><?php echo $news['title']; ?></h3>
                                     <p class="news-excerpt"><?php echo \zap\util\Str::truncate(strip_tags($news['content']),80); ?></p>
                                 </div>

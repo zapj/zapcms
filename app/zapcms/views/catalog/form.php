@@ -1,4 +1,7 @@
 <?php
+/**
+ * @var array $catalog
+ */
 
 use zapcms\services\Catalog;
 use zapcms\services\NodeType;
