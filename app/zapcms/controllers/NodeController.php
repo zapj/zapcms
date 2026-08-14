@@ -228,16 +228,20 @@ class NodeController extends AdminController
 
         $types = DB::table('node_types')->orderBy('sort_order', 'ASC')->orderBy('type_id', 'DESC')->fetchAll();
         $configs = [];
+        $fields  = [];
         foreach ($types as $type) {
-            $configs[$type['type_name']] = NodeType::getConfig((string)$type['type_name']);
+            $typeName = (string)$type['type_name'];
+            $configs[$typeName] = NodeType::getConfig($typeName);
+            $fields[$typeName]  = NodeType::getFields($typeName);
         }
 
         View::render("node.types_config", [
             'types'       => $types,
             'configs'     => $configs,
+            'fields'      => $fields,
             'title'       => '内容模型显示配置',
             'page_title'  => '显示配置',
-            'page_subtitle' => '配置列表分页数量与图片尺寸（按内容模型区分）',
+            'page_subtitle' => '配置列表分页数量、图片尺寸与列表默认展示字段（按内容模型区分）',
             'breadcrumbs' => BreadCrumb::instance()->toArray(),
         ]);
     }
@@ -262,6 +266,13 @@ class NodeController extends AdminController
                     $clean[$k] = max(1, (int)$cfg[$k]);
                 }
             }
+            // 列表默认展示的自定义字段（node_meta 键），仅保留该模型真实存在的字段名
+            $validNames = NodeType::getFieldNames($typeName);
+            $columns = isset($cfg['list_columns']) && is_array($cfg['list_columns']) ? $cfg['list_columns'] : [];
+            $clean['list_columns'] = array_values(array_intersect(
+                array_map('trim', array_map('strval', $columns)),
+                $validNames
+            ));
             if ($clean) {
                 NodeType::saveConfig($typeName, $clean);
             }

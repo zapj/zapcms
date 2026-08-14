@@ -179,6 +179,7 @@ class NodeType
         'list_image_height'  => 210,  // 列表图片高度
         'detail_image_width' => 750,  // 详情页图片宽度
         'detail_image_height'=> 480,  // 详情页图片高度
+        'list_columns'       => [],   // 后台列表默认展示的自定义字段（node_meta 键）
     ];
 
     /**

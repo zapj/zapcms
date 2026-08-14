@@ -4,6 +4,7 @@ namespace zapcms\node;
 
 use zapcms\services\BreadCrumb;
 use zapcms\services\Catalog;
+use zapcms\services\NodeMeta;
 use zapcms\services\NodeType;
 use zapcms\services\SlugHelper;
 use zapcms\support\HtmlXss;
@@ -65,7 +66,40 @@ class AbstractNodeType
         $conditions['limit'] = [$page->getLimit(),$page->getOffset()];
         $conditions = apply_filters('node_get_all_conditions',$conditions);
         $data['data'] = $this->getAll($conditions);
+        // 列表默认展示的自定义字段列（node_meta 键，来自显示配置勾选）
+        $data['list_columns'] = $this->getListColumns();
+        if (!empty($data['list_columns'])) {
+            $data['data'] = NodeMeta::attachList(
+                $data['data'],
+                array_column($data['list_columns'], 'field_name')
+            );
+        }
         $this->display($data);
+    }
+
+    /**
+     * 获取列表默认展示的自定义字段（含字段标签），来自内容模型显示配置 list_columns
+     * @return array [['field_name'=>..., 'field_label'=>...], ...]
+     */
+    protected function getListColumns(): array
+    {
+        $columns = (array)NodeType::getConfig((string)$this->nodeType, 'list_columns', []);
+        if (empty($columns)) {
+            return [];
+        }
+        $labelMap = [];
+        foreach (NodeType::getFields((string)$this->nodeType) as $f) {
+            $labelMap[$f['field_name']] = $f['field_label'] ?? $f['field_name'];
+        }
+        $result = [];
+        foreach ($columns as $name) {
+            $name = (string)$name;
+            $result[] = [
+                'field_name'  => $name,
+                'field_label' => $labelMap[$name] ?? $name,
+            ];
+        }
+        return $result;
     }
 
     public function edit($id = 0){

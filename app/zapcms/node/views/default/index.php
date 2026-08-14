@@ -50,9 +50,7 @@ if (!empty($catalogPaths)) {
                   <a href="<?php echo Url::action("Node@typesConfig");?>" class="list-group-item list-group-item-action"  aria-selected="false" tabindex="-1">
                     <i class="fa fa-sliders-h me-2" aria-hidden="true"></i>显示设置
                   </a>
-                 
-                
-                </div>
+            </div>
         </div>
         <!-- /左侧栏目导航 -->
 
@@ -114,6 +112,9 @@ if (!empty($catalogPaths)) {
                                     <th style="width:120px">类型</th>
                                     <th style="width:100px">状态</th>
                                     <th style="width:140px">发布时间</th>
+                                    <?php foreach (($list_columns ?? []) as $lc): ?>
+                                    <th><?php echo htmlspecialchars($lc['field_label']); ?></th>
+                                    <?php endforeach; ?>
                                     <th style="width:130px">操作</th>
                                 </tr>
                             </thead>
@@ -142,6 +143,16 @@ if (!empty($catalogPaths)) {
                                     <td class="text-muted small">
                                         <?php echo date('Y-m-d H:i', $row['pub_time'] ?? $row['add_time'] ?? 0); ?>
                                     </td>
+                                    <?php foreach (($list_columns ?? []) as $lc): ?>
+                                    <?php
+                                        $mv = $row['meta'][$lc['field_name']] ?? '';
+                                        $decoded = json_decode((string)$mv, true);
+                                        if (is_array($decoded)) { $mv = implode(', ', $decoded); }
+                                    ?>
+                                    <td class="text-muted small">
+                                        <?php echo $mv !== '' && $mv !== null ? htmlspecialchars((string)$mv) : '<span class="text-light-emphasis">-</span>'; ?>
+                                    </td>
+                                    <?php endforeach; ?>
                                     <td>
                                         <div class="btn-group btn-group-sm">
                                             <?php if (!empty($row['slug'])): ?>

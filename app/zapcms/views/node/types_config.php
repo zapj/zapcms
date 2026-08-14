@@ -1,7 +1,13 @@
 <?php use zap\facades\Url; ?>
 <?php $this->layout('layouts/common'); ?>
 <?php
+/**
+ * @var array $types   模型列表
+ * @var array $configs 模型配置
+ * @var array $fields  各模型自定义字段（用于列表列勾选）
+ */
 $configs  = $configs ?? [];
+$fields   = $fields ?? [];
 $defaults = \zapcms\services\NodeType::CONFIG_DEFAULTS;
 $inputTypes = [
     'list_per_page'      => ['label' => '列表分页显示数量', 'hint' => '该模型列表页每页显示的内容条数'],
@@ -14,58 +20,124 @@ $inputTypes = [
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h4 class="mb-1"><i class="fa fa-sliders-h"></i> 内容模型显示配置</h4>
-        <div class="text-muted">按内容模型配置列表分页数量与图片尺寸，保存后前台列表页与详情页生效。</div>
+        <div class="text-muted">按内容模型配置列表分页数量、图片尺寸与列表默认展示字段，保存后前台与后台列表页生效。</div>
     </div>
     <a href="<?= Url::action('Node/types')?>" class="btn btn-outline-secondary btn-sm">
         <i class="fa fa-arrow-left"></i> 返回内容模型
     </a>
 </div>
 
-<form id="configForm" method="post" action="<?= Url::action('Node/typesConfigSave')?>">
-    <?php foreach ($types as $type): ?>
-    <?php
-        $typeName = (string)$type['type_name'];
-        $cfg = $configs[$typeName] ?? $defaults;
-        $isDisabled = (int)$type['status'] === 0;
-    ?>
-    <div class="card mb-3">
-        <div class="card-header bg-white d-flex align-items-center justify-content-between">
-            <span class="fw-semibold">
-                <i class="fa fa-cube"></i> <?= e($type['title'])?>
-                <code class="ms-2 small"><?= e($typeName)?></code>
-                <?php if ($isDisabled): ?>
-                    <span class="badge bg-secondary ms-2">已禁用</span>
+<div class="row g-3">
+    <!-- 左侧导航 -->
+    <div class="col-md-3">
+        <div class="list-group list-group-flush nav nav-pills flex-column" id="types-nav" role="tablist">
+            <?php $navIdx = 0; foreach ($types as $i => $type): 
+                if($type['type_name'] === 'link-url') continue; // link-url 类型不需要配置
+                $navIdx++;
+                ?>
+            <?php $typeName = (string)$type['type_name']; ?>
+            <a href="#type-<?= (int)$type['type_id'] ?>" class="list-group-item list-group-item-action <?= $navIdx === 1 ? 'active' : '' ?>"
+               data-bs-toggle="pill" role="tab" aria-selected="<?= $navIdx === 1 ? 'true' : 'false' ?>">
+                <div class="d-flex align-items-center justify-content-between">
+                    <span>
+                        <i class="fa fa-cube me-2"></i><?= e($type['title']) ?>
+                    </span>
+                    <code class="small"><?= e($typeName) ?></code>
+                </div>
+                <?php if ((int)$type['status'] === 0): ?>
+                <small class="text-muted"><span class="badge bg-secondary mt-1">已禁用</span></small>
                 <?php endif; ?>
-            </span>
-            <span class="text-muted small"><?= e($type['description'] ?? '')?></span>
+            </a>
+            <?php endforeach; ?>
         </div>
-        <div class="card-body">
-            <div class="row g-3">
-                <?php foreach ($inputTypes as $key => $meta): ?>
-                <?php $value = $cfg[$key] ?? $defaults[$key]; ?>
-                <div class="col-md-6 col-lg-4">
-                    <label class="form-label d-block">
-                        <?= $meta['label']?>
-                        <span class="text-muted small">(默认 <?= (int)$defaults[$key]?>)</span>
-                    </label>
-                    <input type="number" min="1" step="1"
-                           name="config[<?= e($typeName)?>][<?= $key?>]"
-                           value="<?= (int)$value?>" class="form-control">
-                    <div class="form-text"><?= $meta['hint']?></div>
+    </div>
+
+    <!-- 右侧配置内容 -->
+    <div class="col-md-9">
+        <form id="configForm" method="post" action="<?= Url::action('Node/typesConfigSave')?>">
+            <div class="tab-content">
+                <?php $tabIdx = 0; foreach ($types as $i => $type): 
+                    if($type['type_name'] === 'link-url') continue; // link-url 类型不需要配置
+                    $tabIdx++;
+                    ?>
+                <?php
+                    $typeName = (string)$type['type_name'];
+                    $cfg = $configs[$typeName] ?? $defaults;
+                    $typeFields = $fields[$typeName] ?? [];
+                    $listColumns = (array)($cfg['list_columns'] ?? []);
+                ?>
+                <div class="tab-pane fade <?= $tabIdx === 1 ? 'show active' : '' ?>" id="type-<?= (int)$type['type_id'] ?>" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <h3 class="card-title"><i class="fa fa-cube"></i> <?= e($type['title']) ?>
+                                <code class="ms-2 small"><?= e($typeName) ?></code>
+                            </h3>
+                            <div class="text-muted small"><?= e($type['description'] ?? '') ?></div>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="text-muted fw-semibold mb-3">基本显示设置</h6>
+                            <div class="row g-3">
+                                <?php foreach ($inputTypes as $key => $meta): ?>
+                                <?php $value = $cfg[$key] ?? $defaults[$key]; ?>
+                                <div class="col-md-6 col-lg-4">
+                                    <label class="form-label d-block">
+                                        <?= $meta['label']?>
+                                        <span class="text-muted small">(默认 <?= (int)$defaults[$key]?>)</span>
+                                    </label>
+                                    <input type="number" min="1" step="1"
+                                           name="config[<?= e($typeName)?>][<?= $key?>]"
+                                           value="<?= (int)$value?>" class="form-control">
+                                    <div class="form-text"><?= $meta['hint']?></div>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+
+                            <hr>
+
+                            <h6 class="text-muted fw-semibold mb-2">列表默认展示字段</h6>
+                            <p class="text-secondary small mb-3">
+                                勾选后，后台内容列表中该模型将默认加载并展示这些自定义字段列（数据保存于 meta，未勾选的字段不会在列表中展示）。
+                            </p>
+                            <?php if (empty($typeFields)): ?>
+                            <div class="alert alert-light border small mb-0">
+                                <i class="fa fa-info-circle me-1"></i>该模型暂无自定义字段，请在「字段管理」中添加字段后再配置列表展示。
+                            </div>
+                            <?php else: ?>
+                            <div class="row g-2">
+                                <?php foreach ($typeFields as $f): ?>
+                                <?php
+                                    $fName = (string)$f['field_name'];
+                                    $checked = in_array($fName, $listColumns, true) ? 'checked' : '';
+                                ?>
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                               name="config[<?= e($typeName)?>][list_columns][]"
+                                               value="<?= e($fName)?>" id="lc-<?= e($typeName)?>-<?= e($fName)?>" <?= $checked ?>>
+                                        <label class="form-check-label" for="lc-<?= e($typeName)?>-<?= e($fName)?>">
+                                            <?= e($f['field_label'] ?? $fName)?>
+                                            <code class="small text-muted ms-1"><?= e($fName)?></code>
+                                        </label>
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                 </div>
                 <?php endforeach; ?>
             </div>
-        </div>
-    </div>
-    <?php endforeach; ?>
 
-    <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary">
-            <i class="fa fa-save"></i> 保存全部配置
-        </button>
-        <button type="button" class="btn btn-light" onclick="history.back()">取消</button>
+            <div class="d-flex gap-2 mt-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa fa-save"></i> 保存全部配置
+                </button>
+                <button type="button" class="btn btn-light" onclick="history.back()">取消</button>
+            </div>
+        </form>
     </div>
-</form>
+</div>
 
 <script>
 (function(){
@@ -74,12 +146,24 @@ $inputTypes = [
         var $form = $(this);
         $.post($form.attr('action'), $form.serialize(), function(res){
             if(res && res.code === 0){
-                zap.alert('保存成功', 'success');
+                Swal.fire({
+                    title: "保存成功",
+                    icon: "success",
+                    draggable: true
+                    });
             }else{
-                zap.alert((res && res.msg) || '保存失败', 'error');
+                Swal.fire({
+                    title: "保存失败",
+                    icon: "error",
+                    draggable: true
+                });
             }
         }, 'json').fail(function(){
-            zap.alert('网络错误，请重试', 'error');
+            Swal.fire({
+                title: "网络错误",
+                icon: "error",
+                draggable: true
+            });
         });
     });
 })();
