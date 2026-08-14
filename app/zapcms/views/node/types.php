@@ -81,11 +81,11 @@ use zap\facades\Url;
                     <td class="text-end">
                         <a href="<?= Url::action('Node/typesForm', ['id' => $row['type_id']])?>"
                            class="btn btn-outline-primary btn-sm" title="编辑">
-                            <i class="bi bi-pencil"></i> 编辑
+                            <i class="fa fa-pencil"></i> 编辑
                         </a>
                         <button type="button" class="btn btn-outline-danger btn-sm"
                                 onclick="deleteType(<?=$row['type_id']?>, '<?=e($row['title'])?>')" title="删除">
-                            <i class="bi bi-trash"></i> 删除
+                            <i class="fa fa-trash"></i> 删除
                         </button>
                     </td>
                 </tr>
