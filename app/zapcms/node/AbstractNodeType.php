@@ -183,7 +183,23 @@ class AbstractNodeType
         $data['title'] = $this->title;
         $data['sub_title'] = $this->getTitle("添加%s");
         $data['node'] = new Node();
+        // 添加时若 URL 带 cid 参数（如 ?cid=30），自动勾选对应分类及其全部父级
         $data['node_relations'] = [];
+        if ($this->catalogId) {
+            $catalogRow = DB::table('catalog')->where('id', $this->catalogId)->first();
+            if ($catalogRow) {
+                // path 形如 "28,29,40,"，包含祖先链 + 自身，全部解析出来勾选
+                $ids = array_filter(explode(',', (string)$catalogRow['path']));
+                $ids = array_map('intval', $ids);
+                if (empty($ids) || !in_array($this->catalogId, $ids)) {
+                    $ids[] = (int)$this->catalogId;
+                }
+                $rows = DB::table('catalog')->whereIn('id', $ids)->get();
+                foreach ($rows as $r) {
+                    $data['node_relations'][(int)$r['id']] = (int)($r['level'] ?? 1);
+                }
+            }
+        }
         $data['catalogList'] = Catalog::instance()->getTreeArray(['node_type'=>$this->nodeType]);
         $this->display($data,'form');
     }
