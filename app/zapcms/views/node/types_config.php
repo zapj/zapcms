@@ -133,7 +133,7 @@ $inputTypes = [
                 <button type="submit" class="btn btn-primary">
                     <i class="fa fa-save"></i> 保存全部配置
                 </button>
-                <button type="button" class="btn btn-light" onclick="history.back()">取消</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()"><i class="fa fa-cancel" ></i>  取消</button>
             </div>
         </form>
     </div>
