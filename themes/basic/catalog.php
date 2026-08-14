@@ -14,11 +14,11 @@ $this->beginBlock('content');
                         <div class="col-sm-12">
                             <p>暂无内容</p>
                         </div>
-                        <?php else: foreach ($nodes as $node): ?>
+                        <?php else: foreach ($nodes as $node): $imgW = \zapcms\services\NodeType::getConfig($node['node_type'] ?? 'article', 'list_image_width', 270); $imgH = \zapcms\services\NodeType::getConfig($node['node_type'] ?? 'article', 'list_image_height', 210); ?>
                         <div class="col-sm-4">
                             <div class="post-content">
                                 <a href="<?php echo site_url('/' . $node['slug']); ?>">
-                                    <img class="img-responsive" src="<?php echo \zapcms\helpers\ThumbHelper::thumb($node['image'], 270, 210); ?>" alt="<?php echo htmlspecialchars($node['title']); ?>" />
+                                    <img class="img-responsive" src="<?php echo \zapcms\helpers\ThumbHelper::thumb($node['image'], $imgW, $imgH); ?>" alt="<?php echo htmlspecialchars($node['title']); ?>" />
                                 </a>
                                 <div class="content-wrap">
                                     <h4><a href="<?php echo site_url('/' . $node['slug']); ?>"><?php echo htmlspecialchars($node['title']); ?></a></h4>

@@ -54,7 +54,9 @@ class CatalogController extends Controller
                 view('page', ['node' => pageState()->node]);
                 return;
             }else{
-                $page = new Pagination(intval(req()->get('page',1)),12,req()->get());
+                // 分页数量从内容模型显示配置读取（默认 12）
+                $listPerPage = (int)\zapcms\services\NodeType::getConfig(pageState()->nodeMimeType, 'list_per_page', 12);
+                $page = new Pagination(intval(req()->get('page',1)), max(1, $listPerPage), req()->get());
                 // 根据栏目 mimeType 选择不同的模板文件，若不存在则使用默认的模板文件
                 $view = View::make( theme_file_is_exists(pageState()->nodeMimeType . '_list') ? pageState()->nodeMimeType.'_list' : pageState()->nodeMimeType);
                 $query = DB::table('node_relation','nr')->leftJoin(['node','n'],'nr.node_id=n.id')

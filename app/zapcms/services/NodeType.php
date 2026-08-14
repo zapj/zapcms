@@ -166,6 +166,75 @@ class NodeType
     }
 
     /**
+     * 内容模型显示配置在 options 表中的键前缀（按内容模型区分）
+     */
+    private const CONFIG_OPTION_PREFIX = 'node_type_config.';
+
+    /**
+     * 内容模型显示配置默认值
+     */
+    public const CONFIG_DEFAULTS = [
+        'list_per_page'      => 12,   // 列表分页显示数量
+        'list_image_width'   => 270,  // 列表图片宽度
+        'list_image_height'  => 210,  // 列表图片高度
+        'detail_image_width' => 750,  // 详情页图片宽度
+        'detail_image_height'=> 480,  // 详情页图片高度
+    ];
+
+    /**
+     * 获取内容模型显示配置
+     *
+     * @param string      $type_name 内容模型标识（如 article / product）
+     * @param string|null $key       配置键；null 返回全部配置（含默认值）
+     * @param mixed       $default   键不存在时的默认值
+     * @return mixed
+     */
+    public static function getConfig(string $type_name, ?string $key = null, $default = null)
+    {
+        $row = DB::table('options')->where('option_name', static::CONFIG_OPTION_PREFIX . $type_name)->first();
+        $config = static::CONFIG_DEFAULTS;
+        if (!empty($row['option_value'])) {
+            $decoded = json_decode((string)$row['option_value'], true);
+            if (is_array($decoded)) {
+                $config = array_merge($config, $decoded);
+            }
+        }
+        return is_null($key) ? $config : ($config[$key] ?? $default);
+    }
+
+    /**
+     * 保存内容模型显示配置（基于现有配置合并非空值，存 options 表）
+     */
+    public static function saveConfig(string $type_name, array $config): void
+    {
+        $optionName = static::CONFIG_OPTION_PREFIX . $type_name;
+        // 先取现有配置（含默认值兜底），再合并非空值，避免空提交冲掉已保存项
+        $existing = static::getConfig($type_name);
+        $new = array_merge($existing, array_filter($config, function ($v) {
+            return $v !== null && $v !== '';
+        }));
+
+        if (DB::table('options')->where('option_name', $optionName)->exists()) {
+            DB::table('options')->where('option_name', $optionName)->update(['option_value' => json_encode($new, JSON_UNESCAPED_UNICODE)]);
+        } else {
+            DB::table('options')->insert([
+                'option_name'  => $optionName,
+                'option_value' => json_encode($new, JSON_UNESCAPED_UNICODE),
+                'sort_order'   => 0,
+                'autoload'     => 0,
+            ]);
+        }
+    }
+
+    /**
+     * 删除内容模型的显示配置
+     */
+    public static function removeConfig(string $type_name): void
+    {
+        DB::table('options')->where('option_name', static::CONFIG_OPTION_PREFIX . $type_name)->delete();
+    }
+
+    /**
      * 按分组返回字段：['分组名' => [字段...]]，'' 表示默认分组（未分组字段）
      *
      * 顺序：默认分组 → 已配置分组（按 sort_order）→ 字段中未配置但存在的分组（兜底）

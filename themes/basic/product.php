@@ -6,7 +6,11 @@ $this->beginBlock('content');
  * @var array $node
  */
 // 主图：原图存在生成对应尺寸缩略图（原名+尺寸），不存在则显示占位图原名，不产生重复缩略图
-$imageUrl = \zapcms\helpers\ThumbHelper::thumb($node['image'] ?? '', 750, 480);
+// 尺寸从内容模型显示配置读取（默认 750x480）
+$nodeType = $node['node_type'] ?? 'product';
+$detailW  = (int)\zapcms\services\NodeType::getConfig($nodeType, 'detail_image_width', 750);
+$detailH  = (int)\zapcms\services\NodeType::getConfig($nodeType, 'detail_image_height', 480);
+$imageUrl = \zapcms\helpers\ThumbHelper::thumb($node['image'] ?? '', $detailW, $detailH);
 ?>
     <?php echo $this->partial('partials/_breadcrumb'); ?>
     <div class="container">

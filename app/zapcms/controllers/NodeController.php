@@ -18,7 +18,7 @@ class NodeController extends AdminController
     {
         View::paths(base_path("app/zapcms/node/views"));
         if($method == 'index'){$method = 'default';}
-        if(in_array($method , ['types','typesForm'])){
+        if(in_array($method , ['types','typesForm','typesConfig','typesConfigSave'])){
             $this->$method();
         }else{
             $action = array_shift($params) ?? 'index';
@@ -219,6 +219,57 @@ class NodeController extends AdminController
     }
 
     /**
+     * 内容模型显示配置页（动态列出所有 node_types，含禁用模型）
+     */
+    function typesConfig(){
+        BreadCrumb::instance()->add('内容管理',url_action('Node'));
+        BreadCrumb::instance()->add('内容模型',url_action('Node@types'));
+        BreadCrumb::instance()->add('显示配置');
+
+        $types = DB::table('node_types')->orderBy('sort_order', 'ASC')->orderBy('type_id', 'DESC')->fetchAll();
+        $configs = [];
+        foreach ($types as $type) {
+            $configs[$type['type_name']] = NodeType::getConfig((string)$type['type_name']);
+        }
+
+        View::render("node.types_config", [
+            'types'       => $types,
+            'configs'     => $configs,
+            'title'       => '内容模型显示配置',
+            'page_title'  => '显示配置',
+            'page_subtitle' => '配置列表分页数量与图片尺寸（按内容模型区分）',
+            'breadcrumbs' => BreadCrumb::instance()->toArray(),
+        ]);
+    }
+
+    /**
+     * 保存内容模型显示配置
+     */
+    function typesConfigSave(){
+        $configs = req()->post('config', []);
+        if (!is_array($configs)) {
+            Response::json(['code' => 1, 'msg' => '参数错误']);
+            return;
+        }
+        foreach ($configs as $typeName => $cfg) {
+            $typeName = trim((string)$typeName);
+            if ($typeName === '' || !is_array($cfg)) {
+                continue;
+            }
+            $clean = [];
+            foreach (['list_per_page','list_image_width','list_image_height','detail_image_width','detail_image_height'] as $k) {
+                if (isset($cfg[$k]) && $cfg[$k] !== '' && $cfg[$k] !== null) {
+                    $clean[$k] = max(1, (int)$cfg[$k]);
+                }
+            }
+            if ($clean) {
+                NodeType::saveConfig($typeName, $clean);
+            }
+        }
+        Response::json(['code' => 0, 'msg' => '保存成功']);
+    }
+
+    /**
      * 快速切换模型启用状态
      */
     function typesStatus(){
@@ -242,10 +293,11 @@ class NodeController extends AdminController
             return;
         }
         $row = DB::table('node_types')->where('type_id', (int)$id)->first();
-        // 同步清理该模型的字段配置与分组配置
+        // 同步清理该模型的字段配置、分组配置与显示配置
         DB::table('node_type_field')->where('node_type_id', (int)$id)->delete();
         if ($row) {
             NodeType::removeFieldGroups((string)$row['type_name']);
+            NodeType::removeConfig((string)$row['type_name']);
         }
         DB::table('node_types')->where('type_id', (int)$id)->delete();
         Response::json(['code' => 0, 'msg' => '删除成功']);

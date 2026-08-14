@@ -23,7 +23,10 @@ class SearchController extends Controller
     function index(){
         $keyword = trim(req()->get('q'));
 
-        $page = new Pagination(intval(req()->get('page',1)),12,req()->get());
+        // 分页数量从内容模型显示配置读取（按请求 node_type 区分，默认 12）
+        $searchType = trim((string)req()->get('node_type'));
+        $listPerPage = (int)\zapcms\services\NodeType::getConfig($searchType !== '' ? $searchType : 'article', 'list_per_page', 12);
+        $page = new Pagination(intval(req()->get('page',1)), max(1, $listPerPage), req()->get());
         pageState()->subCatalogList = pageState()->getSearchSidebarMenu();
         $query = Node::where('title','LIKE',"%{$keyword}%")
             ->where('status',Node::STATUS_PUBLISH)

@@ -2,7 +2,10 @@
 use zapcms\helpers\ThumbHelper;
 
 // 主图：原图存在则生成对应尺寸缩略图（原名+尺寸），不存在则显示占位图原名，不产生重复缩略图
-$imageUrl = ThumbHelper::thumb($product['image'] ?? '', 750, 500);
+// 尺寸从内容模型显示配置读取（默认 750x500）
+$detailW = (int)\zapcms\services\NodeType::getConfig($product['node_type'] ?? 'product', 'detail_image_width', 750);
+$detailH = (int)\zapcms\services\NodeType::getConfig($product['node_type'] ?? 'product', 'detail_image_height', 500);
+$imageUrl = ThumbHelper::thumb($product['image'] ?? '', $detailW, $detailH);
 $stock    = (int) ($product['stock'] ?? 0);
 $unit     = htmlspecialchars($product['unit'] ?? '件');
 ?>

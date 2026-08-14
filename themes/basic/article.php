@@ -16,10 +16,10 @@ $this->beginBlock('content');
                         <div class="col-sm-12">
                             <article class="single-post">
                                 <div class="entry-header">
-                                    <h1 class="entry-title"><?php echo htmlspecialchars($node['title']); ?></h1>
+                                    <h2 class="entry-title"><?php echo htmlspecialchars($node['title']); ?></h2>
                                 </div><!-- /.entry-header -->
                                 <div class="post-thumbnail">
-                                    <img src="<?php echo \zapcms\helpers\ThumbHelper::thumb($node['image'], 750, 480); ?>" class="img-responsive" alt="<?php echo htmlspecialchars($node['title']); ?>">
+                                    <img src="<?php echo \zapcms\helpers\ThumbHelper::thumb($node['image'], (int)\zapcms\services\NodeType::getConfig($node['node_type'] ?? 'article', 'detail_image_width', 750), (int)\zapcms\services\NodeType::getConfig($node['node_type'] ?? 'article', 'detail_image_height', 480)); ?>" class="img-responsive" alt="<?php echo htmlspecialchars($node['title']); ?>">
                                 </div><!-- /.post-thumbnail -->
                                 <div class="post-content">
                                     <?php echo $node['content']; ?>
