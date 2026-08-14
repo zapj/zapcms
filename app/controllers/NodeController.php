@@ -36,7 +36,7 @@ class NodeController extends Controller
         }
         $slug = pageState()->node['slug'];
         BreadCrumb::instance()->add(pageState()->node['title'],site_url("/{$slug}"),true);
-
+   
         //侧边栏菜单
         $topCatalog = current(pageState()->catalogPaths);
         pageState()->subCatalogList = Catalog::instance()->getSubCatalogList($topCatalog['id']);
@@ -87,6 +87,26 @@ class NodeController extends Controller
         $nodeModel = Node::findById($node['id'] ?? 0);
         $node['meta'] = $nodeModel ? $nodeModel->loadMeta() : [];
         view('product', ['node' => $node]);
+    }
+
+    function faq(){
+        $node = pageState()->node;
+        $slug = $node['slug'];
+        pageState()->setPageTitle($node['title']);
+        pageState()->catalogPaths = $this->getCatalogPathByNodeId(pageState()->nodeId);
+        $slugs = [];
+        foreach (pageState()->catalogPaths as $catalog){
+            $slugs[] = $catalog['slug'];
+            BreadCrumb::instance()->add($catalog['title'],site_url("/{$catalog['slug']}"));
+        }
+        $slug = pageState()->node['slug'];
+        
+        BreadCrumb::instance()->add(pageState()->node['title'],site_url("/{$slug}"),true);
+        if (empty(pageState()->subCatalogList) ) {
+            pageState()->subCatalogList = \zapcms\services\Catalog::instance()->getPositionMenu(\zapcms\services\Catalog::POSITION_LEFT);
+        }
+
+        view('faq-page', ['node' => $node]);
     }
 
     private function getCatalogPathByNodeId(int $node_id){

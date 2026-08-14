@@ -226,6 +226,12 @@ class PageState extends ArrayObject
         return \zapcms\helpers\ThumbHelper::thumb($this->image, $width, $height);
     }
 
+
+    public function setPageTitle(string $title): void
+    {
+        $this['pageTitle'] = $title;
+    }
+
     // ─── SEO 输出 ──────────────────────────────────────────
 
     /**

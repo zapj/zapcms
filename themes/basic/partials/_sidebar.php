@@ -9,7 +9,6 @@ $title = htmlspecialchars(
 $catalogs = !empty($subCatalogList) ? $subCatalogList : ($state->subCatalogList ?? []);
 $currentId = $nodeId ?? $state->nodeId ?? 0;
 
-
 if (empty($catalogs)) return;
 // 获取 catlogPaths 第一个的title（搜索页等未设置栏目路径时安全降级）
 $catalogPaths = $state->catalogPaths ?? [];
