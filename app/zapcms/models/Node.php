@@ -20,7 +20,7 @@ class Node extends Model
     const STATUS_PUBLISH = 'publish'; //已发布
     const STATUS_DRAFT = 'draft'; //草稿
     const STATUS_SOFT_DELETE = 'soft_delete'; //软删除
-    const STATUS_TRASH = 'trash'; //软删除
+    const STATUS_TRASH = 'trash'; //回收站
 
     public static function tableName(): string
     {

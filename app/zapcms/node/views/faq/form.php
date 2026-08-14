@@ -11,20 +11,49 @@ register_scripts(base_url('/assets/plugins/zapuploader.js'));
 !IS_AJAX && $this->extend('layouts/common');
 
 $this->view->page_title = !empty($sub_title) ? $sub_title : ($title ?? '编辑');
-$this->view->page_subtitle = $title ?? '';
+// $this->view->page_subtitle = $title ?? '';
 
 /**
  * @var \zapcms\models\Node $node
+ * @var int $catalogId
+ * @var array $catalog
+ * @var string $_controller
+ * @var string $_action
  */
-?>
 
+$catalogId = (int)($catalog['id'] ?? $catalogId ?? 0);
+?>
 <form id="zapForm" method="post">
     <input type="hidden" value="<?php echo $node->id; ?>" name="node_id">
     <input type="hidden" name="node[pub_time]" value="<?php echo $node->getPubTimeToDate(); ?>" />
     <input name="node[status]" id="node_status" type="hidden" value="<?php echo $node->status ?: \zapcms\models\Node::STATUS_PUBLISH;?>" />
     <input type="hidden" id="node_author_id" name="node[author_id]" value="<?php echo \zapcms\services\Auth::user('id') ?>">
-
+    <?php if($catalogId){ ?>
+    <input type="hidden" name="catalog[<?php echo $catalogId ?>]" value="<?php echo $catalog['level'] ?? 0 ?>">
+    <?php } ?>
     <div class="row g-3">
+        <!-- 左侧栏目导航（全部栏目） -->
+        <div class="col-lg-3">
+            <div class="card card-outline card-primary">
+                <div class="card-header p-2">
+                    <h6 class="card-title mb-0">
+                        <i class="fa fa-sitemap me-1 text-primary"></i>栏目导航
+                    </h6>
+                    <div class="card-tools">
+                        <a href="<?php echo Url::action("Node"); ?>"
+                           class="btn btn-tool <?php echo !$catalogId ? 'text-primary' : ''; ?>" title="全部内容">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0" style="max-height:calc(100vh - 260px);overflow-y:auto;">
+                    <?php echo $this->partial('default.sidebar'); ?>
+                </div>
+            </div>
+            <?php echo $this->partial('_left_navs'); ?>
+        </div>
+        <!-- /左侧栏目导航 -->
+
         <div class="col-lg-9">
             <div class="card card-outline card-success">
                 <div class="card-header d-flex align-items-center ps-3 pt-0 pb-0 pe-0">
@@ -32,6 +61,11 @@ $this->view->page_subtitle = $title ?? '';
                         <li class="nav-item">
                             <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab1" type="button">
                                 <i class="fa fa-file-alt me-1"></i>内容
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-attr" type="button">
+                                <i class="fa fa-cog me-1"></i>属性
                             </button>
                         </li>
                         <li class="nav-item">
@@ -77,16 +111,46 @@ $this->view->page_subtitle = $title ?? '';
                                 <textarea name="node[content]" id="node_content"
                                           class="form-control summernote"><?php echo $node->content; ?></textarea>
                             </div>
+                        </div>
+                        <div class="tab-pane" id="tab-attr">
                             <div class="row g-2">
-                                <div class="col-auto">
-                                    <label for="node_hits" class="form-label">点击量</label>
-                                    <input type="number" class="form-control form-control-sm" name="node[hits]" id="node_hits"
-                                           value="<?php echo $node->hits ?? 0; ?>" style="width:100px;">
+                                <div class="col-md-4">
+                                    <div class="mb-2">
+                                        <label for="node_status_select" class="form-label">状态</label>
+                                        <select class="form-select form-select-sm" name="node[status]" id="node_status_select">
+                                            <?php foreach($node->getStatus() as $id => $title){
+                                                if($id == \zapcms\models\Node::STATUS_SOFT_DELETE or $id == \zapcms\models\Node::STATUS_TRASH){ continue; } ?>
+                                                <option value="<?php echo $id;?>" <?php echo $node->status==$id?'selected':null ;?> ><?php echo $title;?></option>
+                                            <?php } ?>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="col-auto">
-                                    <label for="node_sort_order" class="form-label">排序</label>
-                                    <input type="number" class="form-control form-control-sm" name="node[sort_order]" id="node_sort_order"
-                                           value="<?php echo $node->sort_order ?? 0; ?>" style="width:100px;">
+                                <div class="col-md-4">
+                                    <div class="mb-2">
+                                        <label for="node_pub_time" class="form-label">发布时间</label>
+                                        <input type="text" class="form-control form-control-sm datetimepicker" name="node[pub_time]"
+                                               id="node_pub_time" value="<?php echo $node->getPubTimeToDate(); ?>" required/>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-2">
+                                        <label class="form-label">发布人</label>
+                                        <input type="text" class="form-control form-control-sm form-control-plaintext" readonly value="<?php echo \zapcms\services\Auth::user('full_name') ?>">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-2">
+                                        <label for="node_hits" class="form-label">点击量</label>
+                                        <input type="number" class="form-control form-control-sm" name="node[hits]" id="node_hits"
+                                               value="<?php echo $node->hits ?? 0; ?>">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-2">
+                                        <label for="node_sort_order" class="form-label">排序</label>
+                                        <input type="number" class="form-control form-control-sm" name="node[sort_order]" id="node_sort_order"
+                                               value="<?php echo $node->sort_order ?? 0; ?>">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -120,33 +184,7 @@ $this->view->page_subtitle = $title ?? '';
             </div>
         </div>
 
-        <div class="col-md-3">
-            <div class="card card-outline card-secondary mb-3">
-                <div class="card-header">
-                    <h3 class="card-title"><i class="fa fa-paper-plane me-2"></i>发布</h3>
-                </div>
-                <div class="card-body p-2">
-                    <div class="mb-2">
-                        <label for="node_status_select" class="form-label small mb-1">状态</label>
-                        <select class="form-select form-select-sm" name="node[status]" id="node_status_select">
-                            <?php foreach($node->getStatus() as $id => $title){
-                                if($id == \zapcms\models\Node::STATUS_SOFT_DELETE or $id == \zapcms\models\Node::STATUS_TRASH){ continue; } ?>
-                                <option value="<?php echo $id;?>" <?php echo $node->status==$id?'selected':null ;?> ><?php echo $title;?></option>
-                            <?php } ?>
-                        </select>
-                    </div>
-                    <div class="mb-2">
-                        <label for="node_pub_time" class="form-label small mb-1">发布时间</label>
-                        <input type="text" class="form-control form-control-sm datetimepicker" name="node[pub_time]"
-                               id="node_pub_time" value="<?php echo $node->getPubTimeToDate(); ?>" required/>
-                    </div>
-                    <div class="mb-0">
-                        <label class="form-label small mb-1">发布人</label>
-                        <input type="text" class="form-control form-control-sm form-control-plaintext" readonly value="<?php echo \zapcms\services\Auth::user('full_name') ?>">
-                    </div>
-                </div>
-            </div>
-        </div>
+
     </div>
 </form>
 
@@ -155,7 +193,7 @@ $this->view->page_subtitle = $title ?? '';
 .nav-tabs .nav-link.active { color: #198754; border-bottom-color: #198754; }
 .note-editor { border-radius: var(--bs-border-radius); overflow: hidden; }
 .note-editor.note-frame { border-color: var(--bs-border-color); }
-.note-editor.note-frame .note-editing-area { min-height: 250px; }
+.note-editor.note-frame .note-editing-area { min-height: 300px; }
 .note-editor .note-toolbar { background: #f8f9fa; padding: 0.35rem 0.5rem; }
 </style>
 

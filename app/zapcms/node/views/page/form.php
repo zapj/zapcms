@@ -37,6 +37,11 @@ if (empty($galleryArr)) {
 }
 
 $catalogId = (int)($catalog['id'] ?? $catalogId ?? 0);
+
+// 图片占位图（浅灰底 + 图片图标，data URI，无引号安全）
+$imagePlaceholder = 'data:image/svg+xml;utf8,' . rawurlencode("<svg xmlns='http://www.w3.org/2000/svg' width='136' height='136' viewBox='0 0 136 136'><rect width='136' height='136' fill='#f4f6f9'/><g fill='none' stroke='#c0c8d0' stroke-width='2'><rect x='40' y='36' width='56' height='40' rx='3'/><circle cx='52' cy='48' r='4'/><polyline points='40,72 60,56 76,68 90,56 96,72'/></g></svg>");
+// 主图当前值（无图时直接显示占位）
+$nodeImage = (string)($node['image'] ?? '');
 ?>
 <form id="zapForm" method="post">
     <input type="hidden" value="<?php echo $node->id; ?>" name="node_id">
@@ -60,7 +65,7 @@ $catalogId = (int)($catalog['id'] ?? $catalogId ?? 0);
                     </div>
                 </div>
                 <div class="card-body p-0" style="max-height:calc(100vh - 260px);overflow-y:auto;">
-                    <?php include __DIR__ . '/../default/sidebar.php'; ?>
+                    <?php echo $this->partial('default.sidebar'); ?>
                 </div>
             </div>
             <?php echo $this->partial('_left_navs'); ?>
@@ -176,7 +181,7 @@ $catalogId = (int)($catalog['id'] ?? $catalogId ?? 0);
                             <div class="mb-2">
                                 <label class="form-label">页面主图</label>
                                 <div class="d-flex align-items-center gap-3">
-                                    <img src="<?php echo \zapcms\helpers\ThumbHelper::thumb($node['image'],136,136); ?>"
+                                    <img src="<?php echo $nodeImage !== '' ? \zapcms\helpers\ThumbHelper::thumb($nodeImage,136,136) : $imagePlaceholder; ?>"
                                          class="img-thumbnail rounded" id="node-image-thumb" style="width:136px;height:136px;object-fit:cover;" alt=""/>
                                     <div class="d-flex flex-column gap-1">
                                         <button type="button" class="btn btn-outline-secondary btn-sm"
@@ -264,6 +269,7 @@ $catalogId = (int)($catalog['id'] ?? $catalogId ?? 0);
 </style>
 
 <script>
+var imagePlaceholder = '<?php echo $imagePlaceholder; ?>';
 var slugConfig = {
     separator: '<?php echo option('slug.separator', '-'); ?>',
     style: '<?php echo option('slug.style', 'default'); ?>',
@@ -294,11 +300,11 @@ function save() {
 }
 function removeImage() {
     $('#node-image').val('');
-    $('#node-image-thumb').attr('src','').hide();
+    $('#node-image-thumb').attr('src', imagePlaceholder).show();
 }
 // ---- 附加图片（node_meta.gallery）----
 var galleryIndex = <?php echo count($galleryArr); ?>;
-var galleryPlaceholder = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+var galleryPlaceholder = imagePlaceholder;
 function addGalleryRow(src) {
     var list = document.getElementById('gallery-list');
     var i = galleryIndex++;
