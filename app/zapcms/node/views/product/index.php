@@ -41,15 +41,7 @@ if (!empty($catalogPaths)) {
                     <?php include __DIR__ . '/../default/sidebar.php'; ?>
                 </div>
             </div>
-            <div class="list-group list-group-flush nav nav-pills flex-column mt-3" id="settings-nav" role="tablist" aria-label="Navigation 19">
-               
-                  <a href="<?php echo Url::action("Node@types");?>" class="list-group-item list-group-item-action"  aria-selected="false" tabindex="-1">
-                    <i class="fa fa-cog me-2" aria-hidden="true"></i>内容模型
-                  </a>
-                  <a href="<?php echo Url::action("Node@typesConfig");?>" class="list-group-item list-group-item-action"  aria-selected="false" tabindex="-1">
-                    <i class="fa fa-sliders-h me-2" aria-hidden="true"></i>显示设置
-                  </a>
-            </div>
+            <?php echo $this->partial('_left_navs'); ?>
         </div>
         <!-- /左侧栏目导航 -->
 

@@ -11,7 +11,7 @@ register_scripts(base_url('/assets/plugins/zapuploader.js'));
 !IS_AJAX && $this->extend('layouts/common');
 
 $this->view->page_title = !empty($sub_title) ? $sub_title : ($title ?? '编辑');
-$this->view->page_subtitle = $title ?? '';
+// $this->view->page_subtitle = $title ?? '';
 
 /**
  * @var \zapcms\models\Node $node
@@ -20,6 +20,23 @@ $this->view->page_subtitle = $title ?? '';
  * @var string $_controller
  * @var string $_action
  */
+
+// 附加图片（node_meta 中的 gallery，JSON 数组）
+$galleryArr = [];
+$galleryRaw = $node->get_node_meta('gallery');
+if ($galleryRaw !== '' && $galleryRaw !== null) {
+    $decoded = json_decode((string)$galleryRaw, true);
+    if (is_array($decoded)) {
+        $galleryArr = array_values(array_filter($decoded, fn($v) => $v !== ''));
+    } elseif ((string)$galleryRaw !== '') {
+        $galleryArr = [(string)$galleryRaw];
+    }
+}
+if (empty($galleryArr)) {
+    $galleryArr = [''];
+}
+
+$catalogId = (int)($catalog['id'] ?? $catalogId ?? 0);
 ?>
 <form id="zapForm" method="post">
     <input type="hidden" value="<?php echo $node->id; ?>" name="node_id">
@@ -28,6 +45,28 @@ $this->view->page_subtitle = $title ?? '';
     <input type="hidden" id="node_author_id" name="node[author_id]" value="<?php echo \zapcms\services\Auth::user('id') ?>">
     <input type="hidden" name="catalog[<?php echo $catalog['id'] ?>]" value="<?php echo $catalog['level'] ?>">
     <div class="row g-3">
+        <!-- 左侧栏目导航（全部栏目） -->
+        <div class="col-lg-3">
+            <div class="card card-outline card-primary">
+                <div class="card-header p-2">
+                    <h6 class="card-title mb-0">
+                        <i class="fa fa-sitemap me-1 text-primary"></i>栏目导航
+                    </h6>
+                    <div class="card-tools">
+                        <a href="<?php echo Url::action("Node"); ?>"
+                           class="btn btn-tool <?php echo !$catalogId ? 'text-primary' : ''; ?>" title="全部内容">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0" style="max-height:calc(100vh - 260px);overflow-y:auto;">
+                    <?php include __DIR__ . '/../default/sidebar.php'; ?>
+                </div>
+            </div>
+            <?php echo $this->partial('_left_navs'); ?>
+        </div>
+        <!-- /左侧栏目导航 -->
+
         <div class="col-lg-9">
             <div class="card card-outline card-success">
                 <div class="card-header d-flex align-items-center ps-3 pt-0 pb-0 pe-0">
@@ -35,6 +74,16 @@ $this->view->page_subtitle = $title ?? '';
                         <li class="nav-item">
                             <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab1" type="button">
                                 <i class="fa fa-file-alt me-1"></i>内容
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-attr" type="button">
+                                <i class="fa fa-cog me-1"></i>属性
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-image" type="button">
+                                <i class="fa fa-image me-1"></i>图片
                             </button>
                         </li>
                         <li class="nav-item">
@@ -80,17 +129,95 @@ $this->view->page_subtitle = $title ?? '';
                                 <textarea name="node[content]" id="node_content"
                                           class="form-control summernote"><?php echo $node->content; ?></textarea>
                             </div>
+                        </div>
+                        <div class="tab-pane" id="tab-attr">
                             <div class="row g-2">
-                                <div class="col-auto">
-                                    <label for="node_hits" class="form-label">点击量</label>
-                                    <input type="number" class="form-control form-control-sm" name="node[hits]" id="node_hits"
-                                           value="<?php echo $node->hits ?? 0; ?>" style="width:100px;">
+                                <div class="col-md-4">
+                                    <div class="mb-2">
+                                        <label for="node_status_select" class="form-label">状态</label>
+                                        <select class="form-select form-select-sm" name="node[status]" id="node_status_select">
+                                            <?php foreach($node->getStatus() as $id => $title){
+                                                if($id == \zapcms\models\Node::STATUS_SOFT_DELETE or $id == \zapcms\models\Node::STATUS_TRASH){ continue; } ?>
+                                                <option value="<?php echo $id;?>" <?php echo $node->status==$id?'selected':null ;?> ><?php echo $title;?></option>
+                                            <?php } ?>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="col-auto">
-                                    <label for="node_sort_order" class="form-label">排序</label>
-                                    <input type="number" class="form-control form-control-sm" name="node[sort_order]" id="node_sort_order"
-                                           value="<?php echo $node->sort_order ?? 0; ?>" style="width:100px;">
+                                <div class="col-md-4">
+                                    <div class="mb-2">
+                                        <label for="node_pub_time" class="form-label">发布时间</label>
+                                        <input type="text" class="form-control form-control-sm datetimepicker" name="node[pub_time]"
+                                               id="node_pub_time" value="<?php echo $node->getPubTimeToDate(); ?>" required/>
+                                    </div>
                                 </div>
+                                <div class="col-md-4">
+                                    <div class="mb-2">
+                                        <label class="form-label">发布人</label>
+                                        <input type="text" class="form-control form-control-sm form-control-plaintext" readonly value="<?php echo \zapcms\services\Auth::user('full_name') ?>">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-2">
+                                        <label for="node_hits" class="form-label">点击量</label>
+                                        <input type="number" class="form-control form-control-sm" name="node[hits]" id="node_hits"
+                                               value="<?php echo $node->hits ?? 0; ?>">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-2">
+                                        <label for="node_sort_order" class="form-label">排序</label>
+                                        <input type="number" class="form-control form-control-sm" name="node[sort_order]" id="node_sort_order"
+                                               value="<?php echo $node->sort_order ?? 0; ?>">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="tab-image">
+                            <div class="mb-2">
+                                <label class="form-label">页面主图</label>
+                                <div class="d-flex align-items-center gap-3">
+                                    <img src="<?php echo \zapcms\helpers\ThumbHelper::thumb($node['image'],136,136); ?>"
+                                         class="img-thumbnail rounded" id="node-image-thumb" style="width:136px;height:136px;object-fit:cover;" alt=""/>
+                                    <div class="d-flex flex-column gap-1">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm"
+                                                data-zap-toggle="image" data-zap-target="#node-image|#node-image-thumb">
+                                            <i class="fa fa-upload me-1"></i>选择主图
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeImage()">
+                                            <i class="fa fa-trash"></i>移除
+                                        </button>
+                                        <div class="form-text">页面主图将显示在列表与详情页封面。</div>
+                                    </div>
+                                    <input type="hidden" name="node[image]" id="node-image" value="<?php echo $node['image']; ?>" />
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <label class="form-label mb-0">附加图片</label>
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addGalleryRow()">
+                                    <i class="fa fa-plus me-1"></i>添加图片
+                                </button>
+                            </div>
+                            <div class="form-text mb-2">可添加 1 张或多张附加图片，存储于 <code>node_meta</code>（meta_name 为 <code>gallery</code>）。</div>
+                            <div id="gallery-list">
+                                <?php foreach ($galleryArr as $gIdx => $gimg):
+                                    $gThumb = \zapcms\helpers\ThumbHelper::thumb($gimg, 64, 64);
+                                ?>
+                                <div class="gallery-item d-flex align-items-center gap-2 mb-2">
+                                    <img src="<?php echo $gThumb; ?>"
+                                         class="img-thumbnail rounded" id="gallery-thumb-<?php echo $gIdx; ?>"
+                                         style="width:64px;height:64px;object-fit:cover;" alt=""/>
+                                    <input type="hidden" class="gallery-input" id="gallery-input-<?php echo $gIdx; ?>"
+                                           name="meta[gallery][]" value="<?php echo e($gimg); ?>">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                                            data-zap-toggle="image" data-zap-target="#gallery-input-<?php echo $gIdx; ?>|#gallery-thumb-<?php echo $gIdx; ?>">
+                                        <i class="fa fa-upload me-1"></i>选择图片
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeGalleryRow(this)">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                                <?php endforeach; ?>
                             </div>
                         </div>
                         <div class="tab-pane" id="tab2">
@@ -123,53 +250,7 @@ $this->view->page_subtitle = $title ?? '';
             </div>
         </div>
 
-        <div class="col-md-3">
-            <div class="card card-outline card-secondary mb-3">
-                <div class="card-header">
-                    <h3 class="card-title"><i class="fa fa-paper-plane me-2"></i>发布</h3>
-                </div>
-                <div class="card-body p-2">
-                    <div class="mb-2">
-                        <label for="node_status_select" class="form-label small mb-1">状态</label>
-                        <select class="form-select form-select-sm" name="node[status]" id="node_status_select">
-                            <?php foreach($node->getStatus() as $id => $title){
-                                if($id == \zapcms\models\Node::STATUS_SOFT_DELETE or $id == \zapcms\models\Node::STATUS_TRASH){ continue; } ?>
-                                <option value="<?php echo $id;?>" <?php echo $node->status==$id?'selected':null ;?> ><?php echo $title;?></option>
-                            <?php } ?>
-                        </select>
-                    </div>
-                    <div class="mb-2">
-                        <label for="node_pub_time" class="form-label small mb-1">发布时间</label>
-                        <input type="text" class="form-control form-control-sm datetimepicker" name="node[pub_time]"
-                               id="node_pub_time" value="<?php echo $node->getPubTimeToDate(); ?>" required/>
-                    </div>
-                    <div class="mb-0">
-                        <label class="form-label small mb-1">发布人</label>
-                        <input type="text" class="form-control form-control-sm form-control-plaintext" readonly value="<?php echo \zapcms\services\Auth::user('full_name') ?>">
-                    </div>
-                </div>
-            </div>
 
-            <div class="card card-outline card-secondary">
-                <div class="card-header">
-                    <h3 class="card-title"><i class="fa fa-image me-2"></i>主图</h3>
-                </div>
-                <div class="card-body text-center p-2">
-                    <img src="<?php echo \zapcms\helpers\ThumbHelper::thumb($node['image'],136,136); ?>"
-                         class="img-thumbnail rounded" id="node-image-thumb" style="max-height:140px;" alt=""/>
-                    <input type="hidden" name="node[image]" id="node-image" value="<?php echo $node['image']; ?>" />
-                </div>
-                <div class="card-footer p-2 d-flex gap-1">
-                    <button type="button" class="btn btn-outline-secondary btn-sm flex-fill"
-                            data-zap-toggle="image" data-zap-target="#node-image|#node-image-thumb">
-                        <i class="fa fa-upload me-1"></i>选择
-                    </button>
-                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeImage()">
-                        <i class="fa fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
     </div>
 </form>
 
@@ -198,6 +279,7 @@ function save() {
     const f = $('#zapForm');
     if (!f.valid()) { ZapToast.alert('请修改错误项，重新提交', {bgColor: bgDanger}); return; }
     const l = Zap.loading('正在保存，请稍后');
+    cleanGallery();
     $.ajax({
         url: '<?php echo Url::currentFull();?>',
         method: 'post', data: f.serialize(), dataType: 'json',
@@ -213,6 +295,34 @@ function save() {
 function removeImage() {
     $('#node-image').val('');
     $('#node-image-thumb').attr('src','').hide();
+}
+// ---- 附加图片（node_meta.gallery）----
+var galleryIndex = <?php echo count($galleryArr); ?>;
+var galleryPlaceholder = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+function addGalleryRow(src) {
+    var list = document.getElementById('gallery-list');
+    var i = galleryIndex++;
+    var imgSrc = src ? src : galleryPlaceholder;
+    var div = document.createElement('div');
+    div.className = 'gallery-item d-flex align-items-center gap-2 mb-2';
+    div.innerHTML =
+        '<img src="' + imgSrc + '" class="img-thumbnail rounded" id="gallery-thumb-' + i + '" style="width:64px;height:64px;object-fit:cover;" alt=""/>' +
+        '<input type="hidden" class="gallery-input" id="gallery-input-' + i + '" name="meta[gallery][]" value="' + (src || '') + '">' +
+        '<button type="button" class="btn btn-outline-secondary btn-sm" data-zap-toggle="image" data-zap-target="#gallery-input-' + i + '|#gallery-thumb-' + i + '">' +
+            '<i class="fa fa-upload me-1"></i>选择图片' +
+        '</button>' +
+        '<button type="button" class="btn btn-outline-danger btn-sm" onclick="removeGalleryRow(this)"><i class="fa fa-trash"></i></button>';
+    list.appendChild(div);
+}
+function removeGalleryRow(btn) {
+    var row = btn.closest('.gallery-item');
+    if (row) { row.remove(); }
+}
+function cleanGallery() {
+    document.querySelectorAll('#gallery-list .gallery-item').forEach(function (row) {
+        var inp = row.querySelector('.gallery-input');
+        if (!inp || !inp.value.trim()) { row.remove(); }
+    });
 }
 function generateSlug() {
     var title = $('#node_title').val().trim();
