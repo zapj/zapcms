@@ -63,6 +63,10 @@ class CatalogController extends Controller
                     ->select('n.id','n.title','n.slug','n.image','n.pub_time','n.node_type')
                     ->where('nr.catalog_id',pageState()->nodeId)
                     ->where('n.node_type', pageState()->nodeMimeType);
+                // FAQ 模型需要额外查询 content 字段    
+                if(pageState()->nodeMimeType === 'faq'){
+                    $query->addSelect('n.content');
+                }
                 $view->page = $page->setTotal($query->count('n.id'));
                 $query->limit($page->getLimit())->offset($page->getOffset());
                 $nodes = $query->get(FETCH_ASSOC);

@@ -31,9 +31,9 @@ $this->beginBlock('content');
                                         <span class="product-price-value"><?php echo number_format(floatval($node['meta']['price']), 2); ?></span>
                                     </div>
                                     <?php endif; ?>
-                                    <ul class="list-inline post-meta">
+                                    <!-- <ul class="list-inline post-meta">
                                         <li><i class="fa fa-calendar"></i> <?php echo date('Y-m-d', intval($node['pub_time'] ?: 0)); ?></li>
-                                    </ul>
+                                    </ul> -->
                                 </div>
                             </div>
                         </div>
