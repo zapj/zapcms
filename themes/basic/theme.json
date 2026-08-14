@@ -5,9 +5,7 @@
     "description": "Basic 是 ZAP CMS 内置的默认主题，风格简洁，适合企业官网、产品展示等场景。",
     "author": "ZAP CMS",
     "settings": {
-        "homeTitle": "企业官网",
-        "homeKeywords": "ZAP CMS,PHP CMS,企业网站",
-        "homeDescription": "基于 ZAP CMS 构建的企业官网",
+        "basic_home.slide": "[{\"img_path\":\"/themes/basic/img/banner1.png\",\"link\":\"https://zap.cn\",\"target\":\"_blank\"},{\"img_path\":\"/themes/basic/img/banner2.png\",\"link\":\"https://zap.cn\",\"target\":\"_blank\"}]",
         "productThumbWidth": 400,
         "productThumbHeight": 300,
         "newsThumbWidth": 400,

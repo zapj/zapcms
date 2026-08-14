@@ -12,7 +12,8 @@ $latestNews = pageState()->getLatestNews();
         <div class="swiper-wrapper">
             <?php foreach($banners as $banner){ ?>
             <div class="swiper-slide " >
-                <a href="<?php echo $banner['link'] ?? '#';?>"  style="background: url('<?php echo $banner['img_path'];?>') no-repeat center center; background-size: cover; ">
+                <?php $slideTarget = (($banner['target'] ?? '_self') === '_blank') ? '_blank' : '_self'; ?>
+                <a href="<?php echo $banner['link'] ?? '#';?>" target="<?php echo $slideTarget; ?>" <?php echo $slideTarget === '_blank' ? 'rel="noopener"' : ''; ?> style="background: url('<?php echo $banner['img_path'];?>') no-repeat center center; background-size: cover; ">
                 </a>
             </div>
             <?php } ?>

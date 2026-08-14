@@ -36,7 +36,8 @@ class Option
         try {
             return DB::insert('options',$data);
         }catch (\PDOException $e){
-            return DB::update('options',$data);
+            // 记录已存在时按 option_name 更新，避免无条件 UPDATE 全表
+            return DB::update('options',$data,['option_name'=>$option_name]);
         }
     }
 
