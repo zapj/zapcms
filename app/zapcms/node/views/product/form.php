@@ -11,7 +11,7 @@ register_scripts(base_url('/assets/plugins/zapuploader.js'));
 !IS_AJAX && $this->extend('layouts/common');
 
 $this->view->page_title = !empty($sub_title) ? $sub_title : ($title ?? '编辑');
-$this->view->page_subtitle = $title ?? '';
+// $this->view->page_subtitle = $title ?? '';
 
 /**
  * @var \zapcms\models\Node $node
@@ -63,7 +63,7 @@ if (empty($galleryArr)) {
                     </div>
                 </div>
                 <div class="card-body p-0" style="max-height:calc(100vh - 260px);overflow-y:auto;">
-                    <?php include __DIR__ . '/../default/sidebar.php'; ?>
+                    <?php echo $this->partial('default/sidebar');?>
                 </div>
             </div>
             <?php echo $this->partial('_left_navs'); ?>
