@@ -2157,7 +2157,7 @@ p.text {
     align-items: baseline;
     gap: 6px;
     /* margin-bottom: 14px; */
-    padding: 10px 14px;
+    padding: 10px 0%;
     /* background: linear-gradient(135deg, #fff5f0 0%, #fef2e7 100%); */
     /* border: 1px solid #f5d9c4; */
     /* border-radius: 8px; */
