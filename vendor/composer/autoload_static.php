@@ -61,7 +61,7 @@ class ComposerStaticInit501184272d4d7ed612cf428f1bb86753
         ),
         'Psr\\Log\\' =>
         array (
-            0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
+            0 => __DIR__ . '/..' . '/psr/log/src',
         ),
         'PHPMailer\\PHPMailer\\' =>
         array (

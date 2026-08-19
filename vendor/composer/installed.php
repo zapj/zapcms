@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'zapj/zapcms',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => null,
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => 'eb7f4d00533391312cbc1ce88046ec03ed882acf',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -47,12 +47,14 @@
             'dev_requirement' => false,
         ),
         'psr/log' => array(
-            'pretty_version' => '1.1.4',
-            'version' => '1.1.4.0',
-            'reference' => 'd49695b909c3b7628b6289db5479a1c204601f11',
+            'pretty_version' => 'dev-master',
+            'version' => 'dev-master',
+            'reference' => 'f16e1d5863e37f8d8c2a01719f5b34baa2b714d3',
             'type' => 'library',
             'install_path' => __DIR__ . '/../psr/log',
-            'aliases' => array(),
+            'aliases' => array(
+                0 => '3.x-dev',
+            ),
             'dev_requirement' => false,
         ),
         'psr/log-implementation' => array(
@@ -67,15 +69,13 @@
             'reference' => '485d7a0fd8e637a67c815488e89566227acaaf66',
             'type' => 'library',
             'install_path' => __DIR__ . '/../zapj/zap-php-framework',
-            'aliases' => array(
-                0 => '9999999-dev',
-            ),
+            'aliases' => array(),
             'dev_requirement' => false,
         ),
         'zapj/zapcms' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => null,
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => 'eb7f4d00533391312cbc1ce88046ec03ed882acf',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

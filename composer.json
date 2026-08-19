@@ -1,8 +1,8 @@
 {
   "repositories": [
         {
-            "type": "vcs",
-            "url": "https://github.com/zapj/zap-php-framework.git"
+            "type": "path",
+            "url": "../zap-php-framework"
         }
   ],
   "name": "zapj/zapcms",

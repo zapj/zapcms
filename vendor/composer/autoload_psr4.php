@@ -10,7 +10,7 @@ return array(
     'zap\\' => array($vendorDir . '/zapj/zap-php-framework/src'),
     'mods\\' => array($baseDir . '/mods'),
     'app\\' => array($baseDir . '/app'),
-    'Psr\\Log\\' => array($vendorDir . '/psr/log/Psr/Log'),
+    'Psr\\Log\\' => array($vendorDir . '/psr/log/src'),
     'PHPMailer\\PHPMailer\\' => array($vendorDir . '/phpmailer/phpmailer/src'),
     'Overtrue\\Pinyin\\' => array($vendorDir . '/overtrue/pinyin/src'),
     'Monolog\\' => array($vendorDir . '/monolog/monolog/src/Monolog'),
