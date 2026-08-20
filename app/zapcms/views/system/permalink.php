@@ -1,6 +1,6 @@
 <?php
 $currentStructure = $current_structure ?? '/%postname%/';
-$currentCatalogPrefix = $current_catalog_prefix ?? 'catalog';
+$currentCatalogPrefix = (string) ($current_catalog_prefix ?? '');
 
 // 预设的链接结构
 $presets = [
@@ -130,7 +130,7 @@ $this->layout('layouts/common');
                 </div>
                 <div class="card-body">
                     <p class="text-muted mb-3">
-                        设置栏目（Catalog）URL 的前缀。默认为 <code>catalog</code>。
+                        设置栏目（Catalog）URL 的前缀，留空则栏目直接以 <code>/slug</code> 形式访问。
                         例如，栏目 "产品中心" 的 slug 为 <code>products</code> 时，完整链接为：
                     </p>
 
@@ -140,14 +140,14 @@ $this->layout('layouts/common');
                             <span class="input-group-text" id="catalog_prefix_url"><?php echo htmlspecialchars(rtrim(home_url(), '/')); ?>/</span>
                             <input type="text" class="form-control" id="catalog_prefix"
                                    name="catalog_prefix" value="<?php echo htmlspecialchars($currentCatalogPrefix); ?>"
-                                   placeholder="catalog">
+                                   placeholder="留空则直接以 /slug 访问">
                         </div>
-                        <div class="form-text">只能使用字母、数字、下划线和连字符</div>
+                        <div class="form-text">只能使用字母、数字、下划线和连字符；留空则栏目直接以 <code>/slug</code> 访问</div>
                     </div>
 
                     <div id="catalog_preview" class="alert alert-info mb-0">
                         <i class="fa-solid fa-eye me-1"></i>
-                        预览：<code id="catalog_preview_url"><?php echo htmlspecialchars(rtrim(home_url(), '/')); ?>/<?php echo htmlspecialchars($currentCatalogPrefix); ?>/products</code>
+                        预览：<code id="catalog_preview_url"><?php echo htmlspecialchars(rtrim(home_url(), '/') . ($currentCatalogPrefix !== '' ? '/' . $currentCatalogPrefix . '/products' : '/products')); ?></code>
                     </div>
                 </div>
             </div>
@@ -182,7 +182,7 @@ $this->layout('layouts/common');
                         </li>
                         <li class="mb-2">
                             <i class="fa-solid fa-lightbulb text-info me-1"></i>
-                            栏目前缀可以改为 <code>shop</code>、<code>category</code> 等任意名称。
+                            栏目前缀可以改为 <code>shop</code>、<code>category</code> 等任意名称，留空则栏目直接以 <code>/slug</code> 访问。
                         </li>
                         <li class="mb-2">
                             <i class="fa-solid fa-lightbulb text-info me-1"></i>
@@ -282,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 显示成功提示
                 showToast('success', '设置已保存');
                 // 更新页面上的预览
-                catalogPreviewUrl.textContent = siteHome + '/' + catalogPrefix + '/products';
+                catalogPreviewUrl.textContent = siteHome + (catalogPrefix ? '/' + catalogPrefix + '/products' : '/products');
             } else {
                 showToast('danger', data.msg || '保存失败');
             }

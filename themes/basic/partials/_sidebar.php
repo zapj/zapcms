@@ -24,11 +24,9 @@ $lastCatalogId = $lastCatalog['id'] ?? 0;
         <h4><?php echo e(!empty($firstCatalogTitle) ? $firstCatalogTitle :$title); ?></h4>
         <ul>
             <?php foreach ($catalogs as $catalog):
-                // link-url 类型：slug 是占位符 --zap-link-url，需根据绑定的 link_type/link_to/link_object 生成真实 URL
+                // link-url 类型：slug 是占位符 --zap-link-url，smart_node_url 会根据 link_type/link_to/link_object 生成真实 URL
                 $isLinkUrl = ($catalog['node_type'] ?? '') === 'link-url';
-                $href = $isLinkUrl
-                    ? smart_node_url($catalog)
-                    : site_url('/' . $catalog['slug']);
+                $href = smart_node_url($catalog);
                 $linkTarget = $isLinkUrl ? ($catalog['link_target'] ?? '') : '';
             ?>
                 <li<?php if ($lastCatalogId == $catalog['id']) echo ' class="current"'; ?>>

@@ -6,7 +6,6 @@
  *
  * @var array $footerCatalogMenu 页脚栏目数据
  */
-$childLastSlug = [];
 ?>
 <footer class="site-footer">
     <div class="container">
@@ -23,7 +22,7 @@ $childLastSlug = [];
                         if (!in_array(4, explode(',', $child['show_position'] ?? ''))) {
                             continue;
                         }
-                        $childUrl = $child['slug'] === '--zap-link-url' ? resolve_link_url($child) : url_slug($childLastSlug, $child['slug']);
+                        $childUrl = smart_node_url($child);
                     ?>
                     <li><a href="<?php echo $childUrl; ?>" title="<?php echo htmlspecialchars($child['title']); ?>"><?php echo htmlspecialchars($child['title']); ?></a></li>
                     <?php endforeach; ?>

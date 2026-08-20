@@ -484,7 +484,7 @@ class SystemController extends AdminController
     {
         if (Request::isPost()) {
             $structure     = Request::post('permalink_structure', '/%postname%/');
-            $catalogPrefix = Request::post('catalog_prefix', 'catalog');
+            $catalogPrefix = Request::post('catalog_prefix', '');
 
             // 基本清理（栏目前缀允许留空，表示栏目直接以 /{slug} 访问）
             $structure = '/' . trim(trim($structure), '/') . '/';
@@ -509,7 +509,7 @@ class SystemController extends AdminController
                 ['title' => '固定链接设置'],
             ],
             'current_structure'     => option('permalink.structure', '/%postname%/'),
-            'current_catalog_prefix' => option('permalink.catalog_prefix', 'catalog'),
+            'current_catalog_prefix' => option('permalink.catalog_prefix', ''),
         ];
 
         \view('system.permalink', $data);

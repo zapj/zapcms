@@ -237,14 +237,14 @@ function get_permalink_structure(): string
 /**
  * 获取栏目前缀
  *
- * @return string 如 'catalog', 'shop', 'category'
+ * @return string 如 'catalog'、'shop'，或空字符串（栏目直接以 /{slug} 访问）
  */
 function get_catalog_prefix(): string
 {
     static $prefix = null;
     if ($prefix === null) {
         // 支持空前缀：此时栏目直接以 /{slug} 形式访问，无需强制回退 catalog
-        $prefix = (string) option('permalink.catalog_prefix', 'catalog');
+        $prefix = (string) option('permalink.catalog_prefix', '');
     }
     return $prefix;
 }
@@ -465,7 +465,7 @@ function smart_node_url(array $row): string
     }
 
     // 普通栏目
-    if ($nodeType === 'catalog') {
+    if ($nodeType === 'catalog' || ( isset($row['link_type']) && $row['link_type'] === 'catalog') ) {
         $slug = $row['slug'] ?? '';
         $catalogPrefix = get_catalog_prefix();
         if (!empty($slug) && $slug !== '--zap-link-url') {

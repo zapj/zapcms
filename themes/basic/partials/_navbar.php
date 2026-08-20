@@ -8,7 +8,6 @@
  */
 $state = pageState();
 $childLastId = [];
-$childLastSlug = [];
 ?>
 <nav class="navbar navbar-default">
     <div class="container">
@@ -30,7 +29,7 @@ $childLastSlug = [];
                     echo ($menu['id'] === $state->nodeId || $state->nodeId === $menu['link_object']) ? ' active' : '';
                 ?>">
                     <a data-id="<?php echo $menu['id']; ?>"
-                       href="<?php echo $menu['slug'] === '--zap-link-url' ? resolve_link_url($menu) : url_slug($childLastSlug, $menu['slug']); ?>"
+                       href="<?php echo smart_node_url($menu); ?>"
                        title="<?php echo htmlspecialchars($menu['title']); ?>"
                        <?php if (!empty($menu['children'])): ?>
                        class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button"
@@ -49,7 +48,6 @@ $childLastSlug = [];
                         <ul class="dropdown-menu">
                         <?php
                         $childLastId[] = end($menu['children'])['id'];
-                        $childLastSlug[] = $menu['slug'];
                         while ($children = array_pop($menu['children'])) {
                             array_unshift($catalogMenu, $children);
                         }
@@ -58,7 +56,7 @@ $childLastSlug = [];
 
                     <?php if ($menu['id'] == end($childLastId)): ?>
                         </ul>
-                        <?php array_pop($childLastId); array_pop($childLastSlug); ?>
+                        <?php array_pop($childLastId); ?>
                     <?php endif; ?>
                 </li>
                 <?php endwhile; ?>
