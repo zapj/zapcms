@@ -46,7 +46,15 @@ class Theme
             if(json_last_error() !== JSON_ERROR_NONE){
                 continue;
             }
+            if(!is_array($themeInfo)){
+                $themeInfo = [];
+            }
             $themeInfo['dirname'] = $theme['dirname'];
+            $themeInfo['name'] = $themeInfo['name'] ?? $theme['dirname'];
+            $themeInfo['title'] = $themeInfo['title'] ?? $themeInfo['label'] ?? $theme['dirname'];
+            $themeInfo['screenshot'] = $themeInfo['screenshot'] ?? '';
+            $themeInfo['description'] = $themeInfo['description'] ?? '';
+            $themeInfo['version'] = $themeInfo['version'] ?? '';
             $themes_info[$theme['dirname']] = $themeInfo;
         }
         return $themes_info;
