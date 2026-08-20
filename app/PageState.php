@@ -90,6 +90,16 @@ class PageState extends ArrayObject
     }
 
     /**
+     * 重写 offsetGet：键不存在时返回 null，避免 PHP 8 下
+     * ArrayObject::offsetGet 触发 "Undefined array key" 警告。
+     */
+    #[\ReturnTypeWillChange]
+    public function offsetGet($key)
+    {
+        return $this->offsetExists($key) ? parent::offsetGet($key) : null;
+    }
+
+    /**
      * 获取单例实例（自动创建）
      */
     public static function instance(): self

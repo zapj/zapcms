@@ -11,7 +11,7 @@ $this->beginBlock('content');
         <div class="row">
             <?php echo $this->partial('partials/_sidebar'); ?>
             <div class="col-sm-9">
-                <div class="content-wrap faq-page">
+                <div class="content-wrap faq-page " style="margin-bottom:30px">
                     <!-- 搜索框 & 工具栏 -->
                     <div class="faq-toolbar">
                         <div class="faq-search-wrap">
