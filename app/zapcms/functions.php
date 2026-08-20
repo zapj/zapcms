@@ -202,6 +202,66 @@ function home_url(): string
 }
 
 /**
+ * 根据 config('config.suffix') 为站内内容 URL 追加后缀（如 .html）
+ *
+ * 与框架 UrlHelper::appendSuffix() 保持一致：
+ *   - 外部链接（http/https/协议相对/mailto/tel）不追加
+ *   - 已是后缀结尾不追加
+ *   - 根路径（空或 /）不追加
+ *   - 查询参数保留在最后
+ *
+ * @param string $url 完整 URL 或站内路径
+ * @return string
+ */
+function append_url_suffix(string $url): string
+{
+    $suffix = (string) config('config.suffix', '');
+    if ($suffix === '' || $url === '') {
+        return $url;
+    }
+
+    // 协议相对/邮件/电话等外部链接不追加
+    if (preg_match('#^(//|mailto:|tel:)#i', $url)) {
+        return $url;
+    }
+
+    $base = get_site_base_url(); // 如 https://localhost 或 /zapcms
+
+    // 分离协议与主机（site_url 返回绝对 URL 时）
+    $scheme = '';
+    if (preg_match('#^(https?://[^/]+)(/.*)?$#i', $url, $m)) {
+        // 绝对 URL：仅当域名与本站一致时才追加后缀，外部域名原样返回
+        if (str_starts_with($base, 'http')) {
+            $curHost  = parse_url($m[1], PHP_URL_HOST);
+            $baseHost = parse_url($base, PHP_URL_HOST);
+            if ($curHost !== null && $baseHost !== null && strcasecmp($curHost, $baseHost) !== 0) {
+                return $url;
+            }
+        }
+        $scheme = $m[1];
+        $url    = $m[2] ?? '';
+    }
+
+    // 分离路径和查询参数
+    $queryPos = strpos($url, '?');
+    $path = $queryPos !== false ? substr($url, 0, $queryPos) : $url;
+    $query = $queryPos !== false ? substr($url, $queryPos) : '';
+
+    // 已是后缀结尾则跳过
+    if (str_ends_with($path, $suffix)) {
+        return $scheme . $url;
+    }
+
+    // 根路径不追加
+    $path = rtrim($path, '/');
+    if ($path === '') {
+        return $scheme . $url;
+    }
+
+    return $scheme . $path . $suffix . $query;
+}
+
+/**
  * 附件/存储文件 URL
  *
  * 按后台「文件上传 → 附件 URL 模式」(upload.url_mode) 返回：
@@ -267,7 +327,7 @@ function build_permalink(array $node): string
     // 但只有当结构是简单的 /%postname%/ 时才直接用 slug
     if (!empty($slug) && $slug !== '--zap-link-url') {
         if ($structure === '/%postname%/') {
-            return site_url($slug);
+            return append_url_suffix(site_url($slug));
         }
         // 自定义结构时也用 slug 替换 %postname%
     }
@@ -298,7 +358,7 @@ function build_permalink(array $node): string
 
     $uri = str_replace(array_keys($replacements), array_values($replacements), $structure);
 
-    return site_url($uri);
+    return append_url_suffix(site_url($uri));
 }
 
 /**
@@ -338,7 +398,7 @@ function node_url(int $nodeId, string $type = 'default'): string
 
     // 文章名称型且有 slug：直接用 slug
     if ($structure === '/%postname%/' && !empty($slug) && $slug !== '--zap-link-url') {
-        return site_url($slug);
+        return append_url_suffix(site_url($slug));
     }
 
     // 使用固定链接结构生成
@@ -368,14 +428,14 @@ function resolve_link_url(array $linkRow): string
             // link_to 存的是 slug
             $catalogPrefix = get_catalog_prefix();
             if (!empty($linkTo) && $linkTo !== '--zap-link-url') {
-                return site_url($catalogPrefix . '/' . $linkTo);
+                return append_url_suffix(site_url($catalogPrefix . '/' . $linkTo));
             }
             if ($linkObject > 0) {
                 $catalog = Node::createQuery()->select('id', 'slug')->where('id', $linkObject)->first();
                 if ($catalog && !empty($catalog['slug']) && $catalog['slug'] !== '--zap-link-url') {
-                    return site_url($catalogPrefix . '/' . $catalog['slug']);
+                    return append_url_suffix(site_url($catalogPrefix . '/' . $catalog['slug']));
                 }
-                return site_url($catalogPrefix . '/' . $linkObject);
+                return append_url_suffix(site_url($catalogPrefix . '/' . $linkObject));
             }
             return home_url();
 
@@ -393,9 +453,9 @@ function resolve_link_url(array $linkRow): string
             if (!empty($linkTo) && $linkTo !== '--zap-link-url') {
                 $structure = get_permalink_structure();
                 if ($structure === '/%postname%/') {
-                    return site_url($linkTo);
+                    return append_url_suffix(site_url($linkTo));
                 }
-                return site_url(str_replace('%postname%', $linkTo, $structure));
+                return append_url_suffix(site_url(str_replace('%postname%', $linkTo, $structure)));
             }
             return home_url();
 
@@ -405,7 +465,7 @@ function resolve_link_url(array $linkRow): string
             if (preg_match('#^(https?://|//|mailto:|tel:)#i', $linkTo)) {
                 return $linkTo;
             }
-            return site_url($linkTo);
+            return append_url_suffix(site_url($linkTo));
     }
 }
 
@@ -420,7 +480,7 @@ function url_link(string $path): string
     if (preg_match('#^(https?://|//|mailto:|tel:)#i', $path)) {
         return $path;
     }
-    return site_url($path);
+    return append_url_suffix(site_url($path));
 }
 
 /**
@@ -469,9 +529,9 @@ function smart_node_url(array $row): string
         $slug = $row['slug'] ?? '';
         $catalogPrefix = get_catalog_prefix();
         if (!empty($slug) && $slug !== '--zap-link-url') {
-            return site_url($catalogPrefix . '/' . $slug);
+            return append_url_suffix(site_url($catalogPrefix . '/' . $slug));
         }
-        return site_url($catalogPrefix . '/' . ((int) ($row['id'] ?? 0)));
+        return append_url_suffix(site_url($catalogPrefix . '/' . ((int) ($row['id'] ?? 0))));
     }
 
     // 普通内容节点：使用固定链接结构

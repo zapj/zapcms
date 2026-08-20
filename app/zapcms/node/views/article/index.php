@@ -146,7 +146,7 @@ if (!empty($catalogPaths)) {
                                     <td>
                                         <div class="btn-group btn-group-sm">
                                             <?php if (!empty($row['slug'])): ?>
-                                            <a href="<?php echo site_url('/' . $row['slug']); ?>"
+                                            <a href="<?php echo smart_node_url($row); ?>"
                                                target="_blank" class="btn btn-outline-secondary" title="前台查看">
                                                 <i class="fa fa-eye"></i>
                                             </a>

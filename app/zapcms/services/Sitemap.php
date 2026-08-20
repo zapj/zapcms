@@ -199,13 +199,13 @@ class Sitemap
 
         // 回退：slug 优先
         if (!empty($slug)) {
-            return \site_url($slug);
+            return \append_url_suffix(\site_url($slug));
         }
 
         if ($nodeType === 'catalog') {
-            return \site_url('catalog/' . $id);
+            return \append_url_suffix(\site_url('catalog/' . $id));
         }
-        return \site_url('node/' . $nodeType . '?nodeId=' . $id);
+        return \append_url_suffix(\site_url('node/' . $nodeType . '?nodeId=' . $id));
     }
 
     // ==================== 元数据计算 ====================

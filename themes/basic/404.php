@@ -96,7 +96,7 @@ $catalogMenu = pageState()->getCatalogList();
             <h2 class="error-404-title">页面走丢了</h2>
             <p class="error-404-desc">您访问的页面不存在、已被移除或网址有误，请检查后重试。</p>
 
-            <form class="error-404-search" action="<?php echo site_url('/search'); ?>" method="get">
+            <form class="error-404-search" action="<?php echo append_url_suffix(site_url('/search')); ?>" method="get">
                 <div class="input-group">
                     <input autocomplete="off" type="text" name="q" class="form-control" placeholder="搜索您想找的内容…">
                     <span class="input-group-btn">

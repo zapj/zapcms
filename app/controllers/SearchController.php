@@ -31,7 +31,7 @@ class SearchController extends Controller
         // 强制使用 ?page=N 形式，避免 path 为空时生成 "/N" 这类错误链接。
         $queryParams = req()->get();
         unset($queryParams['page']);
-        $page->withPath(site_url('/search') . '?' . ($queryParams ? http_build_query($queryParams) . '&' : '') . 'page={page}');
+        $page->withPath(append_url_suffix(site_url('/search')) . '?' . ($queryParams ? http_build_query($queryParams) . '&' : '') . 'page={page}');
         pageState()->subCatalogList = pageState()->getSearchSidebarMenu();
         $query = Node::where('title','LIKE',"%{$keyword}%")
             ->where('status',Node::STATUS_PUBLISH)

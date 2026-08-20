@@ -754,7 +754,7 @@ class ZQuery
         $catalogPrefix = get_catalog_prefix();
         foreach ($cats as $cat) {
             $slug = $cat['slug'] ?? '';
-            $url = $slug ? site_url($catalogPrefix . '/' . $slug) : '';
+            $url = $slug ? append_url_suffix(site_url($catalogPrefix . '/' . $slug)) : '';
             $name = htmlspecialchars($cat['catalog_name'] ?? '');
             $links[] = '<a href="' . $url . '">' . $name . '</a>';
         }

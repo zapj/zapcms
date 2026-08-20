@@ -354,7 +354,7 @@ function updateSlugPreview() {
     var slug = $('#node_slug').val().trim();
     var preview = $('#slug_preview');
     if (slug) {
-        preview.find('span').text('<?php echo site_url("/"); ?>' + slug);
+        preview.find('span').text('<?php echo site_url("/"); ?>' + slug + '<?php echo htmlspecialchars((string) config('config.suffix', '')); ?>');
         preview.show();
     } else {
         preview.hide();

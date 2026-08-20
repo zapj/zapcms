@@ -31,7 +31,7 @@ $footerCatalogMenu = $catalogMenu;
 <body>
 
 <header class="site-header">
-    <form action="<?php echo site_url('/search'); ?>">
+    <form action="<?php echo append_url_suffix(site_url('/search')); ?>">
     <div class="top hidden-xs">
         <div class="container">
             <div class="row">

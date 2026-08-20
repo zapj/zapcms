@@ -45,7 +45,7 @@ class CatalogController extends Controller
         pageState()->catalogPaths = Catalog::instance()->getCatalogPathById(pageState()->nodeId);
         $lastKey = array_key_last(pageState()->catalogPaths );
         foreach (pageState()->catalogPaths as $key => $catalog){
-            BreadCrumb::instance()->add($catalog['title'],site_url("/{$catalog['slug']}"),$key === $lastKey);
+            BreadCrumb::instance()->add($catalog['title'],smart_node_url(['node_type' => 'catalog', 'slug' => $catalog['slug'] ?? '', 'id' => $catalog['id'] ?? 0]),$key === $lastKey);
         }
 
         // catalog 可能为 null（nodeType 非 catalog 或 nodeId 无效时 getCatalog() 返回 null），加空值保护

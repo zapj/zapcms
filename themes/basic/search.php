@@ -63,7 +63,7 @@ $link = function (array $node): string {
     if (function_exists('smart_node_url')) {
         return smart_node_url($node);
     }
-    return site_url('/' . ($node['slug'] ?? ''));
+    return append_url_suffix(site_url('/' . ($node['slug'] ?? '')));
 };
 ?>
     <?php echo $this->partial('partials/_breadcrumb'); ?>
@@ -76,7 +76,7 @@ $link = function (array $node): string {
             <div class="col-sm-9">
                 <div class="content-wrap search-page">
                     <!-- 搜索框 -->
-                    <form class="search-form" method="get" action="<?php echo site_url('/search'); ?>">
+                    <form class="search-form" method="get" action="<?php echo append_url_suffix(site_url('/search')); ?>">
                         <div class="faq-search-wrap">
                             <i class="fa fa-search faq-search-icon"></i>
                             <input type="text" name="q" class="faq-search-input"
@@ -84,7 +84,7 @@ $link = function (array $node): string {
                                    autocomplete="off"
                                    value="<?php echo htmlspecialchars($keyword); ?>">
                             <?php if ($keyword !== ''): ?>
-                            <a class="faq-search-clear" href="<?php echo site_url('/search'); ?>" title="清除搜索词">&times;</a>
+                            <a class="faq-search-clear" href="<?php echo append_url_suffix(site_url('/search')); ?>" title="清除搜索词">&times;</a>
                             <?php endif; ?>
                         </div>
                         <button class="search-btn" type="submit"><i class="fa fa-search"></i> 搜索</button>

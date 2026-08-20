@@ -32,10 +32,9 @@ class NodeController extends Controller
         $slugs = [];
         foreach (pageState()->catalogPaths as $catalog){
             $slugs[] = $catalog['slug'];
-            BreadCrumb::instance()->add($catalog['title'],site_url("/{$catalog['slug']}"));
+            BreadCrumb::instance()->add($catalog['title'],smart_node_url(['node_type' => 'catalog', 'slug' => $catalog['slug'] ?? '', 'id' => $catalog['id'] ?? 0]));
         }
-        $slug = pageState()->node['slug'];
-        BreadCrumb::instance()->add(pageState()->node['title'],site_url("/{$slug}"),true);
+        BreadCrumb::instance()->add(pageState()->node['title'],smart_node_url(pageState()->node),true);
    
         //侧边栏菜单
         $topCatalog = current(pageState()->catalogPaths);
@@ -45,8 +44,7 @@ class NodeController extends Controller
 
     function page(){
         $node = pageState()->node;
-        $slug = $node['slug'];
-        BreadCrumb::instance()->add($node['title'],site_url("/{$slug}"),true);
+        BreadCrumb::instance()->add($node['title'],smart_node_url($node),true);
         view('page', ['node' => $node]);
     }
 
@@ -57,10 +55,9 @@ class NodeController extends Controller
         $slugs = [];
         foreach (pageState()->catalogPaths as $catalog){
             $slugs[] = $catalog['slug'];
-            BreadCrumb::instance()->add($catalog['title'],site_url("/{$catalog['slug']}"));
+            BreadCrumb::instance()->add($catalog['title'],smart_node_url(['node_type' => 'catalog', 'slug' => $catalog['slug'] ?? '', 'id' => $catalog['id'] ?? 0]));
         }
-        $slug = pageState()->node['slug'];
-        BreadCrumb::instance()->add(pageState()->node['title'],site_url("/{$slug}"),true);
+        BreadCrumb::instance()->add(pageState()->node['title'],smart_node_url(pageState()->node),true);
 
         //侧边栏菜单
         $topCatalog = current(pageState()->catalogPaths);
@@ -75,10 +72,9 @@ class NodeController extends Controller
         $slugs = [];
         foreach (pageState()->catalogPaths as $catalog){
             $slugs[] = $catalog['slug'];
-            BreadCrumb::instance()->add($catalog['title'],site_url("/{$catalog['slug']}"));
+            BreadCrumb::instance()->add($catalog['title'],smart_node_url(['node_type' => 'catalog', 'slug' => $catalog['slug'] ?? '', 'id' => $catalog['id'] ?? 0]));
         }
-        $slug = pageState()->node['slug'];
-        BreadCrumb::instance()->add(pageState()->node['title'],site_url("/{$slug}"),true);
+        BreadCrumb::instance()->add(pageState()->node['title'],smart_node_url(pageState()->node),true);
 
         //侧边栏菜单
         $topCatalog = current(pageState()->catalogPaths);
@@ -91,17 +87,15 @@ class NodeController extends Controller
 
     function faq(){
         $node = pageState()->node;
-        $slug = $node['slug'];
         pageState()->setPageTitle($node['title']);
         pageState()->catalogPaths = $this->getCatalogPathByNodeId(pageState()->nodeId);
         $slugs = [];
         foreach (pageState()->catalogPaths as $catalog){
             $slugs[] = $catalog['slug'];
-            BreadCrumb::instance()->add($catalog['title'],site_url("/{$catalog['slug']}"));
+            BreadCrumb::instance()->add($catalog['title'],smart_node_url(['node_type' => 'catalog', 'slug' => $catalog['slug'] ?? '', 'id' => $catalog['id'] ?? 0]));
         }
-        $slug = pageState()->node['slug'];
         
-        BreadCrumb::instance()->add(pageState()->node['title'],site_url("/{$slug}"),true);
+        BreadCrumb::instance()->add(pageState()->node['title'],smart_node_url(pageState()->node),true);
         if (empty(pageState()->subCatalogList) ) {
             pageState()->subCatalogList = \zapcms\services\Catalog::instance()->getPositionMenu(\zapcms\services\Catalog::POSITION_LEFT);
         }
