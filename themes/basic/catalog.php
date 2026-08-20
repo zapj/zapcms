@@ -17,11 +17,11 @@ $this->beginBlock('content');
                         <?php else: foreach ($nodes as $node): $imgW = \zapcms\services\NodeType::getConfig($node['node_type'] ?? 'article', 'list_image_width', 270); $imgH = \zapcms\services\NodeType::getConfig($node['node_type'] ?? 'article', 'list_image_height', 210); ?>
                         <div class="col-sm-4">
                             <div class="post-content">
-                                <a href="<?php echo site_url('/' . $node['slug']); ?>">
+                                <a href="<?php echo smart_node_url($node); ?>">
                                     <img class="img-responsive" src="<?php echo \zapcms\helpers\ThumbHelper::thumb($node['image'], $imgW, $imgH); ?>" alt="<?php echo htmlspecialchars($node['title']); ?>" />
                                 </a>
                                 <div class="content-wrap">
-                                    <h4><a href="<?php echo site_url('/' . $node['slug']); ?>"><?php echo htmlspecialchars($node['title']); ?></a></h4>
+                                    <h4><a href="<?php echo smart_node_url($node); ?>"><?php echo htmlspecialchars($node['title']); ?></a></h4>
                                     <ul class="list-inline post-meta">
                                         <li><i class="fa fa-calendar"></i> <?php echo date('Y-m-d', intval($node['pub_time'] ?: 0)); ?></li>
                                     </ul>

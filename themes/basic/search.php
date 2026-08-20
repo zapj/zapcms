@@ -58,10 +58,10 @@ $summarize = function (string $content, string $keyword, int $length = 160): str
     return $prefix . $text;
 };
 
-// 结果链接：优先使用固定链接结构
+// 结果链接：统一使用 smart_node_url（固定链接结构 + link-url 解析）
 $link = function (array $node): string {
-    if (function_exists('build_permalink')) {
-        return build_permalink($node);
+    if (function_exists('smart_node_url')) {
+        return smart_node_url($node);
     }
     return site_url('/' . ($node['slug'] ?? ''));
 };

@@ -49,6 +49,10 @@ class NodeType
         if(is_null(static::$nodeTypes)){
             static::getNodeTypes();
         }
+        // 模型不存在时返回 null，避免访问不存在的键触发 Undefined array key 警告
+        if(!isset(static::$nodeTypes[$type_name])){
+            return null;
+        }
         return is_null($key) ? self::$nodeTypes[$type_name] : self::$nodeTypes[$type_name][$key];
     }
 
@@ -186,13 +190,17 @@ class NodeType
     /**
      * 获取内容模型显示配置
      *
-     * @param string      $type_name 内容模型标识（如 article / product）
+     * @param string|null  $type_name 内容模型标识（如 article / product）；null/空表示栏目未绑定模型，返回默认值
      * @param string|null $key       配置键；null 返回全部配置（含默认值）
      * @param mixed       $default   键不存在时的默认值
      * @return mixed
      */
-    public static function getConfig(string $type_name, ?string $key = null, $default = null)
+    public static function getConfig(?string $type_name, ?string $key = null, $default = null)
     {
+        // type_name 为空（栏目未绑定内容模型）时直接返回默认值，避免 TypeError 与无意义查询
+        if (empty($type_name)) {
+            return is_null($key) ? static::CONFIG_DEFAULTS : (static::CONFIG_DEFAULTS[$key] ?? $default);
+        }
         $cacheKey = static::CONFIG_OPTION_PREFIX . $type_name;
         $ttl = (int)config('cache.ttl', 0);
         if ($ttl <= 0) {

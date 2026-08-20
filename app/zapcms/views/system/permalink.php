@@ -242,11 +242,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // 栏目前缀实时预览
+    // 栏目前缀实时预览（允许留空，此时直接以 /slug 访问）
     catalogInput.addEventListener('input', function() {
-        var prefix = this.value.replace(/[^a-zA-Z0-9_-]/g, '') || 'catalog';
+        var prefix = this.value.replace(/[^a-zA-Z0-9_-]/g, '');
         this.value = prefix;
-        catalogPreviewUrl.textContent = siteHome + '/' + prefix + '/products';
+        catalogPreviewUrl.textContent = siteHome + (prefix ? '/' + prefix + '/products' : '/products');
     });
 
     // 保存按钮
@@ -265,7 +265,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 确保以 / 开头和结尾
         structure = '/' + structure.replace(/^\/+|\/+$/g, '') + '/';
 
-        var catalogPrefix = catalogInput.value.replace(/[^a-zA-Z0-9_-]/g, '') || 'catalog';
+        var catalogPrefix = catalogInput.value.replace(/[^a-zA-Z0-9_-]/g, '');
 
         fetch(window.location.href, {
             method: 'POST',

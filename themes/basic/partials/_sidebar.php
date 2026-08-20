@@ -23,10 +23,18 @@ $lastCatalogId = $lastCatalog['id'] ?? 0;
     <div class="widget">
         <h4><?php echo e(!empty($firstCatalogTitle) ? $firstCatalogTitle :$title); ?></h4>
         <ul>
-            <?php foreach ($catalogs as $catalog): ?>
+            <?php foreach ($catalogs as $catalog):
+                // link-url 类型：slug 是占位符 --zap-link-url，需根据绑定的 link_type/link_to/link_object 生成真实 URL
+                $isLinkUrl = ($catalog['node_type'] ?? '') === 'link-url';
+                $href = $isLinkUrl
+                    ? smart_node_url($catalog)
+                    : site_url('/' . $catalog['slug']);
+                $linkTarget = $isLinkUrl ? ($catalog['link_target'] ?? '') : '';
+            ?>
                 <li<?php if ($lastCatalogId == $catalog['id']) echo ' class="current"'; ?>>
-                    <a href="<?php echo site_url('/' . $catalog['slug']); ?>"
-                       title="<?php echo htmlspecialchars($catalog['title']); ?>">
+                    <a href="<?php echo $href; ?>"
+                       title="<?php echo htmlspecialchars($catalog['title']); ?>"
+                       <?php if ($linkTarget === '_blank'): ?>target="_blank" rel="noopener"<?php endif; ?>>
                         <?php echo htmlspecialchars($catalog['title']); ?>
                     </a>
                 </li>

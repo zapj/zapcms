@@ -90,7 +90,10 @@ class Catalog extends Category
 
     public function getCatalogPathById($catalogId){
         $catalog = $this->get($catalogId);
-//        $rootId = explode(',',$catalog['path'])[0] ?? 0;
+        // 栏目不存在或 path 为空时直接返回空数组，避免访问 null 下标
+        if(empty($catalog) || empty($catalog['path'])){
+            return [];
+        }
         $ids = array_filter(explode(',',$catalog['path']));
         if(empty($ids)){
             return [];

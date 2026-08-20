@@ -117,7 +117,7 @@ $catalogMenu = pageState()->getCatalogList();
                 <h4>您可能还想访问：</h4>
                 <div>
                     <?php foreach ($catalogMenu as $menu): ?>
-                    <a href="<?php echo url_slug([], $menu['slug'] === '--zap-link-url' ? $menu['link_to'] : $menu['slug']); ?>">
+                    <a href="<?php echo $menu['slug'] === '--zap-link-url' ? resolve_link_url($menu) : url_slug([], $menu['slug']); ?>">
                         <?php echo htmlspecialchars($menu['title']); ?>
                     </a>
                     <?php endforeach; ?>

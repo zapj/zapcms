@@ -23,9 +23,9 @@ $childLastSlug = [];
                         if (!in_array(4, explode(',', $child['show_position'] ?? ''))) {
                             continue;
                         }
-                        $childSlug = $child['slug'] === '--zap-link-url' ? $child['link_to'] : $child['slug'];
+                        $childUrl = $child['slug'] === '--zap-link-url' ? resolve_link_url($child) : url_slug($childLastSlug, $child['slug']);
                     ?>
-                    <li><a href="<?php echo url_slug($childLastSlug, $childSlug); ?>" title="<?php echo htmlspecialchars($child['title']); ?>"><?php echo htmlspecialchars($child['title']); ?></a></li>
+                    <li><a href="<?php echo $childUrl; ?>" title="<?php echo htmlspecialchars($child['title']); ?>"><?php echo htmlspecialchars($child['title']); ?></a></li>
                     <?php endforeach; ?>
                 </ul>
             </div>

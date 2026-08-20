@@ -243,10 +243,8 @@ function get_catalog_prefix(): string
 {
     static $prefix = null;
     if ($prefix === null) {
-        $prefix = option('permalink.catalog_prefix', 'catalog');
-        if (empty($prefix)) {
-            $prefix = 'catalog';
-        }
+        // 支持空前缀：此时栏目直接以 /{slug} 形式访问，无需强制回退 catalog
+        $prefix = (string) option('permalink.catalog_prefix', 'catalog');
     }
     return $prefix;
 }

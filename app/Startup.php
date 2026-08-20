@@ -164,6 +164,17 @@ class Startup
             return;
         }
 
+        // ──── 栏目前缀路由：/catalog/xxx 交给 initRoute() 按 slug 解析栏目 ────
+        // 栏目前缀可能恰好与控制器同名（如 catalog → CatalogController），
+        // 若在此处当作控制器解析，会跳过 initRoute() 导致 pageState 无数据、模板无法渲染。
+        // 注意：必须同步设置 router->params，否则 initRoute() 会拿到 /{any:.*} 的原始参数而 404。
+        $catalogPrefix = get_catalog_prefix();
+        if ($catalogPrefix !== '' && ($segments[0] ?? '') === $catalogPrefix) {
+            $this->hasParams = !((count($segments) == 0));
+            $this->router->params = array_values($segments);
+            return;
+        }
+
         if (isset($segments[0]) && preg_match('/^[a-z]+[-_0-9a-z]+$/i', $segments[0])) {
             $controllerClass = $this->namespace . '\\' . Router::convertToName($segments[0]) . 'Controller';
             if (class_exists($controllerClass)) {
@@ -249,7 +260,7 @@ class Startup
             $pageState->nodeType = $node['node_type'];
             $pageState->nodeMimeType = $node['mime_type'];
             
-            if($node['node_type'] === 'catalog' && $this->resetRoute($node['mime_type'], 'index')) {
+            if($node['node_type'] === 'catalog' && $this->resetRoute($node['mime_type'] ?: 'catalog', 'index')) {
                 
             } else if (!$this->resetRoute($node['node_type'], empty($node['mime_type']) ? 'index' : $node['mime_type'])) {
                 DB::update('node', ['hits' => DB::raw('hits+1')], ['id' => $node['id']]);

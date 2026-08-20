@@ -30,7 +30,7 @@ $childLastSlug = [];
                     echo ($menu['id'] === $state->nodeId || $state->nodeId === $menu['link_object']) ? ' active' : '';
                 ?>">
                     <a data-id="<?php echo $menu['id']; ?>"
-                       href="<?php echo url_slug($childLastSlug, $menu['slug'] === '--zap-link-url' ? $menu['link_to'] : $menu['slug']); ?>"
+                       href="<?php echo $menu['slug'] === '--zap-link-url' ? resolve_link_url($menu) : url_slug($childLastSlug, $menu['slug']); ?>"
                        title="<?php echo htmlspecialchars($menu['title']); ?>"
                        <?php if (!empty($menu['children'])): ?>
                        class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button"

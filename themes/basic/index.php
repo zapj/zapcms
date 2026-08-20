@@ -90,7 +90,7 @@ $latestNews = pageState()->getLatestNews();
                     <?php foreach ($latestNews as $news){ ?>
                     <div class="col-lg-3 col-md-6 col-sm-12">
                         <div class="news-card">
-                            <a href="<?php echo site_url("/{$news['node_type']}/{$news['slug']}") ?>" class="news-link">
+                            <a href="<?php echo smart_node_url($news); ?>" class="news-link">
                                 <div class="news-image">
                                     <img src="<?php echo \zapcms\helpers\ThumbHelper::thumb($news['image'], (int)\zapcms\services\NodeType::getConfig($news['node_type'] ?? 'article', 'list_image_width', 400), (int)\zapcms\services\NodeType::getConfig($news['node_type'] ?? 'article', 'list_image_height', 300)); ?>" alt="<?php echo $news['title']; ?>">
                                     <div class="news-overlay">

@@ -486,9 +486,9 @@ class SystemController extends AdminController
             $structure     = Request::post('permalink_structure', '/%postname%/');
             $catalogPrefix = Request::post('catalog_prefix', 'catalog');
 
-            // 基本清理
+            // 基本清理（栏目前缀允许留空，表示栏目直接以 /{slug} 访问）
             $structure = '/' . trim(trim($structure), '/') . '/';
-            $catalogPrefix = preg_replace('/[^a-zA-Z0-9_-]/', '', $catalogPrefix) ?: 'catalog';
+            $catalogPrefix = (string) preg_replace('/[^a-zA-Z0-9_-]/', '', $catalogPrefix);
 
             Option::update('permalink.structure', $structure, 0, 1);
             Option::update('permalink.catalog_prefix', $catalogPrefix, 0, 1);

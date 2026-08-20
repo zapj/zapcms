@@ -48,7 +48,10 @@ class CatalogController extends Controller
             BreadCrumb::instance()->add($catalog['title'],site_url("/{$catalog['slug']}"),$key === $lastKey);
         }
 
-        pageState()->subCatalogList = Catalog::instance()->getSubCatalogList(pageState()->catalog['pid'] == 0 ? pageState()->catalog['id'] : pageState()->catalog['pid']);
+        // catalog 可能为 null（nodeType 非 catalog 或 nodeId 无效时 getCatalog() 返回 null），加空值保护
+        $catalogData = pageState()->catalog ?: [];
+        $subParentId = (int)($catalogData['pid'] ?? 0) == 0 ? ($catalogData['id'] ?? 0) : $catalogData['pid'];
+        pageState()->subCatalogList = Catalog::instance()->getSubCatalogList($subParentId);
         try{
             if(pageState()->nodeMimeType==='page') {
                 view('page', ['node' => pageState()->node]);
