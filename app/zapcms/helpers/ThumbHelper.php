@@ -22,8 +22,11 @@ class ThumbHelper
         }
         $file = ltrim($file,'/\\');
         $path_parts = pathinfo($file);
-        $path_parts['dirname'] = $path_parts['dirname'] == '.' ? '' : "{$path_parts['dirname']}/";
-        $thumb_file = "{$path_parts['dirname']}{$path_parts['filename']}-{$width}x{$height}.{$path_parts['extension']}";
+        $dirname = $path_parts['dirname'] ?? '.';
+        $filename = $path_parts['filename'] ?? basename($file, '.' . ($path_parts['extension'] ?? ''));
+        $extension = $path_parts['extension'] ?? 'jpg';
+        $dirname = $dirname == '.' ? '' : "{$dirname}/";
+        $thumb_file = "{$dirname}{$filename}-{$width}x{$height}.{$extension}";
         if(is_file(storage_path("thumbs/".$thumb_file))){
             return storage_url("thumbs/".$thumb_file);
         }
