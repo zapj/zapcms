@@ -49,9 +49,12 @@ class UserController extends AdminController
         $latestUser  = $users ? ($users[0]['username'] ?? '-') : '-';
 
         // 分页
-        $pageHelper = new Pagination($page, $perPage, Request::get());
+        $queryParams = Request::get();
+        unset($queryParams['page']);
+        $pageHelper = new Pagination($page, $perPage, $queryParams);
         $pageHelper->setTotal($total);
-        $pageHelper->url = Url::action('User@index');
+        // 显式指定分页基准 URL，保留筛选参数，强制 ?page=N 形式，避免 path 为空时生成 "/N" 错误链接
+        $pageHelper->withPath(Url::action('User@index') . '?' . ($queryParams ? http_build_query($queryParams) . '&' : '') . 'page={page}');
 
         // 角色列表（供 Modal 表单使用）
         $roles = DB::table('roles')->orderBy('role_id')->fetchAll();
@@ -431,9 +434,12 @@ class UserController extends AdminController
             ->offset(($page - 1) * $perPage)
             ->fetchAll();
 
-        $pageHelper = new Pagination($page, $perPage, Request::get());
+        $queryParams = Request::get();
+        unset($queryParams['page']);
+        $pageHelper = new Pagination($page, $perPage, $queryParams);
         $pageHelper->setTotal($total);
-        $pageHelper->url = Url::action('User@roles');
+        // 显式指定分页基准 URL，强制 ?page=N 形式
+        $pageHelper->withPath(Url::action('User@roles') . '?' . ($queryParams ? http_build_query($queryParams) . '&' : '') . 'page={page}');
 
         view('user.roles', [
             'data'        => $roles,
@@ -605,7 +611,8 @@ class UserController extends AdminController
 
         $pageHelper = new Pagination(1, 999, []);
         $pageHelper->setTotal(count($tree));
-        $pageHelper->url = '#';
+        // 树形展示通常单页渲染；仍显式指定基准 URL，避免动态属性弃用警告
+        $pageHelper->withPath(Url::action('User@permissions') . '?page={page}');
 
         view('user.permissions', [
             'data'        => $tree,

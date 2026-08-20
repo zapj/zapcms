@@ -65,9 +65,12 @@ class CommentController extends AdminController
         $spamCnt     = (int)DB::table('comments')->where('approved', Comment::APPROVED_SPAM)->count();
 
         // 批量补充分页信息
-        $pageHelper = new Pagination($page, $perPage, Request::get());
+        $queryParams = Request::get();
+        unset($queryParams['page']);
+        $pageHelper = new Pagination($page, $perPage, $queryParams);
         $pageHelper->setTotal($total);
-        $pageHelper->url = Url::action('Comment@index');
+        // 显式指定分页基准 URL，保留筛选参数，强制 ?page=N 形式，避免 path 为空时生成 "/N" 错误链接
+        $pageHelper->withPath(Url::action('Comment@index') . '?' . ($queryParams ? http_build_query($queryParams) . '&' : '') . 'page={page}');
 
         // 关联对象信息（每条评论挂在哪个内容下）
         $objectInfos = [];
