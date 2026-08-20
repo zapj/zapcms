@@ -27,6 +27,11 @@ class SearchController extends Controller
         $searchType = trim((string)req()->get('node_type'));
         $listPerPage = (int)\zapcms\services\NodeType::getConfig($searchType !== '' ? $searchType : 'article', 'list_per_page', 12);
         $page = new Pagination(intval(req()->get('page',1)), max(1, $listPerPage), req()->get());
+        // 修复分页链接：以搜索页 /search 为基准，保留 q/node_type 等查询参数，
+        // 强制使用 ?page=N 形式，避免 path 为空时生成 "/N" 这类错误链接。
+        $queryParams = req()->get();
+        unset($queryParams['page']);
+        $page->withPath(site_url('/search') . '?' . ($queryParams ? http_build_query($queryParams) . '&' : '') . 'page={page}');
         pageState()->subCatalogList = pageState()->getSearchSidebarMenu();
         $query = Node::where('title','LIKE',"%{$keyword}%")
             ->where('status',Node::STATUS_PUBLISH)

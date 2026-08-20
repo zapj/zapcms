@@ -60,6 +60,17 @@ class CatalogController extends Controller
                 // 分页数量从内容模型显示配置读取（默认 12）
                 $listPerPage = (int)\zapcms\services\NodeType::getConfig(pageState()->nodeMimeType, 'list_per_page', 12);
                 $page = new Pagination(intval(req()->get('page',1)), max(1, $listPerPage), req()->get());
+                // 修复分页链接：以当前栏目完整 URL 为基准（如 /products 或 /catalog/products），
+                // 保留除 page 外的查询参数，并强制使用 ?page=N 形式。
+                // 否则 URL 无查询参数时 path 为空，Pagination::url() 会生成 "/N" 这类错误链接；
+                // 且 /products/N 路径形式无法被路由解析为 page 参数。
+                $queryParams = req()->get();
+                unset($queryParams['page']);
+                $pagerBase = smart_node_url(pageState()->node ?: []);
+                if ($pagerBase === '') {
+                    $pagerBase = home_url();
+                }
+                $page->withPath($pagerBase . '?' . ($queryParams ? http_build_query($queryParams) . '&' : '') . 'page={page}');
                 // 根据栏目 mimeType 选择不同的模板文件，若不存在则使用默认的模板文件
                 $view = View::make( theme_file_is_exists(pageState()->nodeMimeType . '_list') ? pageState()->nodeMimeType.'_list' : pageState()->nodeMimeType);
                 $query = DB::table('node_relation','nr')->leftJoin(['node','n'],'nr.node_id=n.id')
