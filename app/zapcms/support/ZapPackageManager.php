@@ -43,8 +43,8 @@ class ZapPackageManager
 
     public function __construct()
     {
-        $this->tmpDir    = APP_ROOT . '/storage/tmp';
-        $this->backupDir = APP_ROOT . '/storage/backup';
+        $this->tmpDir    = APP_ROOT . '/var/tmp';
+        $this->backupDir = APP_ROOT . '/var/backup';
         $this->modsDir   = APP_ROOT . '/mods';
         $this->apiUrl    = Option::get('website.api_url', 'https://api.zap.cn/api/v1');
 
