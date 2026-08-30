@@ -94,15 +94,27 @@ $this->layout('layouts/common');
 }
 .zap-dev-file-tree .child-list {
     display: none;
+    position: relative;
+    margin-left: 1rem; /* 每层递进缩进,嵌套自动累加,支持任意层级 */
+    padding-left: 0.3rem;
+    border-left: 1px solid #e9ecef; /* 树形引导竖线 */
 }
 .zap-dev-file-tree .child-list.open {
     display: block;
 }
 .zap-dev-file-tree .child-list .list-group-item {
-    padding-left: 1.75rem;
+    position: relative;
+    padding-left: 0.75rem;
 }
-.zap-dev-file-tree .child-list .child-list .list-group-item {
-    padding-left: 2.75rem;
+/* 节点与父级竖线的连接横线 */
+.zap-dev-file-tree .child-list .list-group-item::before {
+    content: '';
+    position: absolute;
+    left: -0.3rem;
+    top: 50%;
+    width: 0.3rem;
+    height: 1px;
+    background: #e9ecef;
 }
 .zap-dev-main {
     flex: 1;
