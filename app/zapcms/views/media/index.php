@@ -14,41 +14,105 @@ $uploadMaxSize = max(1, (int)option('upload.max_size', 20));
 ?>
 
 <style>
+    .media-tree {
+        padding: 0.2rem 0.25rem;
+    }
     .media-tree .tree-item {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.35rem 0.6rem;
-        border-radius: 0.375rem;
+        gap: 0.4rem;
+        padding: 0.32rem 0.5rem;
+        border-radius: 0.4rem;
         cursor: pointer;
         user-select: none;
         white-space: nowrap;
+        font-size: 0.85rem;
+        color: #495057;
+        position: relative;
+        transition: background-color 0.15s ease, color 0.15s ease;
     }
     .media-tree .tree-item:hover {
-        background: rgba(0, 0, 0, 0.05);
+        background: rgba(13, 110, 253, 0.07);
+        color: #212529;
     }
     .media-tree .tree-item.active {
         background: var(--bs-primary-bg-subtle, #cfe2ff);
         color: var(--bs-primary, #0d6efd);
         font-weight: 600;
     }
+    .media-tree .tree-item.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 20%;
+        bottom: 20%;
+        width: 3px;
+        border-radius: 0 2px 2px 0;
+        background: var(--bs-primary, #0d6efd);
+    }
     .media-tree .tree-children {
-        margin-left: 1.1rem;
-        border-left: 1px dashed #dee2e6;
-        padding-left: 0.4rem;
+        margin-left: 1rem;
+        padding-left: 0.3rem;
+        border-left: 1px solid #e9ecef;
+    }
+    /* 子项与父级竖线的连接横线（L 形引导线） */
+    .media-tree .tree-children .tree-item {
+        position: relative;
+    }
+    .media-tree .tree-children .tree-item::after {
+        content: '';
+        position: absolute;
+        left: -0.3rem;
+        top: 50%;
+        width: 0.3rem;
+        height: 1px;
+        background: #e9ecef;
+        pointer-events: none;
     }
     .media-tree .tree-toggle {
-        width: 1rem;
-        text-align: center;
-        color: #6c757d;
-        font-size: 0.75rem;
+        width: 0.9rem;
         flex-shrink: 0;
+        text-align: center;
+        color: #adb5bd;
+        font-size: 0.7rem;
+        transition: color 0.15s ease;
+    }
+    .media-tree .tree-item:hover .tree-toggle {
+        color: var(--bs-primary, #0d6efd);
     }
     .media-tree .tree-caret {
-        transition: transform 0.15s;
+        transition: transform 0.2s ease;
     }
     .media-tree .tree-caret.expanded {
         transform: rotate(90deg);
+    }
+    .media-tree .tree-folder-icon {
+        width: 1.05rem;
+        flex-shrink: 0;
+        text-align: center;
+        color: #e8a33d;
+        transition: color 0.15s ease;
+    }
+    .media-tree .tree-folder-icon.icon-root {
+        color: #868e96;
+    }
+    .media-tree .tree-item.active .tree-folder-icon {
+        color: var(--bs-primary, #0d6efd);
+    }
+    .media-tree .tree-badge {
+        flex-shrink: 0;
+        min-width: 1.15rem;
+        padding: 0.15rem 0.35rem;
+        border-radius: 999px;
+        background: #e9ecef;
+        color: #6c757d;
+        font-size: 0.68rem;
+        line-height: 1;
+        text-align: center;
+    }
+    .media-tree .tree-item.active .tree-badge {
+        background: rgba(13, 110, 253, 0.14);
+        color: var(--bs-primary, #0d6efd);
     }
     .media-file-card {
         transition: box-shadow 0.15s;
@@ -127,7 +191,7 @@ $uploadMaxSize = max(1, (int)option('upload.max_size', 20));
                     <i class="fa-solid fa-folder-plus me-1"></i>新建文件夹
                 </button>
             </div>
-            <div class="card-body p-2 overflow-auto" id="media-tree" style="max-height: 62vh;"></div>
+            <div class="card-body p-2 overflow-auto media-tree" id="media-tree" style="max-height: 62vh;"></div>
             <div class="card-footer bg-white py-2 small text-muted">
                 <div id="media-storage-bar">
                     <div class="d-flex justify-content-between mb-1">
@@ -293,63 +357,116 @@ $uploadMaxSize = max(1, (int)option('upload.max_size', 20));
     };
 
     // ============ 目录树 ============
-    function renderTree(nodes, container, level) {
+    function renderTree(nodes, container) {
         container.empty();
-        nodes.forEach(function (node) {
-            const hasChildren = node.children && node.children.length > 0;
-            const item = $('<div>')
-                .addClass('tree-item' + (media.path === node.path ? ' active' : ''))
-                .attr('data-path', node.path)
-                .append(
-                    $('<span>').addClass('tree-toggle').html(
-                        hasChildren ? '<i class="fa-solid fa-chevron-right tree-caret"></i>' : '<i class="fa-solid fa-minus text-body-tertiary" style="font-size:0.6rem"></i>'
-                    ),
-                    $('<i class="fa-solid fa-folder text-warning"></i>'),
-                    $('<span class="text-truncate flex-fill">').text(node.name),
-                    $('<span class="badge text-bg-light text-muted ms-1">').text(node.count)
-                );
-            const childrenBox = $('<div class="tree-children" style="display:none"></div>');
-            if (hasChildren) {
-                renderTree(node.children, childrenBox, level + 1);
-            }
-            const box = $('<div>').append(item, childrenBox);
-            container.append(box);
+        // 根目录节点（children 即整棵树）
+        appendTreeItem({name: '根目录', path: '', count: 0, children: nodes}, container);
+    }
 
-            // 展开/折叠
-            item.on('click', function (e) {
-                e.stopPropagation();
-                if (media.path === node.path) {
-                    // 已激活：仅切换展开状态
-                    if (hasChildren) {
-                        const expanded = childrenBox.is(':visible');
-                        childrenBox.toggle(200);
-                        item.find('.tree-caret').toggleClass('expanded', !expanded);
-                    }
-                    return;
-                }
-                media.path = node.path;
-                media.search = '';
-                $('#media-search').val('');
-                media.selected.clear();
-                loadBrowse();
-                $('.tree-item').removeClass('active');
-                item.addClass('active');
-            });
-            // 展开按钮
-            item.find('.tree-toggle').on('click', function (e) {
-                e.stopPropagation();
-                if (hasChildren) {
-                    childrenBox.toggle(200);
-                    item.find('.tree-caret').toggleClass('expanded', childrenBox.is(':visible'));
-                }
-            });
+    function appendTreeItems(nodes, container) {
+        nodes.forEach(function (node) {
+            appendTreeItem(node, container);
         });
+    }
+
+    function appendTreeItem(node, container) {
+        const hasChildren = node.children && node.children.length > 0;
+        const isRoot = node.path === '';
+        const isActive = media.path === node.path;
+        // 当前目录的祖先链：自动展开
+        const isAncestor = !isActive && node.path !== '' && media.path.indexOf(node.path + '/') === 0;
+        const expandedInit = isRoot || isAncestor;
+        const iconCls = isRoot
+            ? 'fa-house icon-root'
+            : (expandedInit ? 'fa-folder-open' : 'fa-folder');
+
+        const item = $('<div>')
+            .addClass('tree-item' + (isActive ? ' active' : ''))
+            .attr('data-path', node.path)
+            .append(
+                $('<span>').addClass('tree-toggle').html(
+                    hasChildren
+                        ? '<i class="fa-solid fa-chevron-right tree-caret' + (expandedInit ? ' expanded' : '') + '"></i>'
+                        : '<i class="fa-solid fa-minus text-body-tertiary" style="font-size:0.6rem"></i>'
+                ),
+                $('<i class="tree-folder-icon fa-solid ' + iconCls + '"></i>'),
+                $('<span class="text-truncate flex-fill" title="' + node.name.replace(/"/g, '&quot;') + '">').text(node.name),
+                node.count > 0 ? $('<span class="tree-badge">').text(node.count) : ''
+            );
+
+        const childrenBox = $('<div class="tree-children"' + (expandedInit ? '' : ' style="display:none"') + '></div>');
+        if (hasChildren) {
+            appendTreeItems(node.children, childrenBox);
+        }
+        const box = $('<div>').append(item, childrenBox);
+        container.append(box);
+
+        // 展开/折叠（点击行）
+        item.on('click', function (e) {
+            e.stopPropagation();
+            if (media.path === node.path) {
+                // 已激活：仅切换展开状态
+                if (hasChildren) {
+                    const expanded = childrenBox.is(':visible');
+                    childrenBox.toggle(150);
+                    item.find('.tree-caret').toggleClass('expanded', !expanded);
+                    item.find('.tree-folder-icon').toggleClass('fa-folder-open', !expanded).toggleClass('fa-folder', expanded);
+                }
+                return;
+            }
+            media.path = node.path;
+            media.search = '';
+            $('#media-search').val('');
+            media.selected.clear();
+            $('.tree-item').removeClass('active');
+            item.addClass('active');
+            loadBrowse();
+        });
+        // 展开/折叠（箭头）
+        item.find('.tree-toggle').on('click', function (e) {
+            e.stopPropagation();
+            if (hasChildren) {
+                childrenBox.toggle(150);
+                const expanded = childrenBox.is(':visible');
+                item.find('.tree-caret').toggleClass('expanded', expanded);
+                item.find('.tree-folder-icon').toggleClass('fa-folder-open', expanded).toggleClass('fa-folder', !expanded);
+            }
+        });
+    }
+
+    // 浏览路径变化后同步树的高亮 / 展开状态，并滚动到可视区
+    function syncTreeActive() {
+        $('#media-tree .tree-item').each(function () {
+            const $item = $(this);
+            const path = $item.data('path') || '';
+            const isActive = path === media.path;
+            $item.toggleClass('active', isActive);
+            // 祖先链自动展开
+            if (!isActive && path !== '' && media.path.indexOf(path + '/') === 0) {
+                const $children = $item.next('.tree-children');
+                if ($children.length && !$children.is(':visible')) {
+                    $children.show();
+                    $item.find('.tree-caret').addClass('expanded');
+                    $item.find('.tree-folder-icon').addClass('fa-folder-open').removeClass('fa-folder');
+                }
+            }
+        });
+        // 滚动激活节点进入可视区
+        const $tree = $('#media-tree');
+        const $active = $tree.find('.tree-item.active');
+        if ($active.length) {
+            const treeTop = $tree.offset().top;
+            const activeTop = $active.offset().top;
+            if (activeTop < treeTop || activeTop > treeTop + $tree.height()) {
+                $tree.scrollTop($tree.scrollTop() + (activeTop - treeTop) - $tree.height() / 2);
+            }
+        }
     }
 
     function loadTree() {
         $.get(MediaApi.tree, function (data) {
             if (data && data.code === 0) {
-                renderTree(data.data, $('#media-tree'), 0);
+                renderTree(data.data, $('#media-tree'));
             }
         });
     }
@@ -579,6 +696,7 @@ $uploadMaxSize = max(1, (int)option('upload.max_size', 20));
                 media.dirs = data.dirs;
                 media.files = data.files;
                 renderContent();
+                syncTreeActive();
             } else {
                 $content.html('<div class="alert alert-warning mb-0">' + (data && data.msg ? data.msg : '加载失败') + '</div>');
             }
