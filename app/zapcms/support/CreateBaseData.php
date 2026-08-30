@@ -44,6 +44,7 @@ class CreateBaseData
                 ['id' => 15, 'title' => 'Slug 设置', 'pid' => 3, 'path' => '3,15,', 'level' => 2, 'icon' => 'fa-solid fa-chevron-right', 'link_to' => 'System@slugSettings', 'link_target' => '_self', 'link_type' => 'action', 'active_rule' => '(system/slug-settings.*)', 'show_position' => '', 'sort_order' => 0, 'updated_at' => 1786415523, 'created_at' => 1786415434],
                 ['id' => 16, 'title' => '服务器信息', 'pid' => 3, 'path' => '3,16,', 'level' => 2, 'icon' => 'fa-solid fa-info', 'link_to' => 'System@sysInfo', 'link_target' => '_self', 'link_type' => 'action', 'active_rule' => '(system/sys-info)', 'show_position' => '', 'sort_order' => 9, 'updated_at' => 1786433064, 'created_at' => 1786433064],
                 ['id' => 17, 'title' => '评论', 'pid' => 0, 'path' => '17,', 'level' => 1, 'icon' => 'fa-regular fa-comment', 'link_to' => 'Comment', 'link_target' => '_self', 'link_type' => 'action', 'active_rule' => '(comment[/.]?.*)', 'show_position' => '', 'sort_order' => 5, 'updated_at' => 1786501912, 'created_at' => 1786501912],
+                ['id' => 18, 'title' => '媒体库', 'pid' => 0, 'path' => '18,', 'level' => 1, 'icon' => 'fa-regular fa-image', 'link_to' => 'Media', 'link_target' => '_self', 'link_type' => 'action', 'active_rule' => '(media[/.]?.*)', 'show_position' => '', 'sort_order' => 25, 'updated_at' => 1786501912, 'created_at' => 1786501912],
             ], true);
         });
 
@@ -244,6 +245,7 @@ class CreateBaseData
         Schema::alter('permissions',function (AlertTable $table){
             $table->batchInsert([
                 ['perm_id' => 7, 'title' => '用户管理', 'pid' => 0, 'path' => '', 'level' => 0, 'perm_key' => 'user', 'extras' => '{"delete":"删除","edit":"编辑","add":"新增","view":"查看"}', 'description' => '', 'updated_at' => 1786451018, 'created_at' => 1698204409, 'sort_order' => 0],
+                ['perm_id' => 8, 'title' => '媒体库', 'pid' => 0, 'path' => '', 'level' => 0, 'perm_key' => 'admin_menu_18', 'extras' => NULL, 'description' => '媒体库管理', 'updated_at' => 1786501912, 'created_at' => 1786501912, 'sort_order' => 0],
             ], true);
         });
 
@@ -299,6 +301,7 @@ class CreateBaseData
                 ['role_id' => 1, 'perm_key' => 'admin_menu_14', 'extras' => NULL, 'assignment_time' => 1786453446],
                 ['role_id' => 1, 'perm_key' => 'admin_menu_10', 'extras' => NULL, 'assignment_time' => 1786453446],
                 ['role_id' => 1, 'perm_key' => 'admin_menu_16', 'extras' => NULL, 'assignment_time' => 1786453446],
+                ['role_id' => 1, 'perm_key' => 'admin_menu_18', 'extras' => NULL, 'assignment_time' => 1786453446],
             ], true);
         });
 

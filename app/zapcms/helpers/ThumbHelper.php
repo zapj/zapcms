@@ -38,16 +38,25 @@ class ThumbHelper
             if(is_file($placeholder)){
                 $thumb_file = "placeholder-{$width}x{$height}.jpg";
                 if(!is_file(storage_path("thumbs/".$thumb_file))){
-                    $img = Image::from($placeholder);
-                    $img->thumb($width,$height)->saveFile(storage_path("thumbs/".$thumb_file));
+                    try {
+                        $img = Image::from($placeholder);
+                        $img->thumb($width,$height)->saveFile(storage_path("thumbs/".$thumb_file));
+                    } catch (\Throwable $e) {
+                        // 缩略图生成失败时直接返回原占位图
+                    }
                 }
                 return storage_url("thumbs/".$thumb_file);
             }
             return base_url("/assets/images/placeholder.jpg");
         }
-        $img = Image::from($file);
+        try {
+            $img = Image::from($file);
 //        $originalPath = dirname($file);
-        $img->thumb($width,$height)->saveFile(storage_path("thumbs/".$thumb_file));
+            $img->thumb($width,$height)->saveFile(storage_path("thumbs/".$thumb_file));
+        } catch (\Throwable $e) {
+            // 图片无效、损坏或 GD 缺失：降级返回占位图，避免中断整个目录浏览
+            return base_url('/assets/images/placeholder.jpg');
+        }
         return storage_url("thumbs/".$thumb_file);
     }
 
